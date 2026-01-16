@@ -16,34 +16,137 @@ interface CanvasStore {
   elements: CanvasElement[]
   selectedElement: string | null
   scale: number
-  setElements: (elements: CanvasElement[]) => void
+  panOffset: { x: number; y: number }
+  past: CanvasElement[][]
+  future: CanvasElement[][]
+  setElements: (elements: CanvasElement[], skipHistory?: boolean) => void
   addElement: (element: CanvasElement) => void
   updateElement: (id: string, updates: Partial<CanvasElement>) => void
+  updateElementSilent: (id: string, updates: Partial<CanvasElement>) => void
+  commitHistory: () => void
   deleteElement: (id: string) => void
   selectElement: (id: string | null) => void
   setScale: (scale: number) => void
+  setPanOffset: (offset: { x: number; y: number }) => void
   clearCanvas: () => void
+  resetView: () => void
+  undo: () => void
+  redo: () => void
+  canUndo: () => boolean
+  canRedo: () => boolean
+  _pendingHistorySnapshot: CanvasElement[] | null
+  _setPendingSnapshot: () => void
 }
 
-export const useCanvasStore = create<CanvasStore>((set) => ({
+const MAX_HISTORY = 50
+
+export const useCanvasStore = create<CanvasStore>((set, get) => ({
   elements: [],
   selectedElement: null,
   scale: 1,
-  setElements: (elements) => set({ elements }),
+  panOffset: { x: 0, y: 0 },
+  past: [],
+  future: [],
+  _pendingHistorySnapshot: null,
+
+  setElements: (elements, skipHistory = false) =>
+    set((state) => {
+      if (skipHistory) {
+        return { elements }
+      }
+      return {
+        elements,
+        past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+        future: [],
+      }
+    }),
+
   addElement: (element) =>
-    set((state) => ({ elements: [...state.elements, element] })),
+    set((state) => ({
+      elements: [...state.elements, element],
+      past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+      future: [],
+    })),
+
   updateElement: (id, updates) =>
     set((state) => ({
       elements: state.elements.map((el) =>
         el.id === id ? { ...el, ...updates } : el
       ),
+      past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+      future: [],
     })),
+
+  updateElementSilent: (id, updates) =>
+    set((state) => ({
+      elements: state.elements.map((el) =>
+        el.id === id ? { ...el, ...updates } : el
+      ),
+    })),
+
+  _setPendingSnapshot: () =>
+    set((state) => ({
+      _pendingHistorySnapshot: [...state.elements],
+    })),
+
+  commitHistory: () =>
+    set((state) => {
+      if (!state._pendingHistorySnapshot) return state
+      return {
+        past: [...state.past.slice(-MAX_HISTORY + 1), state._pendingHistorySnapshot],
+        future: [],
+        _pendingHistorySnapshot: null,
+      }
+    }),
+
   deleteElement: (id) =>
     set((state) => ({
       elements: state.elements.filter((el) => el.id !== id),
       selectedElement: state.selectedElement === id ? null : state.selectedElement,
+      past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+      future: [],
     })),
+
   selectElement: (id) => set({ selectedElement: id }),
   setScale: (scale) => set({ scale }),
-  clearCanvas: () => set({ elements: [], selectedElement: null }),
+  setPanOffset: (offset) => set({ panOffset: offset }),
+
+  clearCanvas: () =>
+    set((state) => ({
+      elements: [],
+      selectedElement: null,
+      past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+      future: [],
+    })),
+
+  resetView: () => set({ scale: 1, panOffset: { x: 0, y: 0 } }),
+
+  undo: () =>
+    set((state) => {
+      if (state.past.length === 0) return state
+      const previous = state.past[state.past.length - 1]
+      const newPast = state.past.slice(0, -1)
+      return {
+        elements: previous,
+        past: newPast,
+        future: [state.elements, ...state.future.slice(0, MAX_HISTORY - 1)],
+        selectedElement: null,
+      }
+    }),
+
+  redo: () =>
+    set((state) => {
+      if (state.future.length === 0) return state
+      const next = state.future[0]
+      const newFuture = state.future.slice(1)
+      return {
+        elements: next,
+        past: [...state.past, state.elements],
+        future: newFuture,
+        selectedElement: null,
+      }
+    }),
+
+  canUndo: () => get().past.length > 0,
+  canRedo: () => get().future.length > 0,
 }))

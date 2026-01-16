@@ -6,6 +6,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+
 export default function SignIn() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -40,46 +45,44 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-slate-900 p-12 flex-col justify-between">
+      <div className="hidden lg:flex lg:w-1/2 bg-primary p-12 flex-col justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">Event Layout Planner</h1>
+          <h1 className="text-2xl font-semibold text-primary-foreground tracking-tight">Event Layout Planner</h1>
         </div>
         <div>
-          <p className="text-3xl font-light text-slate-300 leading-relaxed">
+          <p className="text-3xl font-light text-primary-foreground/80 leading-relaxed">
             Design your event spaces with precision and clarity.
           </p>
-          <p className="mt-4 text-slate-500 text-sm">
+          <p className="mt-4 text-primary-foreground/50 text-sm">
             Drag-and-drop floor planning for conferences, weddings, and corporate events.
           </p>
         </div>
-        <div className="text-slate-600 text-xs">
+        <div className="text-primary-foreground/40 text-xs">
           &copy; {new Date().getFullYear()} Event Layout Planner
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+      <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-sm">
           <div className="lg:hidden mb-8">
-            <h1 className="text-xl font-semibold text-slate-900">Event Layout Planner</h1>
+            <h1 className="text-xl font-semibold">Event Layout Planner</h1>
           </div>
 
-          <h2 className="text-2xl font-semibold text-slate-900">Sign in</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <h2 className="text-2xl font-semibold">Sign in</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             Enter your credentials to access your account
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             {error && (
-              <div className="bg-red-50 text-red-600 px-3 py-2 rounded text-sm">
-                {error}
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-                Email
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
                 id="email"
                 name="email"
                 type="email"
@@ -87,16 +90,13 @@ export default function SignIn() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500"
                 placeholder="name@company.com"
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-                Password
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
                 id="password"
                 name="password"
                 type="password"
@@ -104,16 +104,11 @@ export default function SignIn() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded text-slate-900 text-sm placeholder-slate-400 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500"
                 placeholder="Enter your password"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2 px-4 bg-slate-900 text-white text-sm font-medium rounded hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
-            >
+            <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -122,12 +117,12 @@ export default function SignIn() {
               ) : (
                 'Sign in'
               )}
-            </button>
+            </Button>
           </form>
 
-          <p className="mt-6 text-sm text-slate-600">
+          <p className="mt-6 text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/signup" className="text-slate-900 font-medium hover:underline">
+            <Link href="/auth/signup" className="text-foreground font-medium hover:underline">
               Create one
             </Link>
           </p>

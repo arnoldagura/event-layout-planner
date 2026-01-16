@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Sparkles, Loader2 } from 'lucide-react'
+import { Sparkles, Loader2, Check, Lightbulb, LayoutGrid } from 'lucide-react'
 import { useCanvasStore, CanvasElement } from '@/lib/store'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 
 interface Props {
   eventId: string
@@ -65,12 +67,16 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData }) => {
   const applySuggestion = async () => {
     if (suggestion?.elements) {
       const hasNoSavedElements = elements.length === 0
-      setElements(suggestion.elements)
+      const elementsWithIds = suggestion.elements.map((el, index) => ({
+        ...el,
+        id: el.id || `ai-element-${Date.now()}-${index}`,
+      }))
+      setElements(elementsWithIds)
       setSuggestion(null)
 
       if (hasNoSavedElements) {
         try {
-          for (const element of suggestion.elements) {
+          for (const element of elementsWithIds) {
             await fetch(`/api/events/${eventId}/elements`, {
               method: 'POST',
               headers: {
@@ -87,82 +93,144 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData }) => {
   }
 
   return (
-    <div className="w-72 bg-white border-l border-slate-200 p-4 overflow-y-auto">
-      <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="w-4 h-4 text-slate-600" />
-        <h2 className="text-sm font-medium text-slate-900">AI Assistant</h2>
+    <div className="w-72 bg-white border-l flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-zinc-900">AI Assistant</h2>
+            <p className="text-xs text-zinc-500">Auto-generate layouts</p>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <p className="text-xs text-slate-500">
-          Generate a layout based on your event type and capacity.
-        </p>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {/* Event context */}
+        <div className="mb-4 p-3 bg-zinc-50 rounded-lg">
+          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Event Details</h3>
+          <div className="space-y-1 text-sm">
+            <p className="text-zinc-700">
+              <span className="text-zinc-500">Type:</span>{' '}
+              <span className="capitalize">{eventData.eventType || 'Not specified'}</span>
+            </p>
+            <p className="text-zinc-700">
+              <span className="text-zinc-500">Capacity:</span>{' '}
+              {eventData.capacity ? `${eventData.capacity} guests` : 'Not specified'}
+            </p>
+          </div>
+        </div>
 
-        <button
+        {/* Generate button */}
+        <Button
           onClick={generateSuggestion}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm bg-slate-900 text-white rounded hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+          className="w-full mb-4"
+          size="lg"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
               Generating...
             </>
           ) : (
             <>
-              <Sparkles className="w-3.5 h-3.5" />
+              <LayoutGrid className="w-4 h-4" />
               Generate Layout
             </>
           )}
-        </button>
+        </Button>
 
+        {/* Error state */}
         {error && (
-          <div className="p-2 bg-red-50 rounded">
-            <p className="text-xs text-red-600">{error}</p>
+          <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+            <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
+        {/* Suggestion result */}
         {suggestion && (
-          <div className="space-y-3">
-            <div className="p-3 bg-slate-50 rounded">
-              <p className="text-xs text-slate-600 mb-3">{suggestion.reasoning}</p>
-              <button
-                onClick={applySuggestion}
-                className="w-full px-3 py-1.5 bg-slate-900 text-white text-xs rounded hover:bg-slate-800 transition-colors"
-              >
+          <div className="space-y-4">
+            {/* Reasoning */}
+            {suggestion.reasoning && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                  <p className="text-sm text-amber-800">{suggestion.reasoning}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Elements preview */}
+            <div className="p-3 bg-zinc-50 rounded-lg">
+              <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
+                Generated Elements
+              </h4>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {suggestion.elements?.slice(0, 8).map((el, idx) => (
+                  <span
+                    key={idx}
+                    className="px-2 py-1 bg-white border rounded text-xs text-zinc-600"
+                  >
+                    {el.name}
+                  </span>
+                ))}
+                {(suggestion.elements?.length || 0) > 8 && (
+                  <span className="px-2 py-1 bg-zinc-100 rounded text-xs text-zinc-500">
+                    +{(suggestion.elements?.length || 0) - 8} more
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-zinc-500 mb-3">
+                {suggestion.elements?.length || 0} elements total
+              </p>
+              <Button onClick={applySuggestion} className="w-full" size="sm">
+                <Check className="w-4 h-4" />
                 Apply Layout
-              </button>
+              </Button>
             </div>
 
+            {/* Alternatives */}
             {suggestion.alternatives && suggestion.alternatives.length > 0 && (
-              <div className="p-3 bg-slate-50 rounded">
-                <h4 className="text-xs font-medium text-slate-700 mb-2">
-                  Alternatives
+              <div className="p-3 bg-zinc-50 rounded-lg">
+                <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
+                  Alternative Ideas
                 </h4>
-                <ul className="space-y-1">
+                <ul className="space-y-2">
                   {suggestion.alternatives.map((alt: string, idx: number) => (
-                    <li key={idx} className="text-xs text-slate-500">
-                      • {alt}
+                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-600">
+                      <span className="text-zinc-400">•</span>
+                      {alt}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-
-            <div className="p-3 bg-slate-50 rounded">
-              <h4 className="text-xs font-medium text-slate-700 mb-2">
-                Elements ({suggestion.elements?.length || 0})
-              </h4>
-              <ul className="space-y-1 max-h-32 overflow-y-auto">
-                {suggestion.elements?.map((el, idx) => (
-                  <li key={idx} className="text-xs text-slate-500">
-                    {el.name}
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         )}
+
+        {/* Empty state */}
+        {!suggestion && !isLoading && !error && (
+          <div className="text-center py-6">
+            <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center mx-auto mb-3">
+              <Sparkles className="w-5 h-5 text-zinc-400" />
+            </div>
+            <p className="text-sm text-zinc-500 mb-1">No layout generated yet</p>
+            <p className="text-xs text-zinc-400">
+              Click the button above to generate a suggested layout based on your event details.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="p-3 border-t bg-zinc-50">
+        <p className="text-xs text-zinc-500 text-center">
+          AI suggestions are starting points. Customize as needed.
+        </p>
       </div>
     </div>
   )
