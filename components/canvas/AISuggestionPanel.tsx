@@ -65,12 +65,30 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData }) => {
   }
 
   const applySuggestion = async () => {
-    if (suggestion?.elements) {
+    if (suggestion?.elements && suggestion.elements.length > 0) {
       const hasNoSavedElements = elements.length === 0
+
+      const canvasWidth = 2000
+      const canvasHeight = 1500
+
+      const minX = Math.min(...suggestion.elements.map((el) => el.x))
+      const minY = Math.min(...suggestion.elements.map((el) => el.y))
+      const maxX = Math.max(...suggestion.elements.map((el) => el.x + el.width))
+      const maxY = Math.max(...suggestion.elements.map((el) => el.y + el.height))
+
+      const layoutWidth = maxX - minX
+      const layoutHeight = maxY - minY
+
+      const offsetX = (canvasWidth - layoutWidth) / 2 - minX
+      const offsetY = (canvasHeight - layoutHeight) / 2 - minY
+
       const elementsWithIds = suggestion.elements.map((el, index) => ({
         ...el,
         id: el.id || `ai-element-${Date.now()}-${index}`,
+        x: el.x + offsetX,
+        y: el.y + offsetY,
       }))
+
       setElements(elementsWithIds)
       setSuggestion(null)
 
@@ -93,7 +111,7 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData }) => {
   }
 
   return (
-    <div className="w-72 bg-white border-l flex flex-col">
+    <div className="flex-1 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-2">

@@ -29,7 +29,7 @@ interface CanvasStore {
   setScale: (scale: number) => void
   setPanOffset: (offset: { x: number; y: number }) => void
   clearCanvas: () => void
-  resetView: () => void
+  resetView: (viewportWidth?: number, viewportHeight?: number) => void
   undo: () => void
   redo: () => void
   canUndo: () => boolean
@@ -119,7 +119,25 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       future: [],
     })),
 
-  resetView: () => set({ scale: 1, panOffset: { x: 0, y: 0 } }),
+  resetView: (viewportWidth?: number, viewportHeight?: number) =>
+    set((state) => {
+      if (!viewportWidth || !viewportHeight || state.elements.length === 0) {
+        return { scale: 1, panOffset: { x: 0, y: 0 } }
+      }
+
+      const minX = Math.min(...state.elements.map((el) => el.x))
+      const minY = Math.min(...state.elements.map((el) => el.y))
+      const maxX = Math.max(...state.elements.map((el) => el.x + el.width))
+      const maxY = Math.max(...state.elements.map((el) => el.y + el.height))
+
+      const layoutCenterX = (minX + maxX) / 2
+      const layoutCenterY = (minY + maxY) / 2
+
+      const offsetX = viewportWidth / 2 - layoutCenterX
+      const offsetY = viewportHeight / 2 - layoutCenterY
+
+      return { scale: 1, panOffset: { x: offsetX, y: offsetY } }
+    }),
 
   undo: () =>
     set((state) => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -20,12 +20,15 @@ import {
   Trash2,
   Undo2,
   Redo2,
+  Pencil,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { EventCanvas } from '@/components/canvas/EventCanvas';
 import { ElementToolbar } from '@/components/canvas/ElementToolbar';
 import { AISuggestionPanel } from '@/components/canvas/AISuggestionPanel';
+import { ElementPropertiesPanel } from '@/components/canvas/ElementPropertiesPanel';
+import { EventDetailsDialog } from '@/components/EventDetailsDialog';
 import { useCanvasStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -90,6 +93,18 @@ export function EventEditorClient({ event }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentEvent, setCurrentEvent] = useState(event);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleResetView = () => {
+    const container = canvasContainerRef.current;
+    if (container) {
+      resetView(container.clientWidth, container.clientHeight);
+    } else {
+      resetView();
+    }
+  };
 
   useEffect(() => {
     if (event.elements) {
@@ -206,10 +221,10 @@ export function EventEditorClient({ event }: Props) {
             <div className='flex items-center gap-3'>
               <div>
                 <div className='flex items-center gap-2'>
-                  <h1 className='font-semibold text-zinc-900'>{event.title}</h1>
-                  {event.eventType && (
+                  <h1 className='font-semibold text-zinc-900'>{currentEvent.title}</h1>
+                  {currentEvent.eventType && (
                     <Badge variant='secondary' className='text-xs capitalize'>
-                      {event.eventType}
+                      {currentEvent.eventType}
                     </Badge>
                   )}
                   {hasUnsavedChanges && (
@@ -220,24 +235,35 @@ export function EventEditorClient({ event }: Props) {
                       Unsaved
                     </Badge>
                   )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setIsEditDialogOpen(true)}
+                        className='p-1 rounded text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors'
+                      >
+                        <Pencil className='w-3.5 h-3.5' />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit Event Details</TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className='flex items-center gap-3 text-xs text-zinc-500'>
-                  {event.eventDate && (
+                  {currentEvent.eventDate && (
                     <span className='flex items-center gap-1'>
                       <Calendar className='w-3 h-3' />
-                      {format(new Date(event.eventDate), 'MMM d, yyyy')}
+                      {format(new Date(currentEvent.eventDate), 'MMM d, yyyy')}
                     </span>
                   )}
-                  {event.venue && (
+                  {currentEvent.venue && (
                     <span className='flex items-center gap-1'>
                       <MapPin className='w-3 h-3' />
-                      {event.venue}
+                      {currentEvent.venue}
                     </span>
                   )}
-                  {event.capacity && (
+                  {currentEvent.capacity && (
                     <span className='flex items-center gap-1'>
                       <Users className='w-3 h-3' />
-                      {event.capacity} guests
+                      {currentEvent.capacity} guests
                     </span>
                   )}
                 </div>
@@ -303,12 +329,12 @@ export function EventEditorClient({ event }: Props) {
                 <Button
                   variant='ghost'
                   size='icon-sm'
-                  onClick={resetView}
+                  onClick={handleResetView}
                 >
                   <Maximize className='w-4 h-4' />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Reset View (100%)</TooltipContent>
+              <TooltipContent>Center on Layout</TooltipContent>
             </Tooltip>
           </div>
 
@@ -402,7 +428,7 @@ export function EventEditorClient({ event }: Props) {
 
         <div className='flex-1 flex overflow-hidden'>
           <ElementToolbar />
-          <div className='flex-1 overflow-auto relative'>
+          <div ref={canvasContainerRef} className='flex-1 overflow-auto relative'>
             <EventCanvas showGrid={showGrid} />
 
             {elements.length === 0 && (
@@ -432,17 +458,27 @@ export function EventEditorClient({ event }: Props) {
               </div>
             )}
           </div>
-          <AISuggestionPanel
-            eventId={event.id}
-            eventData={{
-              title: event.title,
-              eventType: event.eventType || undefined,
-              capacity: event.capacity || undefined,
-              venue: event.venue || undefined,
-            }}
-          />
+          <div className='w-72 bg-white border-l flex flex-col overflow-y-auto'>
+            <ElementPropertiesPanel />
+            <AISuggestionPanel
+              eventId={currentEvent.id}
+              eventData={{
+                title: currentEvent.title,
+                eventType: currentEvent.eventType || undefined,
+                capacity: currentEvent.capacity || undefined,
+                venue: currentEvent.venue || undefined,
+              }}
+            />
+          </div>
         </div>
       </div>
+
+      <EventDetailsDialog
+        event={currentEvent}
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        onEventUpdated={(updated) => setCurrentEvent((prev) => ({ ...prev, ...updated }))}
+      />
     </TooltipProvider>
   );
 }
