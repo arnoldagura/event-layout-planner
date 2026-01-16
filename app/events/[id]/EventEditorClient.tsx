@@ -83,6 +83,7 @@ export function EventEditorClient({ event }: Props) {
     setElements,
     scale,
     setScale,
+    panOffset,
     clearCanvas,
     resetView,
     undo,
@@ -430,6 +431,7 @@ export function EventEditorClient({ event }: Props) {
           <ElementToolbar />
           <div ref={canvasContainerRef} className='flex-1 overflow-auto relative'>
             <EventCanvas showGrid={showGrid} />
+            <ElementPropertiesPanel panOffset={panOffset} scale={scale} />
 
             {elements.length === 0 && (
               <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
@@ -458,18 +460,15 @@ export function EventEditorClient({ event }: Props) {
               </div>
             )}
           </div>
-          <div className='w-72 bg-white border-l flex flex-col overflow-y-auto'>
-            <ElementPropertiesPanel />
-            <AISuggestionPanel
-              eventId={currentEvent.id}
-              eventData={{
-                title: currentEvent.title,
-                eventType: currentEvent.eventType || undefined,
-                capacity: currentEvent.capacity || undefined,
-                venue: currentEvent.venue || undefined,
-              }}
-            />
-          </div>
+          <AISuggestionPanel
+            eventId={currentEvent.id}
+            eventData={{
+              title: currentEvent.title,
+              eventType: currentEvent.eventType || undefined,
+              capacity: currentEvent.capacity || undefined,
+              venue: currentEvent.venue || undefined,
+            }}
+          />
         </div>
       </div>
 

@@ -84,22 +84,21 @@
 
 **Impact:** Minimal - only 2 files changed, simple state management, uses existing API endpoint
 
-### Feature 2: Element Properties Panel - COMPLETED
+### Feature 2: Element Properties Panel - COMPLETED (Option B: Floating Panel)
 
 **Changes Made:**
-1. Created `components/canvas/ElementPropertiesPanel.tsx` - A compact properties panel
-   - Shows when an element is selected
-   - Displays: element icon, type label
+1. Created `components/canvas/ElementPropertiesPanel.tsx` - A floating properties panel
+   - Appears near the selected element (to the right, or left if no space)
+   - Auto-positions to stay within viewport bounds
+   - Shows: element icon, type label
    - Editable fields: name, width, height
    - Read-only fields: x, y position
+   - Close button (X) to deselect element
    - Delete button with red accent
 
 2. Modified `app/events/[id]/EventEditorClient.tsx`:
    - Added ElementPropertiesPanel import
-   - Wrapped right sidebar in a container div
-   - Added ElementPropertiesPanel above AISuggestionPanel
+   - Added `panOffset` from useCanvasStore
+   - Added floating panel inside canvas container with panOffset and scale props
 
-3. Modified `components/canvas/AISuggestionPanel.tsx`:
-   - Changed outer div from `w-72 bg-white border-l` to `flex-1` to work inside the new container
-
-**Impact:** Minimal - 3 files changed, uses existing store methods (updateElement, deleteElement)
+**Impact:** Minimal - 2 files changed, floating panel follows element position

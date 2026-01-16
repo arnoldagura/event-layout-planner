@@ -111,7 +111,7 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData }) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="w-72 bg-white border-l flex flex-col">
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-2">
