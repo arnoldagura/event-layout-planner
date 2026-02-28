@@ -1,105 +1,106 @@
-# Event Layout Planner - New Features
+# Event Layout Planner - Tasks
 
-## Task: Add Event Details Editing + Element Properties Panel
+## Task: Setup Docker for Local Development
 
 ### Problem Analysis
-1. **Event Details Editing**: Currently, event details (title, date, venue, capacity, type) are displayed in the header but cannot be modified from the editor. The AI assistant needs these details to generate better layouts.
-2. **Element Properties Panel**: When clicking elements, users can delete via X button but cannot view/edit properties (name, dimensions, etc.).
+The project needs Docker containerization for local development to ensure consistent environments across developers and easier setup.
+
+**Current Stack:**
+- Next.js 16 (React 19)
+- PostgreSQL (currently using Supabase remote)
+- Prisma ORM
+- NextAuth for authentication
+- pnpm package manager
 
 ### Brainstorming - Options
 
-#### Feature 1: Event Details Editing
+#### Option A: Minimal - Docker Compose with Local PostgreSQL Only (SELECTED)
+- Only containerize PostgreSQL for local development
+- Run Next.js app directly on host (using `pnpm dev`)
+- Simplest setup, fastest development iteration
+- **Pros:** Fast hot-reload, minimal Docker config
+- **Cons:** Requires Node.js/pnpm installed locally
 
-**Option A: Modal/Dialog Approach**
-- Add "Edit" button next to event title in header
-- Opens dialog with form fields for all event details
-- Simple, minimal code changes
-- Keeps header clean
+#### Option B: Full Stack - Docker Compose with App + PostgreSQL
+- Containerize both Next.js app and PostgreSQL
+- Complete isolated development environment
+- **Pros:** No local dependencies needed (except Docker)
+- **Cons:** Slower hot-reload (volume mounting), larger setup
 
-**Option B: Expandable Panel in Sidebar**
-- Add collapsible section in AI panel for editing event details
-- Always visible context for AI
-- More integrated experience
-
-**Option C: Inline Edit in Header**
-- Click on event details to edit inline
-- More complex, requires handling multiple editable fields
-
-**Recommendation**: Option A (Modal) - Simple, minimal code impact, clear UX
-
-#### Feature 2: Element Properties Panel
-
-**Option A: Right-side Panel (Replace/Alongside AI Panel)**
-- When element selected, show properties in right panel
-- Could toggle between AI and Properties
-- More screen real estate
-
-**Option B: Floating Panel near Element**
-- Small floating panel appears near selected element
-- Contextual, doesn't take permanent space
-- May overlap with elements
-
-**Option C: Bottom Drawer/Panel**
-- Properties appear in bottom drawer when selected
-- Non-intrusive
-- Takes vertical space
-
-**Recommendation**: Option A - Add properties section to right panel that shows when element is selected
+#### Option C: Production-Ready - Multi-stage Dockerfile
+- Add production-optimized Dockerfile with multi-stage builds
+- Include development docker-compose with hot-reload
+- Separate production docker-compose
+- **Pros:** Ready for deployment
+- **Cons:** More complexity
 
 ---
 
 ## Todo List
 
-### Feature 1: Event Details Editing
-- [x] 1. Create EventDetailsDialog component for editing event details
-- [x] 2. Add Edit button to header in EventEditorClient
-- [x] 3. Test event details editing works correctly
-
-### Feature 2: Element Properties Panel
-- [x] 4. Create ElementPropertiesPanel component
-- [x] 5. Integrate ElementPropertiesPanel into the right sidebar area
-- [x] 6. Test element properties editing works correctly
+### Docker Setup
+- [x] 1. Create docker-compose.yml with PostgreSQL service
+- [x] 2. Create .env.example with template environment variables
+- [x] 3. Create .dockerignore file
+- [x] 4. Update prisma schema to use DATABASE_URL environment variable
+- [x] 5. Test Docker setup works
 
 ---
 
 ## Review
 
-### Feature 1: Event Details Editing - COMPLETED
+### Changes Made
 
-**Changes Made:**
-1. Created `components/EventDetailsDialog.tsx` - A modal dialog for editing event details
-   - Form fields: title, description, date, venue, capacity, event type
-   - Validation for required fields
-   - PATCH request to `/api/events/[id]` on save
-   - Real-time updates to the UI after saving
+1. **Created `docker-compose.yml`**
+   - PostgreSQL 16 Alpine image
+   - Container named `event-planner-db`
+   - Credentials: postgres/postgres
+   - Database: event_planner
+   - Port: 5432
+   - Persistent volume for data
 
-2. Modified `app/events/[id]/EventEditorClient.tsx`:
-   - Added Pencil icon import
-   - Added EventDetailsDialog import
-   - Added `isEditDialogOpen` and `currentEvent` state
-   - Added Edit button (pencil icon) next to event title in header
-   - Updated header to display `currentEvent` data (reactive to edits)
-   - Updated AISuggestionPanel to use `currentEvent` data
-   - Added EventDetailsDialog at the bottom of the component
+2. **Created `.env.example`**
+   - Template for DATABASE_URL and DIRECT_URL pointing to local Docker PostgreSQL
+   - NextAuth configuration placeholders
+   - Gemini API key placeholder
 
-**Impact:** Minimal - only 2 files changed, simple state management, uses existing API endpoint
+3. **Created `.dockerignore`**
+   - Excludes node_modules, .next, .git, env files, and logs
 
-### Feature 2: Element Properties Panel - COMPLETED
+4. **Updated `prisma/schema.prisma`**
+   - Added `url = env("DATABASE_URL")` to datasource
+   - Added `directUrl = env("DIRECT_URL")` for migrations
 
-**Changes Made:**
-1. Created `components/canvas/ElementPropertiesPanel.tsx` - A compact properties panel
-   - Shows when an element is selected
-   - Displays: element icon, type label
-   - Editable fields: name, width, height
-   - Read-only fields: x, y position
-   - Delete button with red accent
+### Usage Instructions
 
-2. Modified `app/events/[id]/EventEditorClient.tsx`:
-   - Added ElementPropertiesPanel import
-   - Wrapped right sidebar in a container div
-   - Added ElementPropertiesPanel above AISuggestionPanel
+```bash
+# 1. Start PostgreSQL container
+docker-compose up -d
 
-3. Modified `components/canvas/AISuggestionPanel.tsx`:
-   - Changed outer div from `w-72 bg-white border-l` to `flex-1` to work inside the new container
+# 2. Copy environment variables (first time only)
+cp .env.example .env
+# Then edit .env with your actual NEXTAUTH_SECRET and GEMINI_API_KEY
 
-**Impact:** Minimal - 3 files changed, uses existing store methods (updateElement, deleteElement)
+# 3. Run Prisma migrations
+pnpm prisma migrate dev
+
+# 4. Generate Prisma client
+pnpm prisma generate
+
+# 5. Start the development server
+pnpm dev
+```
+
+### Switching Between Local Docker and Supabase
+
+To use **local Docker PostgreSQL**:
+```
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/event_planner"
+DIRECT_URL="postgresql://postgres:postgres@localhost:5432/event_planner"
+```
+
+To use **Supabase** (production/remote):
+```
+DATABASE_URL="postgresql://...@aws-1-ap-south-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://...@aws-1-ap-south-1.pooler.supabase.com:5432/postgres"
+```

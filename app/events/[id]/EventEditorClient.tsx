@@ -17,7 +17,6 @@ import {
   MapPin,
   Users,
   Maximize,
-  Trash2,
   Undo2,
   Redo2,
   Pencil,
@@ -216,14 +215,22 @@ export function EventEditorClient({ event }: Props) {
               <TooltipContent side='bottom'>Back to Dashboard</TooltipContent>
             </Tooltip>
 
-            <Separator orientation='vertical' className='h-6' />
+            <Separator
+              orientation='vertical'
+              className='h-6'
+            />
 
             <div className='flex items-center gap-3'>
               <div>
                 <div className='flex items-center gap-2'>
-                  <h1 className='font-semibold text-zinc-900'>{currentEvent.title}</h1>
+                  <h1 className='font-semibold text-zinc-900'>
+                    {currentEvent.title}
+                  </h1>
                   {currentEvent.eventType && (
-                    <Badge variant='secondary' className='text-xs capitalize'>
+                    <Badge
+                      variant='secondary'
+                      className='text-xs capitalize'
+                    >
                       {currentEvent.eventType}
                     </Badge>
                   )}
@@ -272,7 +279,11 @@ export function EventEditorClient({ event }: Props) {
           </div>
 
           <div className='flex items-center gap-2'>
-            <Button size='sm' onClick={handleSave} disabled={isSaving}>
+            <Button
+              size='sm'
+              onClick={handleSave}
+              disabled={isSaving}
+            >
               <Save className='w-4 h-4' />
               {isSaving ? 'Saving...' : 'Save Layout'}
             </Button>
@@ -309,7 +320,10 @@ export function EventEditorClient({ event }: Props) {
               <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
             </Tooltip>
 
-            <Separator orientation='vertical' className='h-5 mx-1' />
+            <Separator
+              orientation='vertical'
+              className='h-5 mx-1'
+            />
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -428,7 +442,10 @@ export function EventEditorClient({ event }: Props) {
 
         <div className='flex-1 flex overflow-hidden'>
           <ElementToolbar />
-          <div ref={canvasContainerRef} className='flex-1 overflow-auto relative'>
+          <div
+            ref={canvasContainerRef}
+            className='flex-1 overflow-auto relative'
+          >
             <EventCanvas showGrid={showGrid} />
 
             {elements.length === 0 && (
@@ -477,7 +494,9 @@ export function EventEditorClient({ event }: Props) {
         event={currentEvent}
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
-        onEventUpdated={(updated) => setCurrentEvent((prev) => ({ ...prev, ...updated }))}
+        onEventUpdated={(updated) =>
+          setCurrentEvent((prev) => ({ ...prev, ...updated }))
+        }
       />
     </TooltipProvider>
   );
