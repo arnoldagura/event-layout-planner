@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  events   Event[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  eventDate   DateTime
+  startTime   String?
+  endTime     String?
+  venue       String?
+  capacity    Int?
+  eventType   String?
+  status      String   @default("draft")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  layouts  EventLayout[]
+  elements EventElement[]
+
+  @@map("events")
+}
+
+model EventLayout {
+  id          String   @id @default(cuid())
+  name        String
+  isActive    Boolean  @default(false)
+  layoutData  Json
+  aiGenerated Boolean  @default(false)
+  aiPrompt    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_layouts")
+}
+
+model EventElement {
+  id         String   @id @default(cuid())
+  type       String
+  name       String
+  x          Float
+  y          Float
+  width      Float
+  height     Float
+  rotation   Float    @default(0)
+  properties Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_elements")
+}
