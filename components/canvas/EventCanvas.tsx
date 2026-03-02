@@ -140,7 +140,7 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
       width: size.width,
       height: size.height,
       rotation: 0,
-      properties: {},
+      properties: elementType === 'booth' ? { boothId: crypto.randomUUID() } : {},
     }
 
     addElement(newElement)

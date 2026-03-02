@@ -31,6 +31,8 @@ import { EventCanvas } from '@/components/canvas/EventCanvas';
 import { ElementToolbar } from '@/components/canvas/ElementToolbar';
 import { AISuggestionPanel } from '@/components/canvas/AISuggestionPanel';
 import { VersionHistoryPanel } from '@/components/layout/VersionHistoryPanel';
+import { BidsPanel } from '@/components/layout/BidsPanel';
+import { ElementPropertiesPanel } from '@/components/canvas/ElementPropertiesPanel';
 import { useCanvasStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -102,6 +104,7 @@ export function EventEditorClient({ event }: Props) {
     redo,
     past,
     future,
+    selectedElement,
   } = useCanvasStore();
   const [isSaving, setIsSaving] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
@@ -113,7 +116,8 @@ export function EventEditorClient({ event }: Props) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [expiresAt, setExpiresAt] = useState('');
-  const [rightPanel, setRightPanel] = useState<'ai' | 'history'>('ai');
+  const [rightPanel, setRightPanel] = useState<'ai' | 'history' | 'bids'>('ai');
+  const [bids, setBids] = useState<{ id: string; boothId: string; status: string }[]>([]);
   useEffect(() => {
     if (event.elements) {
       setElements(
@@ -523,6 +527,16 @@ export function EventEditorClient({ event }: Props) {
             )}
           </div>
           <div className='w-72 bg-white border-l flex flex-col'>
+            {/* Booth properties — shown when a booth element is selected */}
+            {(() => {
+              const selectedEl = elements.find((e) => e.id === selectedElement)
+              if (!selectedEl || selectedEl.type !== 'booth') return null
+              const props = (selectedEl.properties ?? {}) as Record<string, unknown>
+              const boothId = props.boothId as string | undefined
+              const bidCount = boothId ? bids.filter((b) => b.boothId === boothId).length : 0
+              return <ElementPropertiesPanel elementId={selectedElement!} bidCount={bidCount} />
+            })()}
+
             {/* Tab bar */}
             <div className='flex border-b shrink-0'>
               <button
@@ -533,7 +547,7 @@ export function EventEditorClient({ event }: Props) {
                     : 'text-zinc-400 hover:text-zinc-600'
                 }`}
               >
-                AI Assistant
+                AI
               </button>
               <button
                 onClick={() => setRightPanel('history')}
@@ -545,7 +559,23 @@ export function EventEditorClient({ event }: Props) {
               >
                 History
               </button>
+              <button
+                onClick={() => setRightPanel('bids')}
+                className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors relative ${
+                  rightPanel === 'bids'
+                    ? 'border-b-2 border-zinc-900 text-zinc-900'
+                    : 'text-zinc-400 hover:text-zinc-600'
+                }`}
+              >
+                Bids
+                {bids.filter((b) => b.status === 'pending').length > 0 && (
+                  <span className='absolute top-1.5 right-1.5 w-3.5 h-3.5 text-[9px] bg-amber-500 text-white rounded-full flex items-center justify-center'>
+                    {bids.filter((b) => b.status === 'pending').length}
+                  </span>
+                )}
+              </button>
             </div>
+
             {rightPanel === 'ai' ? (
               <AISuggestionPanel
                 eventId={event.id}
@@ -557,8 +587,10 @@ export function EventEditorClient({ event }: Props) {
                 }}
                 className='border-none w-full'
               />
-            ) : (
+            ) : rightPanel === 'history' ? (
               <VersionHistoryPanel eventId={event.id} />
+            ) : (
+              <BidsPanel eventId={event.id} onBidsLoaded={(loaded) => setBids(loaded)} />
             )}
           </div>
         </div>

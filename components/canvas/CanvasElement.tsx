@@ -14,6 +14,7 @@ import {
   Wine,
   ClipboardList,
   X,
+  Lock,
 } from 'lucide-react';
 
 interface Props {
@@ -56,10 +57,10 @@ const elementConfig: Record<
     icon: <Armchair className='w-4 h-4 text-white' />,
   },
   booth: {
-    bgColor: 'bg-purple-100',
-    borderColor: 'border-purple-400',
-    textColor: 'text-purple-700',
-    background: '#8b5cf6',
+    bgColor: 'bg-teal-100',
+    borderColor: 'border-teal-400',
+    textColor: 'text-teal-700',
+    background: '#0d9488',
     borderRadius: '12px',
     icon: <Store className='w-5 h-5 text-white' />,
   },
@@ -113,6 +114,8 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
   const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 })
 
   const isSelected = selectedElement === element.id
+  const isForRent = element.type === 'booth' && element.properties?.forRent === true
+  const rentStatus = element.properties?.status as string | undefined
   const config = elementConfig[element.type] || {
     bgColor: 'bg-gray-100',
     borderColor: 'border-gray-400',
@@ -206,6 +209,12 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         borderRadius: config.borderRadius,
         boxShadow: isSelected
           ? '0 0 0 2px #fff, 0 0 0 4px #18181b, 0 8px 20px rgba(0,0,0,0.18)'
+          : isForRent && rentStatus === 'rented'
+          ? '0 0 0 2px #a1a1aa'
+          : isForRent && rentStatus === 'pending'
+          ? '0 0 0 2px #f59e0b'
+          : isForRent
+          ? '0 0 0 2px #22c55e'
           : '0 2px 8px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.10)',
         transition: 'box-shadow 0.15s ease, opacity 0.1s ease',
       }}
@@ -226,6 +235,12 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         >
           {element.name}
         </span>
+
+      {isForRent && rentStatus === 'rented' && (
+        <div className="absolute inset-0 bg-zinc-900/20 rounded-[inherit] flex items-center justify-center pointer-events-none">
+          <Lock className="w-4 h-4 text-zinc-600" />
+        </div>
+      )}
 
       {isSelected && (
         <>

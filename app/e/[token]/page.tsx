@@ -71,5 +71,5 @@ export default async function PublicEventPage({ params }: Props) {
     })),
   }
 
-  return <PublicEventView event={serialized} />
+  return <PublicEventView event={serialized} shareToken={token} />
 }

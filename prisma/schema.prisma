@@ -78,6 +78,7 @@ model Event {
   layouts  EventLayout[]
   elements EventElement[]
   versions EventVersion[]
+  bids     BoothBid[]
 
   @@map("events")
 }
@@ -109,6 +110,23 @@ model EventVersion {
 
   @@unique([eventId, versionNum])
   @@map("event_versions")
+}
+
+model BoothBid {
+  id          String   @id @default(cuid())
+  boothId     String
+  eventId     String
+  vendorName  String
+  vendorEmail String
+  amount      Float
+  message     String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, boothId])
+  @@map("booth_bids")
 }
 
 model EventElement {

@@ -12,6 +12,7 @@ import {
   Wine,
   ClipboardList,
   Hand,
+  Lock,
 } from 'lucide-react'
 
 interface CanvasElement {
@@ -29,13 +30,14 @@ interface CanvasElement {
 interface Props {
   elements: CanvasElement[]
   highlightedId: string | null
+  onBoothClick?: (element: CanvasElement) => void
 }
 
 const elementConfig: Record<string, { background: string; borderRadius: string; icon: React.ReactNode }> = {
   stage:        { background: '#3b82f6', borderRadius: '12px', icon: <Presentation className='w-5 h-5 text-white' /> },
   table:        { background: '#f59e0b', borderRadius: '12px', icon: <Table className='w-5 h-5 text-white' /> },
   chair:        { background: '#71717a', borderRadius: '12px', icon: <Armchair className='w-4 h-4 text-white' /> },
-  booth:        { background: '#8b5cf6', borderRadius: '12px', icon: <Store className='w-5 h-5 text-white' /> },
+  booth:        { background: '#0d9488', borderRadius: '12px', icon: <Store className='w-5 h-5 text-white' /> },
   entrance:     { background: '#22c55e', borderRadius: '12px', icon: <DoorOpen className='w-5 h-5 text-white' /> },
   exit:         { background: '#ef4444', borderRadius: '12px', icon: <DoorClosed className='w-5 h-5 text-white' /> },
   restroom:     { background: '#475569', borderRadius: '12px', icon: <Bath className='w-5 h-5 text-white' /> },
@@ -43,7 +45,7 @@ const elementConfig: Record<string, { background: string; borderRadius: string; 
   registration: { background: '#06b6d4', borderRadius: '12px', icon: <ClipboardList className='w-5 h-5 text-white' /> },
 }
 
-export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId }) => {
+export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, onBoothClick }) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const [scale, setScale] = useState(1)
   const [panOffset, setPanOffset] = useState({ x: 100, y: 100 })
@@ -176,6 +178,20 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId }) 
         {elements.map((element) => {
           const config = elementConfig[element.type] || { background: '#a1a1aa', borderRadius: '12px', icon: null }
           const isHighlighted = element.id === highlightedId
+          const props = element.properties ?? {}
+          const isForRent = element.type === 'booth' && props.forRent === true
+          const rentStatus = props.status as string | undefined
+          const isBooth = element.type === 'booth'
+
+          const boxShadow = isHighlighted
+            ? '0 0 0 3px #fff, 0 0 0 6px #f59e0b, 0 8px 24px rgba(245,158,11,0.4)'
+            : isForRent && rentStatus === 'rented'
+            ? '0 0 0 2px #a1a1aa'
+            : isForRent && rentStatus === 'pending'
+            ? '0 0 0 2px #f59e0b'
+            : isForRent
+            ? '0 0 0 2px #22c55e'
+            : '0 2px 8px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.10)'
 
           return (
             <div
@@ -189,12 +205,12 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId }) 
                 transform: `rotate(${element.rotation}deg)`,
                 background: config.background,
                 borderRadius: config.borderRadius,
-                boxShadow: isHighlighted
-                  ? '0 0 0 3px #fff, 0 0 0 6px #f59e0b, 0 8px 24px rgba(245,158,11,0.4)'
-                  : '0 2px 8px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.10)',
+                boxShadow,
                 transition: 'box-shadow 0.2s ease',
                 border: isHighlighted ? '2px solid #f59e0b' : '2px solid transparent',
+                cursor: isBooth ? 'pointer' : 'default',
               }}
+              onClick={isBooth ? () => onBoothClick?.(element) : undefined}
             >
               {element.width > 50 && element.height > 50 && (
                 <div className='mb-1'>{config.icon}</div>
@@ -205,6 +221,12 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId }) 
               >
                 {element.name}
               </span>
+
+              {isForRent && rentStatus === 'rented' && (
+                <div className='absolute inset-0 bg-zinc-900/20 rounded-[inherit] flex items-center justify-center pointer-events-none'>
+                  <Lock className='w-4 h-4 text-zinc-600' />
+                </div>
+              )}
             </div>
           )
         })}
