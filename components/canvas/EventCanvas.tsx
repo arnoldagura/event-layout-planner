@@ -180,15 +180,13 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
       {/* Canvas Container with pan/zoom transform */}
       <div
         ref={canvasRef}
-        className="absolute bg-white shadow-lg"
+        className="absolute bg-white"
         style={{
           backgroundImage: showGrid
-            ? `
-              linear-gradient(to right, #f4f4f5 1px, transparent 1px),
-              linear-gradient(to bottom, #f4f4f5 1px, transparent 1px)
-            `
+            ? `radial-gradient(circle, #d4d4d8 1px, transparent 1px)`
             : 'none',
-          backgroundSize: `${20}px ${20}px`,
+          backgroundSize: '20px 20px',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)',
           transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`,
           transformOrigin: '0 0',
           width: '2000px',

@@ -82,6 +82,8 @@ export function EventEditorClient({ event }: Props) {
     setElements,
     scale,
     setScale,
+    panOffset,
+    setPanOffset,
     clearCanvas,
     resetView,
     undo,
@@ -103,6 +105,21 @@ export function EventEditorClient({ event }: Props) {
     } else {
       resetView();
     }
+  };
+
+  const handleZoom = (targetScale: number) => {
+    const newScale = Math.max(0.5, Math.min(2, targetScale));
+    const container = canvasContainerRef.current;
+    if (container) {
+      const centerX = container.clientWidth / 2;
+      const centerY = container.clientHeight / 2;
+      const scaleRatio = newScale / scale;
+      setPanOffset({
+        x: centerX - (centerX - panOffset.x) * scaleRatio,
+        y: centerY - (centerY - panOffset.y) * scaleRatio,
+      });
+    }
+    setScale(newScale);
   };
 
   useEffect(() => {
@@ -358,7 +375,7 @@ export function EventEditorClient({ event }: Props) {
                 <Button
                   variant='ghost'
                   size='icon-sm'
-                  onClick={() => setScale(Math.max(0.5, scale - 0.1))}
+                  onClick={() => handleZoom(scale - 0.1)}
                   disabled={scale <= 0.5}
                 >
                   <ZoomOut className='w-4 h-4' />
@@ -371,7 +388,7 @@ export function EventEditorClient({ event }: Props) {
               {zoomPresets.map((preset) => (
                 <button
                   key={preset}
-                  onClick={() => setScale(preset / 100)}
+                  onClick={() => handleZoom(preset / 100)}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     Math.round(scale * 100) === preset
                       ? 'bg-white text-zinc-900 shadow-sm font-medium'
@@ -388,7 +405,7 @@ export function EventEditorClient({ event }: Props) {
                 <Button
                   variant='ghost'
                   size='icon-sm'
-                  onClick={() => setScale(Math.min(2, scale + 0.1))}
+                  onClick={() => handleZoom(scale + 0.1)}
                   disabled={scale >= 2}
                 >
                   <ZoomIn className='w-4 h-4' />
