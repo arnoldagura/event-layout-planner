@@ -51,7 +51,6 @@ export function PublicEventView({ event, shareToken }: Props) {
   const [highlightedId, setHighlightedId] = useState<string | null>(null)
   const [selectedBooth, setSelectedBooth] = useState<CanvasElement | null>(null)
 
-  // Bid form state
   const [vendorName, setVendorName] = useState('')
   const [vendorEmail, setVendorEmail] = useState('')
   const [amount, setAmount] = useState('')
@@ -97,10 +96,11 @@ export function PublicEventView({ event, shareToken }: Props) {
   const askingPrice = selectedBoothProps.askingPrice as number | undefined
   const boothCategory = selectedBoothProps.category as string | undefined
   const boothDescription = selectedBoothProps.description as string | undefined
+  const boothIsForRent = Boolean(selectedBoothProps.forRent)
+  const boothIsRented = selectedBoothProps.status === 'rented'
 
   return (
     <div className='h-screen flex flex-col bg-zinc-100'>
-      {/* Header */}
       <header className='bg-white border-b px-4 py-3 shrink-0'>
         <div className='max-w-screen-xl mx-auto flex items-center justify-between'>
           <div>
@@ -144,7 +144,6 @@ export function PublicEventView({ event, shareToken }: Props) {
       </header>
 
       <div className='flex-1 flex overflow-hidden'>
-        {/* Sidebar */}
         <aside className='w-72 bg-white border-r flex flex-col p-4 gap-4 overflow-y-auto shrink-0'>
           <div>
             <h2 className='text-sm font-semibold text-zinc-900 mb-1'>Find on Layout</h2>
@@ -177,7 +176,6 @@ export function PublicEventView({ event, shareToken }: Props) {
           </div>
         </aside>
 
-        {/* Canvas */}
         <div className='flex-1 overflow-hidden'>
           <PublicEventCanvas
             elements={event.elements}
@@ -187,15 +185,13 @@ export function PublicEventView({ event, shareToken }: Props) {
         </div>
       </div>
 
-      {/* Bid Dialog */}
       <Dialog open={!!selectedBooth} onOpenChange={(open) => !open && setSelectedBooth(null)}>
         <DialogContent className='sm:max-w-sm'>
           <DialogHeader>
             <DialogTitle>{selectedBooth?.name}</DialogTitle>
           </DialogHeader>
 
-          {/* Not for rent */}
-          {selectedBooth && !selectedBoothProps.forRent && (
+          {selectedBooth && !boothIsForRent && (
             <div className='py-2 space-y-2 text-center'>
               <p className='text-sm text-zinc-600'>This booth is not available for rent.</p>
               <Button variant='outline' className='w-full' onClick={() => setSelectedBooth(null)}>
@@ -204,8 +200,7 @@ export function PublicEventView({ event, shareToken }: Props) {
             </div>
           )}
 
-          {/* Rented */}
-          {selectedBooth && selectedBoothProps.forRent && selectedBoothProps.status === 'rented' && (
+          {selectedBooth && boothIsForRent && boothIsRented && (
             <div className='py-2 space-y-2 text-center'>
               <p className='text-sm text-zinc-600'>This booth has already been rented.</p>
               <Button variant='outline' className='w-full' onClick={() => setSelectedBooth(null)}>
@@ -214,8 +209,7 @@ export function PublicEventView({ event, shareToken }: Props) {
             </div>
           )}
 
-          {/* Available for bidding */}
-          {selectedBooth && selectedBoothProps.forRent && selectedBoothProps.status !== 'rented' && (
+          {selectedBooth && boothIsForRent && !boothIsRented && (
             <>
           {(boothCategory || askingPrice || boothDescription) && (
             <div className='bg-zinc-50 rounded-lg p-3 space-y-1 text-xs text-zinc-600 border'>
