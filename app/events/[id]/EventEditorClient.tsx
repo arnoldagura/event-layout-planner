@@ -20,6 +20,10 @@ import {
   Trash2,
   Undo2,
   Redo2,
+  Pencil,
+  Globe,
+  LinkIcon,
+  EyeOff,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -56,6 +60,8 @@ interface Event {
   venue: string | null;
   capacity: number | null;
   eventType: string | null;
+  isPublic: boolean;
+  shareToken: string | null;
   elements: Array<{
     id: string;
     type: string;
@@ -90,7 +96,11 @@ export function EventEditorClient({ event }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentEvent, setCurrentEvent] = useState(event);
+  const [isPublic, setIsPublic] = useState(event.isPublic);
+  const [shareToken, setShareToken] = useState(event.shareToken);
+  const [isPublishing, setIsPublishing] = useState(false);
   useEffect(() => {
     if (event.elements) {
       setElements(
@@ -182,6 +192,39 @@ export function EventEditorClient({ event }: Props) {
     }
   };
 
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    try {
+      if (isPublic && shareToken) {
+        // Unpublish
+        await fetch(`/api/events/${event.id}/publish`, { method: 'DELETE' });
+        setIsPublic(false);
+        setShareToken(null);
+        toast.success('Event unpublished');
+      } else {
+        // Publish
+        const res = await fetch(`/api/events/${event.id}/publish`, { method: 'POST' });
+        const data = await res.json();
+        setIsPublic(true);
+        setShareToken(data.shareToken);
+        const url = `${window.location.origin}/e/${data.shareToken}`;
+        await navigator.clipboard.writeText(url);
+        toast.success('Published! Link copied to clipboard.');
+      }
+    } catch {
+      toast.error('Failed to update publish status');
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!shareToken) return;
+    const url = `${window.location.origin}/e/${shareToken}`;
+    await navigator.clipboard.writeText(url);
+    toast.success('Link copied to clipboard');
+  };
+
   const zoomPresets = [50, 75, 100, 125, 150];
 
   return (
@@ -246,7 +289,55 @@ export function EventEditorClient({ event }: Props) {
           </div>
 
           <div className='flex items-center gap-2'>
-            <Button size='sm' onClick={handleSave} disabled={isSaving}>
+            {isPublic && shareToken && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={handleCopyLink}
+                    className='text-zinc-500'
+                  >
+                    <LinkIcon className='w-4 h-4' />
+                    Copy Link
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Copy public share link</TooltipContent>
+              </Tooltip>
+            )}
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={isPublic ? 'secondary' : 'outline'}
+                  size='sm'
+                  onClick={handlePublish}
+                  disabled={isPublishing}
+                  className={isPublic ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200' : ''}
+                >
+                  {isPublic ? (
+                    <>
+                      <Globe className='w-4 h-4' />
+                      {isPublishing ? 'Unpublishing...' : 'Published'}
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className='w-4 h-4' />
+                      {isPublishing ? 'Publishing...' : 'Publish'}
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {isPublic ? 'Click to unpublish and revoke link' : 'Generate a public share link'}
+              </TooltipContent>
+            </Tooltip>
+
+            <Button
+              size='sm'
+              onClick={handleSave}
+              disabled={isSaving}
+            >
               <Save className='w-4 h-4' />
               {isSaving ? 'Saving...' : 'Save Layout'}
             </Button>

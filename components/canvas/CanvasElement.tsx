@@ -14,71 +14,94 @@ import {
   Wine,
   ClipboardList,
   X,
-} from 'lucide-react'
+} from 'lucide-react';
 
 interface Props {
   element: CanvasElementType
 }
 
-const elementConfig: Record<string, {
-  bgColor: string
-  borderColor: string
-  textColor: string
-  icon: React.ReactNode
-}> = {
+const elementConfig: Record<
+  string,
+  {
+    background: string;
+    borderRadius: string;
+    bgColor: string;
+    borderColor: string;
+    textColor: string;
+    icon: React.ReactNode;
+  }
+> = {
   stage: {
     bgColor: 'bg-blue-100',
     borderColor: 'border-blue-400',
     textColor: 'text-blue-700',
-    icon: <Presentation className="w-4 h-4" />
+    background: '#3b82f6',
+    borderRadius: '12px',
+    icon: <Presentation className='w-5 h-5 text-white' />,
   },
   table: {
     bgColor: 'bg-amber-100',
     borderColor: 'border-amber-400',
     textColor: 'text-amber-700',
-    icon: <Table className="w-4 h-4" />
+    background: '#f59e0b',
+    borderRadius: '12px',
+    icon: <Table className='w-5 h-5 text-white' />,
   },
   chair: {
     bgColor: 'bg-zinc-100',
     borderColor: 'border-zinc-400',
     textColor: 'text-zinc-700',
-    icon: <Armchair className="w-4 h-4" />
+    background: '#71717a',
+    borderRadius: '12px',
+    icon: <Armchair className='w-4 h-4 text-white' />,
   },
   booth: {
     bgColor: 'bg-purple-100',
     borderColor: 'border-purple-400',
     textColor: 'text-purple-700',
-    icon: <Store className="w-4 h-4" />
+    background: '#8b5cf6',
+    borderRadius: '12px',
+    icon: <Store className='w-5 h-5 text-white' />,
   },
   entrance: {
     bgColor: 'bg-emerald-100',
     borderColor: 'border-emerald-400',
     textColor: 'text-emerald-700',
-    icon: <DoorOpen className="w-4 h-4" />
+    background: '#22c55e',
+    borderRadius: '12px',
+    icon: <DoorOpen className='w-5 h-5 text-white' />,
   },
   exit: {
     bgColor: 'bg-red-100',
     borderColor: 'border-red-400',
     textColor: 'text-red-700',
-    icon: <DoorClosed className="w-4 h-4" />
+    background: '#ef4444',
+    borderRadius: '12px',
+    icon: <DoorClosed className='w-5 h-5 text-white' />,
   },
   restroom: {
     bgColor: 'bg-slate-100',
     borderColor: 'border-slate-400',
     textColor: 'text-slate-700',
-    icon: <Bath className="w-4 h-4" />
+    background: '#475569',
+    borderRadius: '12px',
+    icon: <Bath className='w-5 h-5 text-white' />,
   },
   bar: {
     bgColor: 'bg-orange-100',
     borderColor: 'border-orange-400',
     textColor: 'text-orange-700',
-    icon: <Wine className="w-4 h-4" />
+    background: '#f97316',
+    borderRadius: '12px',
+    icon: <Wine className='w-5 h-5 text-white' />,
   },
   registration: {
     bgColor: 'bg-cyan-100',
     borderColor: 'border-cyan-400',
     textColor: 'text-cyan-700',
-    icon: <ClipboardList className="w-4 h-4" />
+    background: '#06b6d4',
+    borderRadius: '12px',
+    icon: <ClipboardList className='w-5 h-5 text-white' />,
   },
 }
 
@@ -94,8 +117,10 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
     bgColor: 'bg-gray-100',
     borderColor: 'border-gray-400',
     textColor: 'text-gray-700',
-    icon: null
-  }
+    background: '#a1a1aa',
+    borderRadius: '12px',
+    icon: null,
+  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -160,6 +185,8 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
     deleteElement(element.id)
   }
 
+  void handleDelete;
+
   return (
     <div
       className={cn(
@@ -175,6 +202,12 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         width: `${element.width}px`,
         height: `${element.height}px`,
         transform: `rotate(${element.rotation}deg)`,
+        background: config.background,
+        borderRadius: config.borderRadius,
+        boxShadow: isSelected
+          ? '0 0 0 2px #fff, 0 0 0 4px #18181b, 0 8px 20px rgba(0,0,0,0.18)'
+          : '0 2px 8px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.10)',
+        transition: 'box-shadow 0.15s ease, opacity 0.1s ease',
       }}
       onMouseDown={handleMouseDown}
     >
@@ -184,13 +217,15 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         </div>
       )}
 
-      <span className={cn(
-        'pointer-events-none truncate px-1 font-medium',
-        config.textColor,
-        element.width > 60 ? 'text-xs' : 'text-[10px]'
-      )}>
-        {element.name}
-      </span>
+        <span
+        className={cn(
+          'pointer-events-none truncate px-1 font-medium',
+          config.textColor,
+          element.width > 60 ? 'text-xs' : 'text-[10px]'
+        )}
+        >
+          {element.name}
+        </span>
 
       {isSelected && (
         <>

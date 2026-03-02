@@ -4,7 +4,80 @@ import React, { useState } from 'react'
 import { Sparkles, Loader2, Check, Lightbulb, LayoutGrid } from 'lucide-react'
 import { useCanvasStore, CanvasElement } from '@/lib/store'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+
+const CANVAS_W = 2000
+const CANVAS_H = 1500
+const GAP = 12
+
+function rectsOverlap(a: CanvasElement, b: CanvasElement): boolean {
+  return !(
+    a.x + a.width + GAP <= b.x ||
+    b.x + b.width + GAP <= a.x ||
+    a.y + a.height + GAP <= b.y ||
+    b.y + b.height + GAP <= a.y
+  )
+}
+
+function clampToCanvas(el: CanvasElement): CanvasElement {
+  return {
+    ...el,
+    x: Math.max(20, Math.min(CANVAS_W - el.width - 20, el.x)),
+    y: Math.max(20, Math.min(CANVAS_H - el.height - 20, el.y)),
+  }
+}
+
+// Type priority: anchors placed first so they keep their AI positions
+const TYPE_PRIORITY = ['stage', 'entrance', 'exit', 'registration', 'restroom', 'bar', 'booth', 'table', 'chair']
+
+function resolveOverlaps(elements: CanvasElement[]): CanvasElement[] {
+  const sorted = [...elements].sort(
+    (a, b) => (TYPE_PRIORITY.indexOf(a.type) ?? 99) - (TYPE_PRIORITY.indexOf(b.type) ?? 99)
+  )
+
+  const placed: CanvasElement[] = []
+
+  for (const el of sorted) {
+    const clamped = clampToCanvas(el)
+
+    if (!placed.some((p) => rectsOverlap(clamped, p))) {
+      placed.push(clamped)
+      continue
+    }
+
+    // Search for a free position in an expanding grid spiral
+    const stepX = clamped.width + GAP
+    const stepY = clamped.height + GAP
+    let found = false
+
+    outer: for (let ring = 1; ring <= 20; ring++) {
+      for (let dx = -ring; dx <= ring; dx++) {
+        for (let dy = -ring; dy <= ring; dy++) {
+          // Only check the perimeter of the current ring
+          if (Math.abs(dx) !== ring && Math.abs(dy) !== ring) continue
+
+          const candidate = clampToCanvas({
+            ...clamped,
+            x: clamped.x + dx * stepX,
+            y: clamped.y + dy * stepY,
+          })
+
+          if (!placed.some((p) => rectsOverlap(candidate, p))) {
+            placed.push(candidate)
+            found = true
+            break outer
+          }
+        }
+      }
+    }
+
+    if (!found) {
+      // Last resort: place at end of canvas row
+      placed.push(clamped)
+    }
+  }
+
+  return placed
+}
 
 interface Props {
   eventId: string
@@ -67,10 +140,28 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData }) => {
   const applySuggestion = async () => {
     if (suggestion?.elements) {
       const hasNoSavedElements = elements.length === 0
-      const elementsWithIds = suggestion.elements.map((el, index) => ({
+
+      const canvasWidth = 2000
+      const canvasHeight = 1500
+
+      const minX = Math.min(...suggestion.elements.map((el) => el.x))
+      const minY = Math.min(...suggestion.elements.map((el) => el.y))
+      const maxX = Math.max(...suggestion.elements.map((el) => el.x + el.width))
+      const maxY = Math.max(...suggestion.elements.map((el) => el.y + el.height))
+
+      const layoutWidth = maxX - minX
+      const layoutHeight = maxY - minY
+
+      const offsetX = (canvasWidth - layoutWidth) / 2 - minX
+      const offsetY = (canvasHeight - layoutHeight) / 2 - minY
+
+      const centered = suggestion.elements.map((el, index) => ({
         ...el,
         id: el.id || `ai-element-${Date.now()}-${index}`,
       }))
+
+      const elementsWithIds = resolveOverlaps(centered)
+
       setElements(elementsWithIds)
       setSuggestion(null)
 

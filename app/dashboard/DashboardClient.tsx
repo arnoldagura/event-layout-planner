@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, LogOut, Trash2, MapPin, Users, Calendar } from 'lucide-react'
+import { Plus, LogOut, Trash2, MapPin, Users, Calendar, Pencil } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { EventDetailsDialog } from '@/components/EventDetailsDialog'
 
 interface Event {
   id: string
@@ -63,8 +64,10 @@ interface Props {
 
 export function DashboardClient({ initialEvents, user }: Props) {
   const router = useRouter()
+  const [events, setEvents] = useState(initialEvents)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -112,8 +115,8 @@ export function DashboardClient({ initialEvents, user }: Props) {
         method: 'DELETE',
       })
       if (response.ok) {
+        setEvents((prev) => prev.filter((e) => e.id !== eventId))
         toast.success('Event deleted successfully')
-        router.refresh()
       } else {
         toast.error('Failed to delete event')
       }
@@ -121,6 +124,10 @@ export function DashboardClient({ initialEvents, user }: Props) {
       console.error('Failed to delete event:', error)
       toast.error('An error occurred while deleting the event')
     }
+  }
+
+  const handleEventUpdated = (updated: Event) => {
+    setEvents((prev) => prev.map((e) => (e.id === updated.id ? { ...e, ...updated } : e)))
   }
 
   const resetForm = () => {
@@ -290,7 +297,7 @@ export function DashboardClient({ initialEvents, user }: Props) {
           </Dialog>
         </div>
 
-        {initialEvents.length === 0 ? (
+        {events.length === 0 ? (
           <Card className="text-center py-16">
             <CardContent>
               <p className="text-muted-foreground mb-4">No events yet</p>
@@ -301,7 +308,7 @@ export function DashboardClient({ initialEvents, user }: Props) {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {initialEvents.map((event) => (
+            {events.map((event) => (
               <Card key={event.id} className="group overflow-hidden">
                 <Link href={`/events/${event.id}`}>
                   <CardHeader className="pb-3">
@@ -340,40 +347,62 @@ export function DashboardClient({ initialEvents, user }: Props) {
                 </Link>
                 <CardFooter className="border-t pt-3 flex justify-between items-center">
                   <span className="text-xs text-muted-foreground">{event._count.elements} elements</span>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete &quot;{event.title}&quot;? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(event.id)}
-                          className="bg-destructive text-white hover:bg-destructive/90"
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-foreground"
+                      onClick={() => setEditingEvent(event)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-muted-foreground hover:text-destructive"
                         >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete &quot;{event.title}&quot;? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(event.id)}
+                            className="bg-destructive text-white hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </CardFooter>
               </Card>
             ))}
           </div>
         )}
       </main>
+
+      {editingEvent && (
+        <EventDetailsDialog
+          event={editingEvent}
+          open={!!editingEvent}
+          onOpenChange={(open) => { if (!open) setEditingEvent(null) }}
+          onEventUpdated={(updated) => {
+            handleEventUpdated(updated as unknown as Event)
+            setEditingEvent(null)
+          }}
+        />
+      )}
     </div>
   )
 }
