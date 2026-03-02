@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { Sparkles, Loader2, Check, Lightbulb, LayoutGrid } from 'lucide-react'
 import { useCanvasStore, CanvasElement } from '@/lib/store'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const CANVAS_W = 2000
 const CANVAS_H = 1500
@@ -87,6 +88,7 @@ interface Props {
     capacity?: number
     venue?: string
   }
+  className?: string
 }
 
 interface AISuggestion {
@@ -95,7 +97,7 @@ interface AISuggestion {
   alternatives?: string[]
 }
 
-export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData }) => {
+export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, className }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [suggestion, setSuggestion] = useState<AISuggestion | null>(null)
@@ -184,7 +186,7 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData }) => {
   }
 
   return (
-    <div className="w-72 bg-white border-l flex flex-col">
+    <div className={cn("w-72 bg-white border-l flex flex-col", className)}>
       {/* Header */}
       <div className="p-4 border-b">
         <div className="flex items-center gap-2">

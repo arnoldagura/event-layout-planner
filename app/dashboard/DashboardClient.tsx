@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, LogOut, Trash2, MapPin, Users, Calendar, Pencil } from 'lucide-react'
+import { Plus, LogOut, Trash2, MapPin, Users, Calendar, Pencil, Globe } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -49,6 +49,7 @@ interface Event {
   venue: string | null
   capacity: number | null
   eventType: string | null
+  isPublic: boolean
   _count: {
     elements: number
   }
@@ -316,9 +317,17 @@ export function DashboardClient({ initialEvents, user }: Props) {
                       <h3 className="font-medium group-hover:text-muted-foreground transition-colors">
                         {event.title}
                       </h3>
-                      <Badge variant="secondary">
-                        {event.eventType}
-                      </Badge>
+                      <div className="flex items-center gap-1.5">
+                        {event.isPublic && (
+                          <Badge className="text-xs text-emerald-700 bg-emerald-50 border-emerald-200 flex items-center gap-1">
+                            <Globe className="w-3 h-3" />
+                            Published
+                          </Badge>
+                        )}
+                        <Badge variant="secondary">
+                          {event.eventType}
+                        </Badge>
+                      </div>
                     </div>
                     {event.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>

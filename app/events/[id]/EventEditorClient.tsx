@@ -30,6 +30,7 @@ import { format } from 'date-fns';
 import { EventCanvas } from '@/components/canvas/EventCanvas';
 import { ElementToolbar } from '@/components/canvas/ElementToolbar';
 import { AISuggestionPanel } from '@/components/canvas/AISuggestionPanel';
+import { VersionHistoryPanel } from '@/components/layout/VersionHistoryPanel';
 import { useCanvasStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,6 +52,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface Event {
   id: string;
@@ -101,6 +111,9 @@ export function EventEditorClient({ event }: Props) {
   const [isPublic, setIsPublic] = useState(event.isPublic);
   const [shareToken, setShareToken] = useState(event.shareToken);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [expiresAt, setExpiresAt] = useState('');
+  const [rightPanel, setRightPanel] = useState<'ai' | 'history'>('ai');
   useEffect(() => {
     if (event.elements) {
       setElements(
@@ -150,39 +163,19 @@ export function EventEditorClient({ event }: Props) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      for (const element of elements) {
-        const existingElement = event.elements.find((e) => e.id === element.id);
+      const res = await fetch(`/api/events/${event.id}/elements`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ elements }),
+      });
 
-        if (existingElement) {
-          await fetch(`/api/events/${event.id}/elements`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ elementId: element.id, ...element }),
-          });
-        } else {
-          await fetch(`/api/events/${event.id}/elements`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(element),
-          });
-        }
-      }
-
-      const deletedElements = event.elements.filter(
-        (e) => !elements.find((el) => el.id === e.id)
-      );
-
-      for (const element of deletedElements) {
-        await fetch(
-          `/api/events/${event.id}/elements?elementId=${element.id}`,
-          {
-            method: 'DELETE',
-          }
-        );
-      }
+      if (!res.ok) throw new Error('Failed to save layout');
 
       toast.success('Layout saved successfully!');
       setHasUnsavedChanges(false);
+      // Fire-and-forget version snapshot
+      fetch(`/api/events/${event.id}/versions`, { method: 'POST' })
+        .catch((err) => console.error('Version snapshot failed:', err));
       router.refresh();
     } catch (error) {
       console.error('Failed to save layout:', error);
@@ -192,7 +185,7 @@ export function EventEditorClient({ event }: Props) {
     }
   };
 
-  const handlePublish = async () => {
+  const handlePublish = async (expiry?: string) => {
     setIsPublishing(true);
     try {
       if (isPublic && shareToken) {
@@ -203,13 +196,19 @@ export function EventEditorClient({ event }: Props) {
         toast.success('Event unpublished');
       } else {
         // Publish
-        const res = await fetch(`/api/events/${event.id}/publish`, { method: 'POST' });
+        const res = await fetch(`/api/events/${event.id}/publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expiresAt: expiry || null }),
+        });
         const data = await res.json();
         setIsPublic(true);
         setShareToken(data.shareToken);
         const url = `${window.location.origin}/e/${data.shareToken}`;
         await navigator.clipboard.writeText(url);
         toast.success('Published! Link copied to clipboard.');
+        setShowPublishModal(false);
+        setExpiresAt('');
       }
     } catch {
       toast.error('Failed to update publish status');
@@ -311,7 +310,7 @@ export function EventEditorClient({ event }: Props) {
                 <Button
                   variant={isPublic ? 'secondary' : 'outline'}
                   size='sm'
-                  onClick={handlePublish}
+                  onClick={isPublic ? () => handlePublish() : () => setShowPublishModal(true)}
                   disabled={isPublishing}
                   className={isPublic ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200' : ''}
                 >
@@ -523,17 +522,78 @@ export function EventEditorClient({ event }: Props) {
               </div>
             )}
           </div>
-          <AISuggestionPanel
-            eventId={event.id}
-            eventData={{
-              title: event.title,
-              eventType: event.eventType || undefined,
-              capacity: event.capacity || undefined,
-              venue: event.venue || undefined,
-            }}
-          />
+          <div className='w-72 bg-white border-l flex flex-col'>
+            {/* Tab bar */}
+            <div className='flex border-b shrink-0'>
+              <button
+                onClick={() => setRightPanel('ai')}
+                className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
+                  rightPanel === 'ai'
+                    ? 'border-b-2 border-zinc-900 text-zinc-900'
+                    : 'text-zinc-400 hover:text-zinc-600'
+                }`}
+              >
+                AI Assistant
+              </button>
+              <button
+                onClick={() => setRightPanel('history')}
+                className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
+                  rightPanel === 'history'
+                    ? 'border-b-2 border-zinc-900 text-zinc-900'
+                    : 'text-zinc-400 hover:text-zinc-600'
+                }`}
+              >
+                History
+              </button>
+            </div>
+            {rightPanel === 'ai' ? (
+              <AISuggestionPanel
+                eventId={event.id}
+                eventData={{
+                  title: event.title,
+                  eventType: event.eventType || undefined,
+                  capacity: event.capacity || undefined,
+                  venue: event.venue || undefined,
+                }}
+                className='border-none w-full'
+              />
+            ) : (
+              <VersionHistoryPanel eventId={event.id} />
+            )}
+          </div>
         </div>
       </div>
+      {/* Publish modal */}
+      <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
+        <DialogContent className='sm:max-w-sm'>
+          <DialogHeader>
+            <DialogTitle>Publish Event</DialogTitle>
+          </DialogHeader>
+          <div className='space-y-4 py-2'>
+            <p className='text-sm text-zinc-500'>
+              Anyone with the link can view this event's layout in read-only mode.
+            </p>
+            <div className='space-y-1.5'>
+              <Label htmlFor='expires-at'>Link expires (optional)</Label>
+              <Input
+                id='expires-at'
+                type='date'
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                min={new Date().toISOString().slice(0, 10)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant='outline' onClick={() => setShowPublishModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => handlePublish(expiresAt || undefined)} disabled={isPublishing}>
+              {isPublishing ? 'Publishing...' : 'Publish & Copy Link'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 }
