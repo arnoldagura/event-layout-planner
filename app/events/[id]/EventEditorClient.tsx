@@ -105,6 +105,9 @@ export function EventEditorClient({ event }: Props) {
     past,
     future,
     selectedElement,
+    copyElement,
+    pasteElement,
+    deleteSelectedElements,
   } = useCanvasStore();
   const [isSaving, setIsSaving] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
@@ -144,11 +147,23 @@ export function EventEditorClient({ event }: Props) {
         e.preventDefault();
         redo();
       }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        e.preventDefault();
+        copyElement();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        e.preventDefault();
+        pasteElement();
+      }
+      if ((e.key === 'Delete' || e.key === 'Backspace') && e.target === document.body) {
+        e.preventDefault();
+        deleteSelectedElements();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo]);
+  }, [undo, redo, copyElement, pasteElement, deleteSelectedElements]);
 
   useEffect(() => {
     const currentIds = elements
@@ -527,10 +542,10 @@ export function EventEditorClient({ event }: Props) {
             )}
           </div>
           <div className='w-72 bg-white border-l flex flex-col'>
-            {/* Booth properties — shown when a booth element is selected */}
+            {/* Element properties — shown when any element is selected */}
             {(() => {
               const selectedEl = elements.find((e) => e.id === selectedElement)
-              if (!selectedEl || selectedEl.type !== 'booth') return null
+              if (!selectedEl) return null
               const props = (selectedEl.properties ?? {}) as Record<string, unknown>
               const boothId = props.boothId as string | undefined
               const bidCount = boothId ? bids.filter((b) => b.boothId === boothId).length : 0

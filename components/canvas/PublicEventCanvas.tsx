@@ -116,7 +116,7 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
 
   const handleMouseUp = useCallback(() => setIsPanning(false), [])
 
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault()
     const delta = e.deltaY > 0 ? -0.1 : 0.1
     const newScale = Math.min(3, Math.max(0.25, scale + delta))
@@ -134,6 +134,13 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
     setScale(newScale)
   }, [scale, panOffset])
 
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    return () => el.removeEventListener('wheel', handleWheel)
+  }, [handleWheel])
+
   const getCursorStyle = () => {
     if (isPanning) return 'grabbing'
     if (isSpacePressed) return 'grab'
@@ -149,7 +156,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
     >
       {isSpacePressed && (
         <div className='absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-zinc-900 text-white px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 shadow-lg'>

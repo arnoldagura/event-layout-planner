@@ -73,8 +73,8 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
     setIsPanning(false)
   }, [])
 
-  // Handle mouse wheel for zooming
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  // Handle mouse wheel for zooming — attached as non-passive to allow preventDefault
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault()
 
     const delta = e.deltaY > 0 ? -0.1 : 0.1
@@ -96,6 +96,13 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
 
     setScale(newScale)
   }, [scale, panOffset, setScale, setPanOffset])
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    return () => el.removeEventListener('wheel', handleWheel)
+  }, [handleWheel])
 
   // Handle canvas click (deselect)
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -167,7 +174,6 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
     >
       {/* Pan mode indicator */}
       {isSpacePressed && (

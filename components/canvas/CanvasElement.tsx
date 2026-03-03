@@ -13,155 +13,166 @@ import {
   Bath,
   Wine,
   ClipboardList,
-  X,
   Lock,
-} from 'lucide-react';
+} from 'lucide-react'
 
 interface Props {
   element: CanvasElementType
 }
 
+type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
+
+const HANDLE_CURSORS: Record<ResizeHandle, string> = {
+  nw: 'nw-resize', n: 'n-resize',  ne: 'ne-resize',
+  e:  'e-resize',  se: 'se-resize', s:  's-resize',
+  sw: 'sw-resize', w:  'w-resize',
+}
+
+const ALL_HANDLES: ResizeHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w']
+
 const elementConfig: Record<
   string,
-  {
-    background: string;
-    borderRadius: string;
-    bgColor: string;
-    borderColor: string;
-    textColor: string;
-    icon: React.ReactNode;
-  }
+  { background: string; borderRadius: string; textColor: string; icon: React.ReactNode }
 > = {
-  stage: {
-    bgColor: 'bg-blue-100',
-    borderColor: 'border-blue-400',
-    textColor: 'text-blue-700',
-    background: '#3b82f6',
-    borderRadius: '12px',
-    icon: <Presentation className='w-5 h-5 text-white' />,
-  },
-  table: {
-    bgColor: 'bg-amber-100',
-    borderColor: 'border-amber-400',
-    textColor: 'text-amber-700',
-    background: '#f59e0b',
-    borderRadius: '12px',
-    icon: <Table className='w-5 h-5 text-white' />,
-  },
-  chair: {
-    bgColor: 'bg-zinc-100',
-    borderColor: 'border-zinc-400',
-    textColor: 'text-zinc-700',
-    background: '#71717a',
-    borderRadius: '12px',
-    icon: <Armchair className='w-4 h-4 text-white' />,
-  },
-  booth: {
-    bgColor: 'bg-teal-100',
-    borderColor: 'border-teal-400',
-    textColor: 'text-teal-700',
-    background: '#0d9488',
-    borderRadius: '12px',
-    icon: <Store className='w-5 h-5 text-white' />,
-  },
-  entrance: {
-    bgColor: 'bg-emerald-100',
-    borderColor: 'border-emerald-400',
-    textColor: 'text-emerald-700',
-    background: '#22c55e',
-    borderRadius: '12px',
-    icon: <DoorOpen className='w-5 h-5 text-white' />,
-  },
-  exit: {
-    bgColor: 'bg-red-100',
-    borderColor: 'border-red-400',
-    textColor: 'text-red-700',
-    background: '#ef4444',
-    borderRadius: '12px',
-    icon: <DoorClosed className='w-5 h-5 text-white' />,
-  },
-  restroom: {
-    bgColor: 'bg-slate-100',
-    borderColor: 'border-slate-400',
-    textColor: 'text-slate-700',
-    background: '#475569',
-    borderRadius: '12px',
-    icon: <Bath className='w-5 h-5 text-white' />,
-  },
-  bar: {
-    bgColor: 'bg-orange-100',
-    borderColor: 'border-orange-400',
-    textColor: 'text-orange-700',
-    background: '#f97316',
-    borderRadius: '12px',
-    icon: <Wine className='w-5 h-5 text-white' />,
-  },
-  registration: {
-    bgColor: 'bg-cyan-100',
-    borderColor: 'border-cyan-400',
-    textColor: 'text-cyan-700',
-    background: '#06b6d4',
-    borderRadius: '12px',
-    icon: <ClipboardList className='w-5 h-5 text-white' />,
-  },
+  stage:        { background: '#3b82f6', borderRadius: '12px', textColor: 'text-white', icon: <Presentation className='w-5 h-5 text-white' /> },
+  table:        { background: '#f59e0b', borderRadius: '12px', textColor: 'text-white', icon: <Table        className='w-5 h-5 text-white' /> },
+  chair:        { background: '#71717a', borderRadius: '12px', textColor: 'text-white', icon: <Armchair     className='w-4 h-4 text-white' /> },
+  booth:        { background: '#0d9488', borderRadius: '12px', textColor: 'text-white', icon: <Store        className='w-5 h-5 text-white' /> },
+  entrance:     { background: '#22c55e', borderRadius: '12px', textColor: 'text-white', icon: <DoorOpen     className='w-5 h-5 text-white' /> },
+  exit:         { background: '#ef4444', borderRadius: '12px', textColor: 'text-white', icon: <DoorClosed   className='w-5 h-5 text-white' /> },
+  restroom:     { background: '#475569', borderRadius: '12px', textColor: 'text-white', icon: <Bath         className='w-5 h-5 text-white' /> },
+  bar:          { background: '#f97316', borderRadius: '12px', textColor: 'text-white', icon: <Wine         className='w-5 h-5 text-white' /> },
+  registration: { background: '#06b6d4', borderRadius: '12px', textColor: 'text-white', icon: <ClipboardList className='w-5 h-5 text-white' /> },
+}
+
+const GRID = 20
+
+// Compute position for each resize handle (placed on the outer rectangular wrapper)
+function handleStyle(h: ResizeHandle): React.CSSProperties {
+  const base: React.CSSProperties = {
+    position: 'absolute',
+    width: 8, height: 8,
+    background: 'white',
+    border: '1.5px solid #27272a',
+    borderRadius: 2,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+    cursor: HANDLE_CURSORS[h],
+    zIndex: 10,
+  }
+  if (h.includes('n')) base.top    = -4
+  if (h.includes('s')) base.bottom = -4
+  if (h.includes('e')) base.right  = -4
+  if (h.includes('w')) base.left   = -4
+  if (h === 'n' || h === 's') { base.left = '50%'; base.transform = 'translateX(-50%)' }
+  if (h === 'e' || h === 'w') { base.top  = '50%'; base.transform = 'translateY(-50%)' }
+  return base
 }
 
 export const CanvasElement: React.FC<Props> = ({ element }) => {
-  const { updateElementSilent, selectElement, selectedElement, deleteElement, _setPendingSnapshot, commitHistory } = useCanvasStore()
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [isResizing, setIsResizing] = useState(false)
-  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 })
+  const {
+    updateElementSilent,
+    selectElement,
+    addToSelection,
+    selectedElement,
+    selectedElements,
+    _setPendingSnapshot,
+    commitHistory,
+    scale,
+  } = useCanvasStore()
 
-  const isSelected = selectedElement === element.id
-  const isForRent = element.type === 'booth' && element.properties?.forRent === true
-  const rentStatus = element.properties?.status as string | undefined
-  const config = elementConfig[element.type] || {
-    bgColor: 'bg-gray-100',
-    borderColor: 'border-gray-400',
-    textColor: 'text-gray-700',
-    background: '#a1a1aa',
-    borderRadius: '12px',
-    icon: null,
-  };
+  const [pendingDrag, setPendingDrag] = useState(false)
+  const [isDragging, setIsDragging]   = useState(false)
+  const [dragStart, setDragStart]     = useState({ x: 0, y: 0, elX: 0, elY: 0 })
+  const [isResizing, setIsResizing]   = useState(false)
+  const [resizeStart, setResizeStart] = useState({
+    mouseX: 0, mouseY: 0,
+    elX: 0, elY: 0,
+    width: 0, height: 0,
+    handle: 'se' as ResizeHandle,
+  })
+
+  const DRAG_THRESHOLD = 4 // px — prevent accidental move on click
+
+  const isSelected         = selectedElement === element.id
+  const isInMultiSelection = selectedElements.includes(element.id) && !isSelected
+  const isForRent          = element.type === 'booth' && element.properties?.forRent === true
+  const rentStatus         = element.properties?.status as string | undefined
+
+  const config = elementConfig[element.type] ?? {
+    background: '#a1a1aa', borderRadius: '12px', textColor: 'text-white', icon: null,
+  }
+
+  // ── Event handlers ──────────────────────────────────────────────────
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (e.shiftKey) { addToSelection(element.id); return }
     selectElement(element.id)
+    // Record start position but wait for threshold before committing to a drag
+    setDragStart({ x: e.clientX, y: e.clientY, elX: element.x, elY: element.y })
+    setPendingDrag(true)
+  }
+
+  const handleResizeMouseDown = (e: React.MouseEvent, handle: ResizeHandle) => {
+    e.stopPropagation()
     _setPendingSnapshot()
-    setIsDragging(true)
-    setDragStart({
-      x: e.clientX - element.x,
-      y: e.clientY - element.y,
+    setIsResizing(true)
+    setResizeStart({
+      mouseX: e.clientX, mouseY: e.clientY,
+      elX: element.x,    elY: element.y,
+      width: element.width, height: element.height,
+      handle,
     })
   }
 
   const handleMouseMove = (e: MouseEvent) => {
+    if (pendingDrag && !isDragging) {
+      const dist = Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y)
+      if (dist > DRAG_THRESHOLD) {
+        _setPendingSnapshot()
+        setIsDragging(true)
+        setPendingDrag(false)
+      }
+      return
+    }
     if (isDragging) {
+      const newX = dragStart.elX + (e.clientX - dragStart.x) / scale
+      const newY = dragStart.elY + (e.clientY - dragStart.y) / scale
       updateElementSilent(element.id, {
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
+        x: Math.round(newX / GRID) * GRID,
+        y: Math.round(newY / GRID) * GRID,
       })
     } else if (isResizing) {
-      const newWidth = Math.max(30, resizeStart.width + (e.clientX - resizeStart.x))
-      const newHeight = Math.max(30, resizeStart.height + (e.clientY - resizeStart.y))
-      updateElementSilent(element.id, {
-        width: newWidth,
-        height: newHeight,
-      })
+      const dx = (e.clientX - resizeStart.mouseX) / scale
+      const dy = (e.clientY - resizeStart.mouseY) / scale
+      const { handle, elX, elY, width: startW, height: startH } = resizeStart
+      const updates: Partial<CanvasElementType> = {}
+
+      if (handle.includes('e')) updates.width  = Math.max(30, startW + dx)
+      if (handle.includes('s')) updates.height = Math.max(30, startH + dy)
+      if (handle.includes('w')) {
+        const newW = Math.max(30, startW - dx)
+        updates.width = newW
+        updates.x = elX + (startW - newW)
+      }
+      if (handle.includes('n')) {
+        const newH = Math.max(30, startH - dy)
+        updates.height = newH
+        updates.y = elY + (startH - newH)
+      }
+      updateElementSilent(element.id, updates)
     }
   }
 
   const handleMouseUp = () => {
-    if (isDragging || isResizing) {
-      commitHistory()
-    }
+    setPendingDrag(false)
+    if (isDragging || isResizing) commitHistory()
     setIsDragging(false)
     setIsResizing(false)
   }
 
   React.useEffect(() => {
-    if (isDragging || isResizing) {
+    if (isDragging || isResizing || pendingDrag) {
       window.addEventListener('mousemove', handleMouseMove)
       window.addEventListener('mouseup', handleMouseUp)
       return () => {
@@ -169,98 +180,79 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         window.removeEventListener('mouseup', handleMouseUp)
       }
     }
-  }, [isDragging, isResizing, dragStart, resizeStart])
+  }, [isDragging, isResizing, pendingDrag, dragStart, resizeStart])
 
-  const handleResizeMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    _setPendingSnapshot()
-    setIsResizing(true)
-    setResizeStart({
-      x: e.clientX,
-      y: e.clientY,
-      width: element.width,
-      height: element.height,
-    })
-  }
+  // ── Derived styles ───────────────────────────────────────────────────
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    deleteElement(element.id)
-  }
+  // Outer wrapper: rectangular — drives the selection box + handles
+  const outerBoxShadow = isSelected
+    ? '0 0 0 1.5px #fff, 0 0 0 3px #18181b, 0 8px 24px rgba(0,0,0,0.22)'
+    : isInMultiSelection
+    ? '0 0 0 1.5px #fff, 0 0 0 3px #3b82f6, 0 4px 12px rgba(59,130,246,0.22)'
+    : undefined
 
-  void handleDelete;
+  // Inner visual div: rounded — drives the element color + rent ring
+  const innerBoxShadow = isSelected || isInMultiSelection
+    ? undefined // outer handles the ring
+    : isForRent && rentStatus === 'rented'
+    ? '0 0 0 2px #a1a1aa'
+    : isForRent && rentStatus === 'pending'
+    ? '0 0 0 2px #f59e0b'
+    : isForRent
+    ? '0 0 0 2px #22c55e'
+    : '0 2px 8px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.10)'
 
   return (
+    // ── Outer: no border-radius → rectangular selection ring + handles ──
     <div
-      className={cn(
-        'absolute border-2 cursor-move flex flex-col items-center justify-center rounded-md transition-shadow',
-        config.bgColor,
-        config.borderColor,
-        isSelected && 'ring-2 ring-zinc-900 ring-offset-2 shadow-lg',
-        isDragging && 'opacity-80 shadow-xl'
-      )}
       style={{
-        left: `${element.x}px`,
-        top: `${element.y}px`,
-        width: `${element.width}px`,
-        height: `${element.height}px`,
+        position: 'absolute',
+        left: element.x, top: element.y,
+        width: element.width, height: element.height,
         transform: `rotate(${element.rotation}deg)`,
-        background: config.background,
-        borderRadius: config.borderRadius,
-        boxShadow: isSelected
-          ? '0 0 0 2px #fff, 0 0 0 4px #18181b, 0 8px 20px rgba(0,0,0,0.18)'
-          : isForRent && rentStatus === 'rented'
-          ? '0 0 0 2px #a1a1aa'
-          : isForRent && rentStatus === 'pending'
-          ? '0 0 0 2px #f59e0b'
-          : isForRent
-          ? '0 0 0 2px #22c55e'
-          : '0 2px 8px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.10)',
-        transition: 'box-shadow 0.15s ease, opacity 0.1s ease',
+        cursor: isDragging ? 'grabbing' : 'move',
+        boxShadow: outerBoxShadow,
+        transition: 'box-shadow 0.15s ease',
+        opacity: isDragging ? 0.8 : 1,
       }}
       onMouseDown={handleMouseDown}
     >
-      {element.width > 50 && element.height > 50 && (
-        <div className={cn('mb-1', config.textColor)}>
-          {config.icon}
-        </div>
-      )}
-
-        <span
-        className={cn(
-          'pointer-events-none truncate px-1 font-medium',
-          config.textColor,
-          element.width > 60 ? 'text-xs' : 'text-[10px]'
+      {/* ── Inner: border-radius → rounded visual appearance ── */}
+      <div
+        className={cn('absolute inset-0 flex flex-col items-center justify-center')}
+        style={{
+          background: config.background,
+          borderRadius: config.borderRadius,
+          boxShadow: innerBoxShadow,
+          transition: 'box-shadow 0.15s ease',
+        }}
+      >
+        {element.width > 50 && element.height > 50 && (
+          <div className='mb-1'>{config.icon}</div>
         )}
+        <span
+          className={cn('pointer-events-none truncate px-1 font-medium', config.textColor)}
+          style={{ fontSize: element.width > 60 ? '12px' : '10px' }}
         >
           {element.name}
         </span>
 
-      {isForRent && rentStatus === 'rented' && (
-        <div className="absolute inset-0 bg-zinc-900/20 rounded-[inherit] flex items-center justify-center pointer-events-none">
-          <Lock className="w-4 h-4 text-zinc-600" />
-        </div>
-      )}
+        {/* Rented lock overlay */}
+        {isForRent && rentStatus === 'rented' && (
+          <div className='absolute inset-0 bg-zinc-900/20 rounded-[inherit] flex items-center justify-center pointer-events-none'>
+            <Lock className='w-4 h-4 text-zinc-600' />
+          </div>
+        )}
+      </div>
 
-      {isSelected && (
-        <>
-          <button
-            className="absolute -top-2.5 -right-2.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 shadow-md transition-colors"
-            onClick={handleDelete}
-          >
-            <X className="w-3 h-3" />
-          </button>
-
-          <div
-            className="absolute -bottom-1 -right-1 w-3 h-3 bg-zinc-900 rounded-sm cursor-se-resize shadow-sm"
-            onMouseDown={handleResizeMouseDown}
-          />
-
-          <div className="absolute -top-1 -left-1 w-2 h-2 bg-zinc-900 rounded-sm" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-zinc-900 rounded-sm" />
-          <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-zinc-900 rounded-sm" />
-        </>
-      )}
+      {/* ── 8-point rectangular resize handles (on outer wrapper) ── */}
+      {isSelected && ALL_HANDLES.map((h) => (
+        <div
+          key={h}
+          style={handleStyle(h)}
+          onMouseDown={(e) => handleResizeMouseDown(e, h)}
+        />
+      ))}
     </div>
   )
 }
