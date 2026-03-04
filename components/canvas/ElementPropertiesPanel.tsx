@@ -14,6 +14,7 @@ import {
   Crosshair,
   RotateCw,
   Trash2,
+  Lock,
 } from "lucide-react"
 import { FaRestroom } from "react-icons/fa"
 
@@ -388,6 +389,34 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
             </div>
           </>
         )}
+
+        {/* ── Lock ── */}
+        <div className="h-px bg-zinc-100" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Lock className="h-3.5 w-3.5 text-zinc-400" />
+            <Label className="text-xs font-medium text-zinc-600">Lock element</Label>
+          </div>
+          <button
+            role="switch"
+            aria-checked={Boolean(props.isLocked)}
+            onClick={() => {
+              const existing = (element.properties ?? {}) as Record<string, unknown>
+              updateElement(elementId, {
+                properties: { ...existing, isLocked: !existing.isLocked },
+              })
+            }}
+            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+              props.isLocked ? "bg-amber-500" : "bg-zinc-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                props.isLocked ? "translate-x-4" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
 
         {/* ── Remove ── */}
         <Button

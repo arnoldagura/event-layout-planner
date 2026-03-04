@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { generateLayoutSuggestion } from "@/lib/gemini"
 import { prisma } from "@/lib/prisma"
+import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,15 @@ export async function POST(request: NextRequest) {
 
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Pro-only feature
+    const plan = await getUserPlan(session.user.id)
+    if (!PLAN_LIMITS[plan].hasAI) {
+      return NextResponse.json(
+        { error: "AI layout generation requires a Pro plan. Upgrade to unlock." },
+        { status: 403 }
+      )
     }
 
     const body = await request.json()

@@ -31,6 +31,21 @@
 - [x] Publish modal with expiry date picker
 - [x] Dashboard Published badge (Globe icon on published events)
 
+### Phase 4 — Stripe Billing + Marketing Landing Page ✅
+- [x] Schema: add `Subscription` model (plan, status, stripeCustomerId, stripeSubscriptionId)
+- [x] Install `stripe` package
+- [x] `lib/stripe.ts` — Stripe singleton; `lib/plans.ts` — PLAN_LIMITS + getUserPlan helper
+- [x] `POST /api/billing/checkout` — creates Stripe checkout session
+- [x] `POST /api/billing/portal` — creates Stripe billing portal session
+- [x] `POST /api/billing/webhook` — handles subscription lifecycle events
+- [x] `GET /api/billing/subscription` — returns current plan
+- [x] Feature gate: free plan max 3 events in `POST /api/events`
+- [x] Feature gate: AI layout is Pro-only in `POST /api/layouts/suggest`
+- [x] Dashboard upgrade banner — shows plan badge + "X/3 events used" for free users
+- [x] `components/landing/LandingPage.tsx` — dark hero, Playfair Display font, canvas mockup, features grid, pricing cards, CTA footer
+- [x] `app/page.tsx` — guests → LandingPage, logged-in → redirect /dashboard
+- [x] `app/pricing/page.tsx` + `components/landing/PricingPage.tsx` — standalone pricing page with checkout button
+
 ### Phase 3 — Booth Rental Marketplace ✅
 - [x] Schema: add `BoothBid` model with stable `boothId` UUID reference
 - [x] `POST /api/public/events/[token]/booths/[boothId]/bids` — public bid submission (no auth)
@@ -70,17 +85,17 @@
 - [x] `app/marketplace/MarketplaceClient.tsx` — search by title/venue, filter by event type / category / max price; event cards with booth count, price range, category pills, "View Booths" CTA
 - [x] Marketplace link in dashboard navbar (ShoppingBag icon)
 
-###  Option D — New ideas
-
-- [] Alignment tools — align selected elements left/center/right/top/middle/bottom, distribute evenly
-- [] Element locking — lock individual elements so they can't be accidentally moved
-- [] Canvas export — export the layout as PNG/PDF for sharing outside the app
-- [] Attendee view — separate public view mode showing seat assignments or booth directory
-
-- [] Notifications — email vendors when their bid is approved/rejected
-- [] Event analytics — views, bid conversion rates per booth
+### Option D — Canvas Enhancements ✅ (partial)
+- [x] Alignment tools — already implemented (`AlignmentToolbar.tsx` + store `alignElements`/`distributeElements`)
+- [x] Element locking — `isLocked` in `properties`; blocks drag/resize/rotate; amber badge; toggle in properties panel
+- [x] Canvas export — Export PNG button in editor header; `html-to-image` captures 2000×1500 board; handles excluded via `data-export-exclude`
 - [x] Mobile — responsive public page for vendors browsing on phone
-- [] Booth floor plan improvements — dimensions in real units (ft/m), scale ruler overlay
+- [x] Notifications — email vendors when their bid is approved/rejected (Resend)
+
+### Remaining Ideas
+- [ ] Attendee view — separate public view mode showing seat assignments or booth directory
+- [ ] Event analytics — views, bid conversion rates per booth
+- [ ] Booth floor plan improvements — dimensions in real units (ft/m), scale ruler overlay
 ---
 
 ## Review
@@ -91,6 +106,13 @@
 - **Share enhancements**: Expiry date on publish links; Published badge on dashboard
 - **AI layout**: Corrected canvas dimensions in Gemini prompt (2000×1500); client-side spiral overlap resolver as fallback
 - **Security**: Removed `console.log(GEMINI_API_KEY)` from `lib/gemini.ts`
+- **Element locking**: `isLocked` stored in `properties` JSON (no schema change); blocks drag/resize/rotate; hides handles; amber badge top-right; toggle in properties panel
+- **Canvas export**: `EventCanvas` wrapped with `React.forwardRef`; `html-to-image` captures 2000×1500 board as PNG; resize/rotation handles tagged `data-export-exclude` to hide from export; Export PNG button in editor header
+- **Email notifications**: Resend integration sends approval/rejection emails to vendors on bid status change
+- **Mobile public page**: Touch pan + pinch-to-zoom on canvas; bottom sheet sidebar on mobile
+- **Prettier**: Added `.prettierrc` with Tailwind class sorting (`prettier-plugin-tailwindcss`), `eslint-config-prettier` to prevent conflicts, `format`/`format:check` scripts
+- **Stripe billing**: `Subscription` Prisma model; checkout/portal/webhook/subscription API routes; Free (3 events, no AI) vs Pro ($19/mo, unlimited + AI + version history); upgrade banner on dashboard
+- **Marketing landing page**: `components/landing/LandingPage.tsx` — dark zinc-950 hero with dot-grid, Playfair Display italic headings, canvas floor plan mockup, stats bar, 6-card features grid, pricing section, dark CTA footer; `app/page.tsx` shows landing for guests; `app/pricing/page.tsx` has checkout + portal buttons
 
 ### Architecture Notes
 - Elements are stored as `EventElement` rows (not via `EventLayout` model — that model is unused)

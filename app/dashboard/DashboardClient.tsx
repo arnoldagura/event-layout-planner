@@ -15,10 +15,14 @@ import {
   Copy,
   ArrowUpDown,
   ShoppingBag,
+  Zap,
 } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { format } from "date-fns"
 import { toast } from "sonner"
+import { Cormorant_Garamond } from "next/font/google"
+
+const playfair = Cormorant_Garamond({ subsets: ["latin"], weight: ["700"] })
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -68,6 +72,24 @@ interface Event {
   }
 }
 
+// Time slots for the styled time selects (6 AM – 11:30 PM in 30-min increments)
+function buildTimeSlots() {
+  const slots: { value: string; label: string }[] = []
+  for (let h = 0; h < 24; h++) {
+    for (const m of [0, 30]) {
+      const hh = String(h).padStart(2, "0")
+      const mm = String(m).padStart(2, "0")
+      const value = `${hh}:${mm}`
+      const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+      const ampm = h < 12 ? "AM" : "PM"
+      const label = `${hour12}:${mm} ${ampm}`
+      slots.push({ value, label })
+    }
+  }
+  return slots
+}
+const TIME_SLOTS = buildTimeSlots()
+
 const TYPE_COLORS: Record<string, string> = {
   stage: "bg-blue-100 text-blue-700",
   table: "bg-amber-100 text-amber-700",
@@ -92,9 +114,10 @@ interface Props {
     name?: string | null
     email?: string | null
   }
+  plan: "free" | "pro"
 }
 
-export function DashboardClient({ initialEvents, user }: Props) {
+export function DashboardClient({ initialEvents, user, plan }: Props) {
   const router = useRouter()
   const [events, setEvents] = useState(initialEvents)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -108,6 +131,7 @@ export function DashboardClient({ initialEvents, user }: Props) {
     title: "",
     description: "",
     eventDate: "",
+    endDate: "",
     startTime: "",
     endTime: "",
     venue: "",
@@ -128,14 +152,15 @@ export function DashboardClient({ initialEvents, user }: Props) {
         body: JSON.stringify(formData),
       })
 
+      const data = await response.json()
+
       if (response.ok) {
-        const { event } = await response.json()
         setShowCreateModal(false)
         toast.success("Event created successfully")
-        router.push(`/events/${event.id}`)
+        router.push(`/events/${data.event.id}`)
         router.refresh()
       } else {
-        toast.error("Failed to create event")
+        toast.error(data.error || "Failed to create event")
       }
     } catch (error) {
       console.error("Failed to create event:", error)
@@ -171,6 +196,7 @@ export function DashboardClient({ initialEvents, user }: Props) {
       title: "",
       description: "",
       eventDate: "",
+      endDate: "",
       startTime: "",
       endTime: "",
       venue: "",
@@ -221,23 +247,36 @@ export function DashboardClient({ initialEvents, user }: Props) {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      <nav className="border-b bg-background">
+      <nav className="border-b bg-zinc-950">
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex h-14 items-center justify-between">
-            <span className="text-lg font-semibold">Event Layout Planner</span>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-amber-500">
+                <span className="text-sm font-bold text-white">E</span>
+              </div>
+              <span className={`${playfair.className} text-lg font-bold text-white`}>
+                EventPlanner
+              </span>
+              {plan === "pro" && (
+                <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400">
+                  Pro
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-3">
               <Link
                 href="/marketplace"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-white"
               >
                 <ShoppingBag className="h-4 w-4" />
                 Marketplace
               </Link>
-              <span className="text-muted-foreground/40">|</span>
-              <span className="text-sm text-muted-foreground">{user.name || user.email}</span>
+              <span className="text-zinc-700">|</span>
+              <span className="text-sm text-zinc-400">{user.name || user.email}</span>
               <Button
                 variant="ghost"
                 size="icon-sm"
+                className="text-zinc-400 hover:bg-zinc-800 hover:text-white"
                 onClick={() => signOut({ callbackUrl: "/auth/signin" })}
               >
                 <LogOut className="h-4 w-4" />
@@ -246,6 +285,24 @@ export function DashboardClient({ initialEvents, user }: Props) {
           </div>
         </div>
       </nav>
+
+      {plan === "free" && (
+        <div className="border-b bg-amber-50">
+          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2.5">
+            <p className="text-sm text-amber-800">
+              <span className="font-semibold">Free plan</span> &mdash;{" "}
+              {events.length}/3 events used. Unlock unlimited events, AI layouts, version history,
+              and more.
+            </p>
+            <Link href="/pricing">
+              <Button size="sm" className="gap-1.5 bg-amber-500 hover:bg-amber-400 text-white">
+                <Zap className="h-3.5 w-3.5" />
+                Upgrade to Pro
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
@@ -263,52 +320,34 @@ export function DashboardClient({ initialEvents, user }: Props) {
                 New Event
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+            <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>New Event</DialogTitle>
+                <DialogTitle className="text-lg font-semibold">Create New Event</DialogTitle>
+                <p className="text-sm text-zinc-500">Fill in the details to get started with your event layout.</p>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    required
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Annual Conference 2024"
-                  />
-                </div>
+              <form onSubmit={handleSubmit} className="mt-2 space-y-5">
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={2}
-                    placeholder="Optional description"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="eventDate">Date</Label>
+                {/* Basic info */}
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="title" className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Event Name *</Label>
                     <Input
-                      id="eventDate"
-                      type="date"
+                      id="title"
                       required
-                      value={formData.eventDate}
-                      onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Annual Conference 2025"
+                      className="h-10"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="eventType">Type</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="eventType" className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Event Type</Label>
                     <Select
                       value={formData.eventType}
                       onValueChange={(value) => setFormData({ ...formData, eventType: value })}
                     >
-                      <SelectTrigger id="eventType">
+                      <SelectTrigger id="eventType" className="h-10">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -321,52 +360,120 @@ export function DashboardClient({ initialEvents, user }: Props) {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="startTime">Start Time</Label>
-                    <Input
-                      id="startTime"
-                      type="time"
-                      value={formData.startTime}
-                      onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="endTime">End Time</Label>
-                    <Input
-                      id="endTime"
-                      type="time"
-                      value={formData.endTime}
-                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      rows={2}
+                      placeholder="Optional — describe your event"
+                      className="resize-none"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="venue">Venue</Label>
-                  <Input
-                    id="venue"
-                    value={formData.venue}
-                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                    placeholder="Grand Ballroom, City Hotel"
-                  />
+                <div className="border-t pt-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Date &amp; Time</p>
+
+                  {/* Date range */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="eventDate" className="text-xs text-zinc-500">Start Date *</Label>
+                      <Input
+                        id="eventDate"
+                        type="date"
+                        required
+                        value={formData.eventDate}
+                        onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                        className="h-10"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="endDate" className="text-xs text-zinc-500">End Date</Label>
+                      <Input
+                        id="endDate"
+                        type="date"
+                        value={formData.endDate}
+                        min={formData.eventDate || undefined}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        className="h-10"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Time range */}
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-zinc-500">Start Time</Label>
+                      <Select
+                        value={formData.startTime}
+                        onValueChange={(v) => setFormData({ ...formData, startTime: v })}
+                      >
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Select time" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-52">
+                          {TIME_SLOTS.map((slot) => (
+                            <SelectItem key={slot.value} value={slot.value}>
+                              {slot.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-zinc-500">End Time</Label>
+                      <Select
+                        value={formData.endTime}
+                        onValueChange={(v) => setFormData({ ...formData, endTime: v })}
+                      >
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Select time" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-52">
+                          {TIME_SLOTS.map((slot) => (
+                            <SelectItem key={slot.value} value={slot.value}>
+                              {slot.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="capacity">Capacity</Label>
-                  <Input
-                    id="capacity"
-                    type="number"
-                    value={formData.capacity}
-                    onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                    placeholder="100"
-                  />
+                {/* Venue & capacity */}
+                <div className="border-t pt-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Venue &amp; Capacity</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2 space-y-1.5">
+                      <Label htmlFor="venue" className="text-xs text-zinc-500">Venue</Label>
+                      <Input
+                        id="venue"
+                        value={formData.venue}
+                        onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                        placeholder="Grand Ballroom, City Hotel"
+                        className="h-10"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="capacity" className="text-xs text-zinc-500">Capacity</Label>
+                      <Input
+                        id="capacity"
+                        type="number"
+                        min="1"
+                        value={formData.capacity}
+                        onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                        placeholder="250"
+                        className="h-10"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-3 border-t pt-4">
                   <Button
                     type="button"
                     variant="outline"
@@ -375,8 +482,8 @@ export function DashboardClient({ initialEvents, user }: Props) {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={isCreating}>
-                    {isCreating ? "Creating..." : "Create"}
+                  <Button type="submit" className="flex-1 bg-zinc-900 hover:bg-zinc-700" disabled={isCreating}>
+                    {isCreating ? "Creating..." : "Create Event"}
                   </Button>
                 </div>
               </form>

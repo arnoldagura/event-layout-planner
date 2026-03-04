@@ -9,7 +9,10 @@ interface Props {
   showGrid?: boolean
 }
 
-export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
+export const EventCanvas = React.forwardRef<HTMLDivElement, Props>(function EventCanvas(
+  { showGrid = true },
+  ref
+) {
   const {
     elements,
     addElement,
@@ -21,7 +24,6 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
     snapGuides,
   } = useCanvasStore()
   const containerRef = useRef<HTMLDivElement>(null)
-  const canvasRef = useRef<HTMLDivElement>(null)
 
   const [isPanning, setIsPanning] = useState(false)
   const [isSpacePressed, setIsSpacePressed] = useState(false)
@@ -114,7 +116,7 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
   }, [handleWheel])
 
   const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === canvasRef.current && !isPanning) {
+    if (e.target === e.currentTarget && !isPanning) {
       selectElement(null)
     }
   }
@@ -123,7 +125,7 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
     e.preventDefault()
     const elementType = e.dataTransfer.getData("elementType")
 
-    if (!elementType || !canvasRef.current || !containerRef.current) return
+    if (!elementType || !containerRef.current) return
 
     const containerRect = containerRef.current.getBoundingClientRect()
 
@@ -188,7 +190,7 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
       )}
 
       <div
-        ref={canvasRef}
+        ref={ref}
         className="absolute bg-white shadow-lg"
         style={{
           backgroundImage: showGrid
@@ -208,6 +210,7 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
         onDragOver={handleDragOver}
       >
         <div
+          data-export-exclude="true"
           className="pointer-events-none absolute rounded-lg border-2 border-dashed border-zinc-300"
           style={{
             left: "20px",
@@ -263,4 +266,4 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
       </div>
     </div>
   )
-}
+})

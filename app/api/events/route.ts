@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { getUserPlan, PLAN_LIMITS } from "@/lib/plans"
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,8 +43,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // Plan limit: free users max 3 events
+    const plan = await getUserPlan(session.user.id)
+    const eventCount = await prisma.event.count({ where: { userId: session.user.id } })
+    if (plan === "free" && eventCount >= PLAN_LIMITS.free.maxEvents) {
+      return NextResponse.json(
+        { error: "Free plan is limited to 3 events. Upgrade to Pro for unlimited events." },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
-    const { title, description, eventDate, startTime, endTime, venue, capacity, eventType } = body
+    const { title, description, eventDate, endDate, startTime, endTime, venue, capacity, eventType } = body
 
     if (!title || !eventDate) {
       return NextResponse.json({ error: "Title and event date are required" }, { status: 400 })
@@ -54,6 +65,7 @@ export async function POST(request: NextRequest) {
         title,
         description,
         eventDate: new Date(eventDate),
+        endDate: endDate ? new Date(endDate) : null,
         startTime,
         endTime,
         venue,

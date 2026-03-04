@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -24,9 +24,16 @@ import {
   Globe,
   LinkIcon,
   EyeOff,
+  Download,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Clock,
+  Tag,
 } from "lucide-react"
 import { toast } from "sonner"
 import { format } from "date-fns"
+import { toPng } from "html-to-image"
 import { EventCanvas } from "@/components/canvas/EventCanvas"
 import { ElementToolbar } from "@/components/canvas/ElementToolbar"
 import { AlignmentToolbar } from "@/components/canvas/AlignmentToolbar"
@@ -117,6 +124,10 @@ export function EventEditorClient({ event }: Props) {
   const [expiresAt, setExpiresAt] = useState("")
   const [rightPanel, setRightPanel] = useState<"ai" | "history" | "bids">("ai")
   const [bids, setBids] = useState<{ id: string; boothId: string; status: string }[]>([])
+  const [isExporting, setIsExporting] = useState(false)
+  const [leftOpen, setLeftOpen] = useState(true)
+  const [rightOpen, setRightOpen] = useState(true)
+  const canvasBoardRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     if (event.elements) {
       setElements(
@@ -238,6 +249,39 @@ export function EventEditorClient({ event }: Props) {
     toast.success("Link copied to clipboard")
   }
 
+  const handleExport = async () => {
+    const node = canvasBoardRef.current
+    if (!node) return
+    setIsExporting(true)
+
+    // Strip the pan/zoom transform so the full 2000×1500 board is captured cleanly
+    const savedTransform = node.style.transform
+    const savedTransformOrigin = node.style.transformOrigin
+    node.style.transform = "none"
+    node.style.transformOrigin = "0 0"
+
+    try {
+      const dataUrl = await toPng(node, {
+        width: 2000,
+        height: 1500,
+        backgroundColor: "#ffffff",
+        pixelRatio: 2,
+        filter: (el) => (el as HTMLElement).dataset?.exportExclude !== "true",
+      })
+      const a = document.createElement("a")
+      a.href = dataUrl
+      a.download = `${event.title.replace(/\s+/g, "-").toLowerCase()}-layout.png`
+      a.click()
+    } catch (err) {
+      console.error("Export failed:", err)
+      toast.error("Export failed — please try again")
+    } finally {
+      node.style.transform = savedTransform
+      node.style.transformOrigin = savedTransformOrigin
+      setIsExporting(false)
+    }
+  }
+
   const zoomPresets = [50, 75, 100, 125, 150]
 
   return (
@@ -348,6 +392,22 @@ export function EventEditorClient({ event }: Props) {
               <TooltipContent>
                 {isPublic ? "Click to unpublish and revoke link" : "Generate a public share link"}
               </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExport}
+                  disabled={isExporting}
+                  className="text-zinc-600"
+                >
+                  <Download className="h-4 w-4" />
+                  {isExporting ? "Exporting..." : "Export PNG"}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Export layout as PNG (2000×1500)</TooltipContent>
             </Tooltip>
 
             <Button size="sm" onClick={handleSave} disabled={isSaving}>
@@ -493,10 +553,33 @@ export function EventEditorClient({ event }: Props) {
         </div>
 
         <div className="flex flex-1 overflow-hidden">
-          <ElementToolbar />
+          {/* ── Left panel ── */}
+          <div
+            className={`relative shrink-0 transition-[width] duration-200 ease-in-out ${
+              leftOpen ? "w-60" : "w-16"
+            }`}
+          >
+            {/* Toggle button — outside overflow-hidden so it's never clipped */}
+            <button
+              onClick={() => setLeftOpen((v) => !v)}
+              className="absolute -right-3 top-4 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-white shadow-sm hover:bg-zinc-50"
+              title={leftOpen ? "Collapse elements panel" : "Expand elements panel"}
+            >
+              {leftOpen ? (
+                <ChevronLeft className="h-3.5 w-3.5 text-zinc-500" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />
+              )}
+            </button>
+            {/* Content — overflow-hidden clips the panel during width transition */}
+            <div className="h-full overflow-hidden border-r bg-white">
+              <ElementToolbar collapsed={!leftOpen} />
+            </div>
+          </div>
+
           <div className="relative flex-1 overflow-auto">
             <AlignmentToolbar />
-            <EventCanvas showGrid={showGrid} />
+            <EventCanvas ref={canvasBoardRef} showGrid={showGrid} />
 
             {elements.length === 0 && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -523,72 +606,146 @@ export function EventEditorClient({ event }: Props) {
               </div>
             )}
           </div>
-          <div className="flex w-72 flex-col border-l bg-white">
-            {/* Element properties — shown when any element is selected */}
-            {(() => {
-              const selectedEl = elements.find((e) => e.id === selectedElement)
-              if (!selectedEl) return null
-              const props = (selectedEl.properties ?? {}) as Record<string, unknown>
-              const boothId = props.boothId as string | undefined
-              const bidCount = boothId ? bids.filter((b) => b.boothId === boothId).length : 0
-              return <ElementPropertiesPanel elementId={selectedElement!} bidCount={bidCount} />
-            })()}
+          {/* ── Right panel ── */}
+          <div
+            className={`relative shrink-0 transition-[width] duration-200 ease-in-out ${
+              rightOpen ? "w-72" : "w-16"
+            }`}
+          >
+            {/* Toggle button — outside overflow-hidden so it's never clipped */}
+            <button
+              onClick={() => setRightOpen((v) => !v)}
+              className="absolute -left-3 top-4 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-white shadow-sm hover:bg-zinc-50"
+              title={rightOpen ? "Collapse right panel" : "Expand right panel"}
+            >
+              {rightOpen ? (
+                <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />
+              ) : (
+                <ChevronLeft className="h-3.5 w-3.5 text-zinc-500" />
+              )}
+            </button>
 
-            {/* Tab bar */}
-            <div className="flex shrink-0 border-b">
-              <button
-                onClick={() => setRightPanel("ai")}
-                className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
-                  rightPanel === "ai"
-                    ? "border-b-2 border-zinc-900 text-zinc-900"
-                    : "text-zinc-400 hover:text-zinc-600"
+            {/* Content — overflow-hidden clips during transition */}
+            <div className="relative h-full overflow-hidden border-l bg-white">
+
+              {/* Collapsed: icon + label strip — always rendered, crossfades */}
+              <div
+                className={`absolute inset-0 flex flex-col items-center gap-1.5 py-3 transition-opacity duration-150 ${
+                  rightOpen ? "pointer-events-none opacity-0" : "opacity-100"
                 }`}
               >
-                AI
-              </button>
-              <button
-                onClick={() => setRightPanel("history")}
-                className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
-                  rightPanel === "history"
-                    ? "border-b-2 border-zinc-900 text-zinc-900"
-                    : "text-zinc-400 hover:text-zinc-600"
+                {(
+                  [
+                    { id: "ai", icon: <Sparkles className="h-4 w-4" />, label: "AI" },
+                    { id: "history", icon: <Clock className="h-4 w-4" />, label: "History" },
+                    {
+                      id: "bids",
+                      icon: <Tag className="h-4 w-4" />,
+                      label: "Bids",
+                      pending: bids.filter((b) => b.status === "pending").length,
+                    },
+                  ] as const
+                ).map((tab) => (
+                  <Tooltip key={tab.id}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => {
+                          setRightPanel(tab.id)
+                          setRightOpen(true)
+                        }}
+                        className={`relative flex w-12 flex-col items-center gap-0.5 rounded-lg py-2 transition-colors ${
+                          rightPanel === tab.id
+                            ? "bg-zinc-900 text-white"
+                            : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                        }`}
+                      >
+                        {tab.icon}
+                        <span className="text-[9px] font-medium leading-none">{tab.label}</span>
+                        {"pending" in tab && tab.pending > 0 && (
+                          <span className="absolute top-1 right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-white">
+                            {tab.pending}
+                          </span>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">{tab.label}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+
+              {/* Expanded: full panel — always rendered, crossfades */}
+              <div
+                className={`flex h-full w-72 flex-col transition-opacity duration-150 ${
+                  rightOpen ? "opacity-100" : "pointer-events-none opacity-0"
                 }`}
               >
-                History
-              </button>
-              <button
-                onClick={() => setRightPanel("bids")}
-                className={`relative flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
-                  rightPanel === "bids"
-                    ? "border-b-2 border-zinc-900 text-zinc-900"
-                    : "text-zinc-400 hover:text-zinc-600"
-                }`}
-              >
-                Bids
-                {bids.filter((b) => b.status === "pending").length > 0 && (
-                  <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[9px] text-white">
-                    {bids.filter((b) => b.status === "pending").length}
-                  </span>
+                {/* Element properties — shown when any element is selected */}
+                {(() => {
+                  const selectedEl = elements.find((e) => e.id === selectedElement)
+                  if (!selectedEl) return null
+                  const props = (selectedEl.properties ?? {}) as Record<string, unknown>
+                  const boothId = props.boothId as string | undefined
+                  const bidCount = boothId ? bids.filter((b) => b.boothId === boothId).length : 0
+                  return <ElementPropertiesPanel elementId={selectedElement!} bidCount={bidCount} />
+                })()}
+
+                {/* Tab bar */}
+                <div className="flex shrink-0 border-b">
+                  <button
+                    onClick={() => setRightPanel("ai")}
+                    className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
+                      rightPanel === "ai"
+                        ? "border-b-2 border-zinc-900 text-zinc-900"
+                        : "text-zinc-400 hover:text-zinc-600"
+                    }`}
+                  >
+                    AI
+                  </button>
+                  <button
+                    onClick={() => setRightPanel("history")}
+                    className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
+                      rightPanel === "history"
+                        ? "border-b-2 border-zinc-900 text-zinc-900"
+                        : "text-zinc-400 hover:text-zinc-600"
+                    }`}
+                  >
+                    History
+                  </button>
+                  <button
+                    onClick={() => setRightPanel("bids")}
+                    className={`relative flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
+                      rightPanel === "bids"
+                        ? "border-b-2 border-zinc-900 text-zinc-900"
+                        : "text-zinc-400 hover:text-zinc-600"
+                    }`}
+                  >
+                    Bids
+                    {bids.filter((b) => b.status === "pending").length > 0 && (
+                      <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[9px] text-white">
+                        {bids.filter((b) => b.status === "pending").length}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {rightPanel === "ai" ? (
+                  <AISuggestionPanel
+                    eventId={event.id}
+                    eventData={{
+                      title: event.title,
+                      eventType: event.eventType || undefined,
+                      capacity: event.capacity || undefined,
+                      venue: event.venue || undefined,
+                    }}
+                    className="w-full border-none"
+                  />
+                ) : rightPanel === "history" ? (
+                  <VersionHistoryPanel eventId={event.id} />
+                ) : (
+                  <BidsPanel eventId={event.id} onBidsLoaded={(loaded) => setBids(loaded)} />
                 )}
-              </button>
+              </div>
             </div>
-
-            {rightPanel === "ai" ? (
-              <AISuggestionPanel
-                eventId={event.id}
-                eventData={{
-                  title: event.title,
-                  eventType: event.eventType || undefined,
-                  capacity: event.capacity || undefined,
-                  venue: event.venue || undefined,
-                }}
-                className="w-full border-none"
-              />
-            ) : rightPanel === "history" ? (
-              <VersionHistoryPanel eventId={event.id} />
-            ) : (
-              <BidsPanel eventId={event.id} onBidsLoaded={(loaded) => setBids(loaded)} />
-            )}
           </div>
         </div>
       </div>

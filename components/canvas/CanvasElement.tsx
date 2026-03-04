@@ -157,6 +157,7 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
   const rentStatus = element.properties?.status as string | undefined
   const isBooth = element.type === "booth"
   const isSmall = element.width < 60 || element.height < 35
+  const isLocked = element.properties?.isLocked === true
 
   const config = elementConfig[element.type] ?? {
     background: "#a1a1aa",
@@ -174,12 +175,14 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
       return
     }
     selectElement(element.id)
+    if (isLocked) return
     setDragStart({ x: e.clientX, y: e.clientY, elX: element.x, elY: element.y })
     setPendingDrag(true)
   }
 
   const handleResizeMouseDown = (e: React.MouseEvent, handle: ResizeHandle) => {
     e.stopPropagation()
+    if (isLocked) return
     _setPendingSnapshot()
     setIsResizing(true)
     setResizeStart({
@@ -195,6 +198,7 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
 
   const handleRotateMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (isLocked) return
     _setPendingSnapshot()
     const rect = outerRef.current?.getBoundingClientRect()
     if (!rect) return
@@ -359,7 +363,7 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         width: element.width,
         height: element.height,
         transform: `rotate(${element.rotation}deg)`,
-        cursor: isDragging ? "grabbing" : "move",
+        cursor: isLocked ? "default" : isDragging ? "grabbing" : "move",
         boxShadow: outerBoxShadow,
         transition: "box-shadow 0.15s ease",
         opacity: isDragging ? 0.8 : 1,
@@ -400,6 +404,12 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         {isForRent && rentStatus === "rented" && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[inherit] bg-zinc-900/20">
             <Lock className="h-4 w-4 text-zinc-600" />
+          </div>
+        )}
+
+        {isLocked && (
+          <div className="pointer-events-none absolute top-1 right-1 flex items-center justify-center rounded bg-amber-500/90 p-0.5">
+            <Lock className="h-2.5 w-2.5 text-white" />
           </div>
         )}
 
@@ -465,13 +475,20 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
 
       {/* 8-point resize handles */}
       {isSelected &&
+        !isLocked &&
         ALL_HANDLES.map((h) => (
-          <div key={h} style={handleStyle(h)} onMouseDown={(e) => handleResizeMouseDown(e, h)} />
+          <div
+            key={h}
+            data-export-exclude="true"
+            style={handleStyle(h)}
+            onMouseDown={(e) => handleResizeMouseDown(e, h)}
+          />
         ))}
 
       {/* Rotation handle — stem + circle above element */}
-      {isSelected && (
+      {isSelected && !isLocked && (
         <div
+          data-export-exclude="true"
           style={{
             position: "absolute",
             left: "50%",
