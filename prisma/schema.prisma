@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider = "postgresql"
 }
 
 model User {
@@ -55,24 +55,30 @@ model Session {
 }
 
 model Event {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  eventDate   DateTime
-  startTime   String?
-  endTime     String?
-  venue       String?
-  capacity    Int?
-  eventType   String?
-  status      String   @default("draft")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(cuid())
+  title          String
+  description    String?
+  eventDate      DateTime
+  startTime      String?
+  endTime        String?
+  venue          String?
+  capacity       Int?
+  eventType      String?
+  status         String    @default("draft")
+  isPublic       Boolean   @default(false)
+  shareToken     String?   @unique
+  shareExpiresAt DateTime?
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   layouts  EventLayout[]
   elements EventElement[]
+  versions EventVersion[]
+  bids     BoothBid[]
 
   @@map("events")
 }
@@ -91,6 +97,36 @@ model EventLayout {
   event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@map("event_layouts")
+}
+
+model EventVersion {
+  id         String   @id @default(cuid())
+  eventId    String
+  versionNum Int
+  elements   Json
+  createdAt  DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, versionNum])
+  @@map("event_versions")
+}
+
+model BoothBid {
+  id          String   @id @default(cuid())
+  boothId     String
+  eventId     String
+  vendorName  String
+  vendorEmail String
+  amount      Float
+  message     String?
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, boothId])
+  @@map("booth_bids")
 }
 
 model EventElement {

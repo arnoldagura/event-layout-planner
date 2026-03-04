@@ -1,0 +1,7 @@
+.next
+out
+build
+node_modules
+app/generated
+pnpm-lock.yaml
+*.md

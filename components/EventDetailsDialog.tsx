@@ -1,31 +1,21 @@
-'use client'
+"use client"
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
-import { toast } from 'sonner'
-import { Loader2, Calendar, MapPin, Users, Type, FileText, Sparkles } from 'lucide-react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { useState } from "react"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select"
 
-interface EventDetails {
+interface Event {
   id: string
   title: string
   description: string | null
@@ -36,280 +26,137 @@ interface EventDetails {
 }
 
 interface Props {
-  event: EventDetails
+  event: Event
   open: boolean
   onOpenChange: (open: boolean) => void
-  onEventUpdated?: (updatedEvent: EventDetails) => void
+  onEventUpdated: (updated: Event) => void
 }
 
-const EVENT_TYPES = [
-  { value: 'conference', label: 'Conference', icon: '🎤' },
-  { value: 'wedding', label: 'Wedding', icon: '💒' },
-  { value: 'concert', label: 'Concert', icon: '🎵' },
-  { value: 'exhibition', label: 'Exhibition', icon: '🖼️' },
-  { value: 'workshop', label: 'Workshop', icon: '🛠️' },
-  { value: 'corporate', label: 'Corporate', icon: '💼' },
-  { value: 'party', label: 'Party', icon: '🎉' },
-  { value: 'other', label: 'Other', icon: '📋' },
-]
-
 export function EventDetailsDialog({ event, open, onOpenChange, onEventUpdated }: Props) {
-  const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    eventDate: '',
-    venue: '',
-    capacity: '',
-    eventType: '',
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSaving, setIsSaving] = useState(false)
+  const [title, setTitle] = useState(event.title)
+  const [description, setDescription] = useState(event.description ?? "")
+  const [eventDate, setEventDate] = useState(
+    event.eventDate ? new Date(event.eventDate).toISOString().slice(0, 16) : ""
+  )
+  const [eventType, setEventType] = useState(event.eventType ?? "")
+  const [venue, setVenue] = useState(event.venue ?? "")
+  const [capacity, setCapacity] = useState(event.capacity?.toString() ?? "")
 
-  // Initialize form when dialog opens or event changes
-  useEffect(() => {
-    if (open && event) {
-      setFormData({
-        title: event.title || '',
-        description: event.description || '',
-        eventDate: event.eventDate ? format(new Date(event.eventDate), 'yyyy-MM-dd') : '',
-        venue: event.venue || '',
-        capacity: event.capacity?.toString() || '',
-        eventType: event.eventType || '',
-      })
-      setErrors({})
+  const handleSave = async () => {
+    if (!title.trim()) {
+      toast.error("Title is required")
+      return
     }
-  }, [open, event])
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-
-    if (!formData.title.trim()) {
-      newErrors.title = 'Event title is required'
-    } else if (formData.title.length > 100) {
-      newErrors.title = 'Title must be less than 100 characters'
-    }
-
-    if (!formData.eventDate) {
-      newErrors.eventDate = 'Event date is required'
-    }
-
-    if (formData.capacity && (isNaN(Number(formData.capacity)) || Number(formData.capacity) < 1)) {
-      newErrors.capacity = 'Capacity must be a positive number'
-    }
-
-    if (formData.capacity && Number(formData.capacity) > 100000) {
-      newErrors.capacity = 'Capacity seems too large'
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!validateForm()) return
-
-    setIsSubmitting(true)
-
+    setIsSaving(true)
     try {
-      const response = await fetch(`/api/events/${event.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`/api/events/${event.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: formData.title.trim(),
-          description: formData.description.trim() || null,
-          eventDate: formData.eventDate,
-          venue: formData.venue.trim() || null,
-          capacity: formData.capacity ? parseInt(formData.capacity) : null,
-          eventType: formData.eventType || null,
+          title: title.trim(),
+          description: description.trim() || null,
+          eventDate: eventDate ? new Date(eventDate).toISOString() : null,
+          eventType: eventType || null,
+          venue: venue.trim() || null,
+          capacity: capacity ? parseInt(capacity, 10) : null,
         }),
       })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to update event')
-      }
-
-      const data = await response.json()
-
-      toast.success('Event details updated')
-      onOpenChange(false)
-
-      if (onEventUpdated) {
-        onEventUpdated(data.event)
-      }
-
-      router.refresh()
-    } catch (error) {
-      console.error('Failed to update event:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to update event')
+      if (!res.ok) throw new Error("Failed to save")
+      const updated = await res.json()
+      toast.success("Event updated")
+      onEventUpdated(updated)
+    } catch {
+      toast.error("Failed to update event")
     } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }))
+      setIsSaving(false)
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            Edit Event Details
-          </DialogTitle>
-          <DialogDescription>
-            Update your event information. These details help the AI generate better layout suggestions.
-          </DialogDescription>
+          <DialogTitle>Edit Event Details</DialogTitle>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="title" className="flex items-center gap-2">
-              <Type className="w-3.5 h-3.5 text-zinc-500" />
-              Event Title
-            </Label>
+        <div className="space-y-4 py-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="edit-title">Title</Label>
             <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => handleChange('title', e.target.value)}
-              placeholder="Enter event title"
-              aria-invalid={!!errors.title}
+              id="edit-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Event title"
             />
-            {errors.title && (
-              <p className="text-xs text-red-500">{errors.title}</p>
-            )}
           </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="flex items-center gap-2">
-              <FileText className="w-3.5 h-3.5 text-zinc-500" />
-              Description
-              <span className="text-xs text-zinc-400 font-normal">(optional)</span>
-            </Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="edit-description">Description</Label>
             <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              placeholder="Describe your event..."
-              className="min-h-[80px] resize-none"
+              id="edit-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Optional description"
+              rows={3}
             />
           </div>
-
-          {/* Date and Type row */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="eventDate" className="flex items-center gap-2">
-                <Calendar className="w-3.5 h-3.5 text-zinc-500" />
-                Event Date
-              </Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-date">Date</Label>
               <Input
-                id="eventDate"
-                type="date"
-                value={formData.eventDate}
-                onChange={(e) => handleChange('eventDate', e.target.value)}
-                aria-invalid={!!errors.eventDate}
+                id="edit-date"
+                type="datetime-local"
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
               />
-              {errors.eventDate && (
-                <p className="text-xs text-red-500">{errors.eventDate}</p>
-              )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="eventType" className="flex items-center gap-2">
-                Event Type
-              </Label>
-              <Select
-                value={formData.eventType}
-                onValueChange={(value) => handleChange('eventType', value)}
-              >
-                <SelectTrigger className="w-full">
+            <div className="space-y-1.5">
+              <Label>Event Type</Label>
+              <Select value={eventType} onValueChange={setEventType}>
+                <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {EVENT_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <span className="flex items-center gap-2">
-                        <span>{type.icon}</span>
-                        <span>{type.label}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="conference">Conference</SelectItem>
+                  <SelectItem value="wedding">Wedding</SelectItem>
+                  <SelectItem value="concert">Concert</SelectItem>
+                  <SelectItem value="exhibition">Exhibition</SelectItem>
+                  <SelectItem value="corporate">Corporate</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-
-          {/* Venue and Capacity row */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="venue" className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-zinc-500" />
-                Venue
-                <span className="text-xs text-zinc-400 font-normal">(optional)</span>
-              </Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-venue">Venue</Label>
               <Input
-                id="venue"
-                value={formData.venue}
-                onChange={(e) => handleChange('venue', e.target.value)}
-                placeholder="Event location"
+                id="edit-venue"
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                placeholder="Venue name"
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="capacity" className="flex items-center gap-2">
-                <Users className="w-3.5 h-3.5 text-zinc-500" />
-                Capacity
-                <span className="text-xs text-zinc-400 font-normal">(optional)</span>
-              </Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-capacity">Capacity</Label>
               <Input
-                id="capacity"
+                id="edit-capacity"
                 type="number"
-                min="1"
-                value={formData.capacity}
-                onChange={(e) => handleChange('capacity', e.target.value)}
-                placeholder="Expected guests"
-                aria-invalid={!!errors.capacity}
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                placeholder="Max guests"
+                min={1}
               />
-              {errors.capacity && (
-                <p className="text-xs text-red-500">{errors.capacity}</p>
-              )}
             </div>
           </div>
-        </form>
-
-        <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </Button>
-        </DialogFooter>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   )

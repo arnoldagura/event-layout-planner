@@ -1,222 +1,402 @@
-'use client'
+"use client"
 
-import React from 'react'
-import { useCanvasStore } from '@/lib/store'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import React, { useEffect, useState } from "react"
 import {
-  Trash2,
-  Box,
-  Move,
-  Ruler,
-  Type,
   Presentation,
-  Table,
   Armchair,
   Store,
   DoorOpen,
   DoorClosed,
-  Bath,
   Wine,
   ClipboardList,
-} from 'lucide-react'
+  Type,
+  Ruler,
+  Crosshair,
+  RotateCw,
+  Trash2,
+} from "lucide-react"
+import { FaRestroom } from "react-icons/fa"
 
-const elementConfig: Record<string, {
-  bgColor: string
-  borderColor: string
-  textColor: string
-  label: string
-  icon: React.ReactNode
-}> = {
-  stage: {
-    bgColor: 'bg-blue-50',
-    borderColor: 'border-blue-200',
-    textColor: 'text-blue-700',
-    label: 'Stage',
-    icon: <Presentation className="w-4 h-4" />
-  },
-  table: {
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-amber-200',
-    textColor: 'text-amber-700',
-    label: 'Table',
-    icon: <Table className="w-4 h-4" />
-  },
-  chair: {
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200',
-    textColor: 'text-zinc-700',
-    label: 'Chair',
-    icon: <Armchair className="w-4 h-4" />
-  },
-  booth: {
-    bgColor: 'bg-purple-50',
-    borderColor: 'border-purple-200',
-    textColor: 'text-purple-700',
-    label: 'Booth',
-    icon: <Store className="w-4 h-4" />
-  },
-  entrance: {
-    bgColor: 'bg-emerald-50',
-    borderColor: 'border-emerald-200',
-    textColor: 'text-emerald-700',
-    label: 'Entrance',
-    icon: <DoorOpen className="w-4 h-4" />
-  },
-  exit: {
-    bgColor: 'bg-red-50',
-    borderColor: 'border-red-200',
-    textColor: 'text-red-700',
-    label: 'Exit',
-    icon: <DoorClosed className="w-4 h-4" />
-  },
-  restroom: {
-    bgColor: 'bg-slate-50',
-    borderColor: 'border-slate-200',
-    textColor: 'text-slate-700',
-    label: 'Restroom',
-    icon: <Bath className="w-4 h-4" />
-  },
-  bar: {
-    bgColor: 'bg-orange-50',
-    borderColor: 'border-orange-200',
-    textColor: 'text-orange-700',
-    label: 'Bar',
-    icon: <Wine className="w-4 h-4" />
-  },
-  registration: {
-    bgColor: 'bg-cyan-50',
-    borderColor: 'border-cyan-200',
-    textColor: 'text-cyan-700',
-    label: 'Registration',
-    icon: <ClipboardList className="w-4 h-4" />
-  },
+import { useCanvasStore } from "@/lib/store"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { MdTableRestaurant } from "react-icons/md"
+
+interface Props {
+  elementId: string
+  bidCount: number
 }
 
-export const ElementPropertiesPanel: React.FC = () => {
-  const { elements, selectedElement, updateElement, deleteElement } = useCanvasStore()
-
-  const element = elements.find((el) => el.id === selectedElement)
-
-  if (!element) {
-    return null
+const ELEMENT_ICONS: Record<string, { icon: React.ReactNode; bgClass: string; iconClass: string }> =
+  {
+    stage: {
+      icon: <Presentation className="h-5 w-5" />,
+      bgClass: "bg-blue-100",
+      iconClass: "text-blue-600",
+    },
+    table: {
+      icon: <MdTableRestaurant className="h-5 w-5" />,
+      bgClass: "bg-amber-100",
+      iconClass: "text-amber-600",
+    },
+    chair: {
+      icon: <Armchair className="h-5 w-5" />,
+      bgClass: "bg-zinc-100",
+      iconClass: "text-zinc-600",
+    },
+    booth: {
+      icon: <Store className="h-5 w-5" />,
+      bgClass: "bg-teal-100",
+      iconClass: "text-teal-600",
+    },
+    entrance: {
+      icon: <DoorOpen className="h-5 w-5" />,
+      bgClass: "bg-emerald-100",
+      iconClass: "text-emerald-600",
+    },
+    exit: {
+      icon: <DoorClosed className="h-5 w-5" />,
+      bgClass: "bg-red-100",
+      iconClass: "text-red-600",
+    },
+    restroom: {
+      icon: <FaRestroom className="h-5 w-5" />,
+      bgClass: "bg-slate-100",
+      iconClass: "text-slate-600",
+    },
+    bar: {
+      icon: <Wine className="h-5 w-5" />,
+      bgClass: "bg-orange-100",
+      iconClass: "text-orange-600",
+    },
+    registration: {
+      icon: <ClipboardList className="h-5 w-5" />,
+      bgClass: "bg-cyan-100",
+      iconClass: "text-cyan-600",
+    },
   }
 
-  const config = elementConfig[element.type] || {
-    bgColor: 'bg-zinc-50',
-    borderColor: 'border-zinc-200',
-    textColor: 'text-zinc-700',
-    label: element.type,
-    icon: <Box className="w-4 h-4" />
+export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
+  const { elements, updateElement, deleteElement } = useCanvasStore()
+  const element = elements.find((e) => e.id === elementId)
+
+  const props = (element?.properties ?? {}) as Record<string, unknown>
+  const isBooth = element?.type === "booth"
+
+  const [name, setName] = useState(element?.name ?? "")
+  const [width, setWidth] = useState(element?.width ?? 80)
+  const [height, setHeight] = useState(element?.height ?? 80)
+  const [rotation, setRotation] = useState(element?.rotation ?? 0)
+  const [posX, setPosX] = useState(Math.round(element?.x ?? 0))
+  const [posY, setPosY] = useState(Math.round(element?.y ?? 0))
+  const [forRent, setForRent] = useState(Boolean(props.forRent))
+  const [askingPrice, setAskingPrice] = useState(String(props.askingPrice ?? ""))
+  const [category, setCategory] = useState(String(props.category ?? ""))
+  const [description, setDescription] = useState(String(props.description ?? ""))
+
+  useEffect(() => {
+    if (!element) return
+    const p = (element.properties ?? {}) as Record<string, unknown>
+
+    // Auto-generate boothId for booths
+    if (element.type === "booth" && !p.boothId) {
+      updateElement(elementId, { properties: { ...p, boothId: crypto.randomUUID() } })
+    }
+
+    setName(element.name)
+    setWidth(element.width)
+    setHeight(element.height)
+    setRotation(element.rotation)
+    setPosX(Math.round(element.x))
+    setPosY(Math.round(element.y))
+    setForRent(Boolean(p.forRent))
+    setAskingPrice(String(p.askingPrice ?? ""))
+    setCategory(String(p.category ?? ""))
+    setDescription(String(p.description ?? ""))
+  }, [elementId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!element) return null
+
+  const typeConfig = ELEMENT_ICONS[element.type] ?? {
+    icon: null,
+    bgClass: "bg-zinc-100",
+    iconClass: "text-zinc-600",
+  }
+  const rentStatus = String(props.status ?? "available")
+  const statusColor =
+    rentStatus === "rented"
+      ? "text-zinc-500 bg-zinc-100 border-zinc-200"
+      : rentStatus === "pending"
+        ? "text-amber-700 bg-amber-50 border-amber-200"
+        : "text-emerald-700 bg-emerald-50 border-emerald-200"
+
+  // Apply name on blur / Enter
+  const applyName = () => {
+    const trimmed = name.trim()
+    if (trimmed && trimmed !== element.name) {
+      updateElement(elementId, { name: trimmed })
+    }
   }
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateElement(element.id, { name: e.target.value })
+  // Apply dimensions on blur
+  const applyDimensions = () => {
+    const w = Math.max(30, width)
+    const h = Math.max(30, height)
+    if (w !== element.width || h !== element.height) {
+      updateElement(elementId, { width: w, height: h })
+    }
   }
 
-  const handleDimensionChange = (dimension: 'width' | 'height', value: string) => {
-    const numValue = parseInt(value) || 30
-    updateElement(element.id, { [dimension]: Math.max(30, numValue) })
+  // Apply rotation on blur / Enter
+  const applyRotation = () => {
+    updateElement(elementId, { rotation: rotation % 360 })
   }
 
-  const handleDelete = () => {
-    deleteElement(element.id)
+  // Apply position on blur / Enter
+  const applyPosition = () => {
+    updateElement(elementId, { x: posX, y: posY })
+  }
+
+  // Apply booth rental props on blur
+  const applyBoothProps = () => {
+    const existing = (element.properties ?? {}) as Record<string, unknown>
+    updateElement(elementId, {
+      properties: {
+        ...existing,
+        forRent,
+        askingPrice: forRent && askingPrice ? Number(askingPrice) : undefined,
+        category: category.trim() || undefined,
+        description: description.trim() || undefined,
+        status: existing.status ?? (forRent ? "available" : undefined),
+      },
+    })
+  }
+
+  // Toggle forRent immediately
+  const handleForRentToggle = () => {
+    const next = !forRent
+    setForRent(next)
+    const existing = (element.properties ?? {}) as Record<string, unknown>
+    updateElement(elementId, {
+      properties: {
+        ...existing,
+        forRent: next,
+        status: existing.status ?? (next ? "available" : undefined),
+      },
+    })
   }
 
   return (
-    <div className="border-b">
-      {/* Header */}
-      <div className="p-4 pb-3">
-        <div className="flex items-center gap-2 mb-3">
-          <div className={`w-8 h-8 rounded-lg ${config.bgColor} ${config.borderColor} border flex items-center justify-center`}>
-            <span className={config.textColor}>{config.icon}</span>
-          </div>
-          <div>
-            <h3 className="font-semibold text-zinc-900 text-sm">Element Properties</h3>
-            <p className="text-xs text-zinc-500">{config.label}</p>
-          </div>
+    <div className="shrink-0 border-b bg-white">
+      {/* ── Header ── */}
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${typeConfig.bgClass}`}
+        >
+          <span className={typeConfig.iconClass}>{typeConfig.icon}</span>
         </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm leading-tight font-semibold text-zinc-900">Properties</h3>
+          <p className="mt-0.5 text-xs text-zinc-400 capitalize">{element.type}</p>
+        </div>
+        {isBooth && forRent && (
+          <Badge className={`shrink-0 text-xs ${statusColor}`}>
+            {rentStatus.charAt(0).toUpperCase() + rentStatus.slice(1)}
+          </Badge>
+        )}
+        {isBooth && bidCount > 0 && (
+          <Badge variant="secondary" className="shrink-0 text-xs">
+            {bidCount} bid{bidCount !== 1 ? "s" : ""}
+          </Badge>
+        )}
       </div>
 
-      <Separator />
+      <div className="h-px bg-zinc-100" />
 
-      {/* Properties */}
-      <div className="p-4 space-y-4">
-        {/* Name */}
+      <div className="space-y-4 p-4">
+        {/* ── Name ── */}
         <div className="space-y-1.5">
-          <Label htmlFor="element-name" className="text-xs flex items-center gap-1.5 text-zinc-600">
-            <Type className="w-3 h-3" />
-            Name
-          </Label>
+          <div className="flex items-center gap-1.5">
+            <Type className="h-3.5 w-3.5 text-zinc-400" />
+            <Label className="text-xs font-medium text-zinc-600">Name</Label>
+          </div>
           <Input
-            id="element-name"
-            value={element.name}
-            onChange={handleNameChange}
-            className="h-8 text-sm"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={applyName}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") applyName()
+            }}
             placeholder="Element name"
+            className="h-9 text-sm"
           />
         </div>
 
-        {/* Dimensions */}
+        {/* ── Dimensions ── */}
         <div className="space-y-1.5">
-          <Label className="text-xs flex items-center gap-1.5 text-zinc-600">
-            <Ruler className="w-3 h-3" />
-            Dimensions
-          </Label>
+          <div className="flex items-center gap-1.5">
+            <Ruler className="h-3.5 w-3.5 text-zinc-400" />
+            <Label className="text-xs font-medium text-zinc-600">Dimensions</Label>
+          </div>
           <div className="grid grid-cols-2 gap-2">
-            <div>
-              <div className="text-[10px] text-zinc-400 uppercase tracking-wider mb-1">Width</div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">Width</p>
               <Input
                 type="number"
                 min={30}
-                value={Math.round(element.width)}
-                onChange={(e) => handleDimensionChange('width', e.target.value)}
-                className="h-8 text-sm"
+                value={width}
+                onChange={(e) => setWidth(Number(e.target.value))}
+                onBlur={applyDimensions}
+                className="h-9 text-sm"
               />
             </div>
-            <div>
-              <div className="text-[10px] text-zinc-400 uppercase tracking-wider mb-1">Height</div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">
+                Height
+              </p>
               <Input
                 type="number"
                 min={30}
-                value={Math.round(element.height)}
-                onChange={(e) => handleDimensionChange('height', e.target.value)}
-                className="h-8 text-sm"
+                value={height}
+                onChange={(e) => setHeight(Number(e.target.value))}
+                onBlur={applyDimensions}
+                className="h-9 text-sm"
               />
             </div>
           </div>
         </div>
 
-        {/* Position (read-only) */}
+        {/* ── Rotation ── */}
         <div className="space-y-1.5">
-          <Label className="text-xs flex items-center gap-1.5 text-zinc-600">
-            <Move className="w-3 h-3" />
-            Position
-          </Label>
+          <div className="flex items-center gap-1.5">
+            <RotateCw className="h-3.5 w-3.5 text-zinc-400" />
+            <Label className="text-xs font-medium text-zinc-600">Rotation</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              value={Math.round(rotation)}
+              onChange={(e) => setRotation(Number(e.target.value))}
+              onBlur={applyRotation}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyRotation()
+              }}
+              className="h-9 text-sm"
+            />
+            <span className="shrink-0 text-sm text-zinc-400">°</span>
+          </div>
+        </div>
+
+        {/* ── Position ── */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <Crosshair className="h-3.5 w-3.5 text-zinc-400" />
+            <Label className="text-xs font-medium text-zinc-600">Position</Label>
+          </div>
           <div className="grid grid-cols-2 gap-2">
-            <div className="px-3 py-1.5 bg-zinc-50 rounded-md border">
-              <div className="text-[10px] text-zinc-400 uppercase tracking-wider">X</div>
-              <div className="text-sm text-zinc-700 font-medium">{Math.round(element.x)}</div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">X</p>
+              <Input
+                type="number"
+                value={posX}
+                onChange={(e) => setPosX(Number(e.target.value))}
+                onBlur={applyPosition}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") applyPosition()
+                }}
+                className="h-9 text-sm"
+              />
             </div>
-            <div className="px-3 py-1.5 bg-zinc-50 rounded-md border">
-              <div className="text-[10px] text-zinc-400 uppercase tracking-wider">Y</div>
-              <div className="text-sm text-zinc-700 font-medium">{Math.round(element.y)}</div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">Y</p>
+              <Input
+                type="number"
+                value={posY}
+                onChange={(e) => setPosY(Number(e.target.value))}
+                onBlur={applyPosition}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") applyPosition()
+                }}
+                className="h-9 text-sm"
+              />
             </div>
           </div>
         </div>
 
-        <Separator />
+        {/* ── Booth rental fields ── */}
+        {isBooth && (
+          <>
+            <div className="h-px bg-zinc-100" />
 
-        {/* Delete button */}
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-medium text-zinc-700">For Rent</Label>
+              <button
+                role="switch"
+                aria-checked={forRent}
+                onClick={handleForRentToggle}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
+                  forRent ? "bg-zinc-900" : "bg-zinc-300"
+                }`}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                    forRent ? "translate-x-4" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {forRent && (
+              <div className="space-y-1.5">
+                <Label className="text-xs text-zinc-600">Asking Price ($)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={askingPrice}
+                  onChange={(e) => setAskingPrice(e.target.value)}
+                  onBlur={applyBoothProps}
+                  placeholder="e.g. 500"
+                  className="h-9 text-sm"
+                />
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-600">Category</Label>
+              <Input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                onBlur={applyBoothProps}
+                placeholder="e.g. Technology, Food"
+                className="h-9 text-sm"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-zinc-600">Description</Label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={applyBoothProps}
+                placeholder="Booth details..."
+                rows={2}
+                className="resize-none text-sm"
+              />
+            </div>
+          </>
+        )}
+
+        {/* ── Remove ── */}
         <Button
           variant="outline"
           size="sm"
-          onClick={handleDelete}
-          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300"
+          className="w-full border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50"
+          onClick={() => deleteElement(elementId)}
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="h-4 w-4" />
           Remove Element
         </Button>
       </div>

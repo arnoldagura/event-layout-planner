@@ -1,17 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     const { id } = await params
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const event = await prisma.event.findFirst({
@@ -22,7 +19,7 @@ export async function GET(
       include: {
         layouts: {
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         },
         elements: true,
@@ -30,29 +27,23 @@ export async function GET(
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
     return NextResponse.json({ event })
   } catch (error: any) {
-    console.error('Get event error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch event' },
-      { status: 500 }
-    )
+    console.error("Get event error:", error)
+    return NextResponse.json({ error: error.message || "Failed to fetch event" }, { status: 500 })
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()
     const { id } = await params
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
@@ -65,7 +56,7 @@ export async function PATCH(
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
     const updatedEvent = await prisma.event.update({
@@ -79,11 +70,8 @@ export async function PATCH(
 
     return NextResponse.json({ event: updatedEvent })
   } catch (error: any) {
-    console.error('Update event error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to update event' },
-      { status: 500 }
-    )
+    console.error("Update event error:", error)
+    return NextResponse.json({ error: error.message || "Failed to update event" }, { status: 500 })
   }
 }
 
@@ -96,7 +84,7 @@ export async function DELETE(
     const { id } = await params
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const event = await prisma.event.findFirst({
@@ -107,7 +95,7 @@ export async function DELETE(
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
     await prisma.event.delete({
@@ -116,10 +104,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error('Delete event error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to delete event' },
-      { status: 500 }
-    )
+    console.error("Delete event error:", error)
+    return NextResponse.json({ error: error.message || "Failed to delete event" }, { status: 500 })
   }
 }

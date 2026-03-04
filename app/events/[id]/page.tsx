@@ -1,14 +1,14 @@
-import { auth } from '@/auth'
-import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
-import { EventEditorClient } from './EventEditorClient'
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
+import { prisma } from "@/lib/prisma"
+import { EventEditorClient } from "./EventEditorClient"
 
 export default async function EventEditor({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
   const { id } = await params
 
   if (!session?.user?.id) {
-    redirect('/auth/signin')
+    redirect("/auth/signin")
   }
 
   const event = await prisma.event.findFirst({
@@ -19,7 +19,7 @@ export default async function EventEditor({ params }: { params: Promise<{ id: st
     include: {
       layouts: {
         orderBy: {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       },
       elements: true,
@@ -27,7 +27,7 @@ export default async function EventEditor({ params }: { params: Promise<{ id: st
   })
 
   if (!event) {
-    redirect('/dashboard')
+    redirect("/dashboard")
   }
 
   return <EventEditorClient event={event} />
