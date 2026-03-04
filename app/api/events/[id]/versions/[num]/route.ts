@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
-import { prisma } from '@/lib/prisma'
-import { Prisma } from '@/app/generated/prisma/client'
+import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
+import { prisma } from "@/lib/prisma"
+import { Prisma } from "@/app/generated/prisma/client"
 
 export async function POST(
   _request: NextRequest,
@@ -13,11 +13,11 @@ export async function POST(
     const versionNum = parseInt(num, 10)
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     if (isNaN(versionNum)) {
-      return NextResponse.json({ error: 'Invalid version number' }, { status: 400 })
+      return NextResponse.json({ error: "Invalid version number" }, { status: 400 })
     }
 
     const event = await prisma.event.findFirst({
@@ -25,7 +25,7 @@ export async function POST(
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
     const version = await prisma.eventVersion.findUnique({
@@ -33,7 +33,7 @@ export async function POST(
     })
 
     if (!version) {
-      return NextResponse.json({ error: 'Version not found' }, { status: 404 })
+      return NextResponse.json({ error: "Version not found" }, { status: 404 })
     }
 
     const snapshot = version.elements as Array<{
@@ -59,18 +59,17 @@ export async function POST(
           height: el.height,
           rotation: el.rotation,
           eventId,
-          properties: el.properties !== null
-            ? (el.properties as Prisma.InputJsonValue)
-            : Prisma.JsonNull,
+          properties:
+            el.properties !== null ? (el.properties as Prisma.InputJsonValue) : Prisma.JsonNull,
         })),
       }),
     ])
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error('Restore version error:', error)
+    console.error("Restore version error:", error)
     return NextResponse.json(
-      { error: error.message || 'Failed to restore version' },
+      { error: error.message || "Failed to restore version" },
       { status: 500 }
     )
   }

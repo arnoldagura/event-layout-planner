@@ -1,36 +1,36 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
 if (!process.env.GEMINI_API_KEY) {
-  throw new Error('GEMINI_API_KEY is not set in environment variables');
+  throw new Error("GEMINI_API_KEY is not set in environment variables")
 }
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 export interface LayoutSuggestionRequest {
-  eventType: string;
-  capacity: number;
-  venue?: string;
-  specialRequirements?: string;
+  eventType: string
+  capacity: number
+  venue?: string
+  specialRequirements?: string
   existingElements?: Array<{
-    type: string;
-    name: string;
-  }>;
+    type: string
+    name: string
+  }>
 }
 
 export interface LayoutElement {
-  type: string;
-  name: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation: number;
-  properties?: Record<string, unknown>;
+  type: string
+  name: string
+  x: number
+  y: number
+  width: number
+  height: number
+  rotation: number
+  properties?: Record<string, unknown>
 }
 
 export interface LayoutSuggestion {
-  elements: LayoutElement[];
-  reasoning: string;
-  alternatives?: string[];
+  elements: LayoutElement[]
+  reasoning: string
+  alternatives?: string[]
 }
 
 export async function generateLayoutSuggestion(
@@ -40,14 +40,14 @@ export async function generateLayoutSuggestion(
 
 Event Type: ${request.eventType}
 Capacity: ${request.capacity} people
-Venue: ${request.venue || 'Not specified'}
-Special Requirements: ${request.specialRequirements || 'None'}
+Venue: ${request.venue || "Not specified"}
+Special Requirements: ${request.specialRequirements || "None"}
 ${
   request.existingElements && request.existingElements.length > 0
     ? `Existing Elements: ${request.existingElements
         .map((e) => `${e.name} (${e.type})`)
-        .join(', ')}`
-    : ''
+        .join(", ")}`
+    : ""
 }
 
 CANVAS SIZE: 2000 x 1500 pixels. All elements must fit within x: 20–1960, y: 20–1460.
@@ -96,23 +96,23 @@ Respond with ONLY a valid JSON object in this exact structure:
   "alternatives": ["alternative suggestion 1", "alternative suggestion 2"]
 }
 
-CRITICAL: Output ONLY the raw JSON object. No markdown, no code fences, no extra text.`;
+CRITICAL: Output ONLY the raw JSON object. No markdown, no code fences, no extra text.`
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.5-flash',
+    model: "gemini-2.5-flash",
     generationConfig: {
-      responseMimeType: 'application/json',
+      responseMimeType: "application/json",
       temperature: 0.7,
     },
-  });
+  })
 
-  const result = await model.generateContent(prompt);
-  const response = result.response;
-  const content = response.text();
+  const result = await model.generateContent(prompt)
+  const response = result.response
+  const content = response.text()
 
   if (!content) {
-    throw new Error('No response from Gemini');
+    throw new Error("No response from Gemini")
   }
 
-  return JSON.parse(content);
+  return JSON.parse(content)
 }

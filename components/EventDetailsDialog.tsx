@@ -1,24 +1,19 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { useState } from "react"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from "@/components/ui/select"
 
 interface Event {
   id: string
@@ -40,24 +35,24 @@ interface Props {
 export function EventDetailsDialog({ event, open, onOpenChange, onEventUpdated }: Props) {
   const [isSaving, setIsSaving] = useState(false)
   const [title, setTitle] = useState(event.title)
-  const [description, setDescription] = useState(event.description ?? '')
+  const [description, setDescription] = useState(event.description ?? "")
   const [eventDate, setEventDate] = useState(
-    event.eventDate ? new Date(event.eventDate).toISOString().slice(0, 16) : ''
+    event.eventDate ? new Date(event.eventDate).toISOString().slice(0, 16) : ""
   )
-  const [eventType, setEventType] = useState(event.eventType ?? '')
-  const [venue, setVenue] = useState(event.venue ?? '')
-  const [capacity, setCapacity] = useState(event.capacity?.toString() ?? '')
+  const [eventType, setEventType] = useState(event.eventType ?? "")
+  const [venue, setVenue] = useState(event.venue ?? "")
+  const [capacity, setCapacity] = useState(event.capacity?.toString() ?? "")
 
   const handleSave = async () => {
     if (!title.trim()) {
-      toast.error('Title is required')
+      toast.error("Title is required")
       return
     }
     setIsSaving(true)
     try {
       const res = await fetch(`/api/events/${event.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim() || null,
@@ -67,12 +62,12 @@ export function EventDetailsDialog({ event, open, onOpenChange, onEventUpdated }
           capacity: capacity ? parseInt(capacity, 10) : null,
         }),
       })
-      if (!res.ok) throw new Error('Failed to save')
+      if (!res.ok) throw new Error("Failed to save")
       const updated = await res.json()
-      toast.success('Event updated')
+      toast.success("Event updated")
       onEventUpdated(updated)
     } catch {
-      toast.error('Failed to update event')
+      toast.error("Failed to update event")
     } finally {
       setIsSaving(false)
     }
@@ -158,7 +153,7 @@ export function EventDetailsDialog({ event, open, onOpenChange, onEventUpdated }
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>

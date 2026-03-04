@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
 
 export async function GET(
   request: NextRequest,
@@ -42,27 +42,24 @@ export async function GET(
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
     // Check expiry if set
     if (event.shareExpiresAt && new Date() > event.shareExpiresAt) {
-      return NextResponse.json({ error: 'This link has expired' }, { status: 410 })
+      return NextResponse.json({ error: "This link has expired" }, { status: 410 })
     }
 
     return NextResponse.json(
       { event },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
         },
       }
     )
   } catch (error: any) {
-    console.error('Public event fetch error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch event' },
-      { status: 500 }
-    )
+    console.error("Public event fetch error:", error)
+    return NextResponse.json({ error: error.message || "Failed to fetch event" }, { status: 500 })
   }
 }

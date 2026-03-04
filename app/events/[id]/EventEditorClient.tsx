@@ -1,8 +1,8 @@
-'use client';
+"use client"
 
-import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 import {
   ArrowLeft,
   Save,
@@ -17,32 +17,28 @@ import {
   MapPin,
   Users,
   Maximize,
+  Trash2,
   Undo2,
   Redo2,
   Pencil,
   Globe,
   LinkIcon,
   EyeOff,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { EventCanvas } from '@/components/canvas/EventCanvas';
-import { ElementToolbar } from '@/components/canvas/ElementToolbar';
-import { AlignmentToolbar } from '@/components/canvas/AlignmentToolbar';
-import { AISuggestionPanel } from '@/components/canvas/AISuggestionPanel';
-import { VersionHistoryPanel } from '@/components/layout/VersionHistoryPanel';
-import { BidsPanel } from '@/components/layout/BidsPanel';
-import { ElementPropertiesPanel } from '@/components/canvas/ElementPropertiesPanel';
-import { useCanvasStore } from '@/lib/store';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "lucide-react"
+import { toast } from "sonner"
+import { format } from "date-fns"
+import { EventCanvas } from "@/components/canvas/EventCanvas"
+import { ElementToolbar } from "@/components/canvas/ElementToolbar"
+import { AlignmentToolbar } from "@/components/canvas/AlignmentToolbar"
+import { AISuggestionPanel } from "@/components/canvas/AISuggestionPanel"
+import { VersionHistoryPanel } from "@/components/layout/VersionHistoryPanel"
+import { BidsPanel } from "@/components/layout/BidsPanel"
+import { ElementPropertiesPanel } from "@/components/canvas/ElementPropertiesPanel"
+import { useCanvasStore } from "@/lib/store"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,53 +49,51 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface Event {
-  id: string;
-  title: string;
-  description: string | null;
-  eventDate: Date;
-  venue: string | null;
-  capacity: number | null;
-  eventType: string | null;
-  isPublic: boolean;
-  shareToken: string | null;
+  id: string
+  title: string
+  description: string | null
+  eventDate: Date
+  venue: string | null
+  capacity: number | null
+  eventType: string | null
+  isPublic: boolean
+  shareToken: string | null
   elements: Array<{
-    id: string;
-    type: string;
-    name: string;
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    rotation: number;
-    properties: unknown;
-  }>;
+    id: string
+    type: string
+    name: string
+    x: number
+    y: number
+    width: number
+    height: number
+    rotation: number
+    properties: unknown
+  }>
 }
 
 interface Props {
-  event: Event;
+  event: Event
 }
 
 export function EventEditorClient({ event }: Props) {
-  const router = useRouter();
+  const router = useRouter()
   const {
     elements,
     setElements,
     scale,
     setScale,
-    panOffset,
-    setPanOffset,
     clearCanvas,
     resetView,
     undo,
@@ -110,19 +104,19 @@ export function EventEditorClient({ event }: Props) {
     copyElement,
     pasteElement,
     deleteSelectedElements,
-  } = useCanvasStore();
-  const [isSaving, setIsSaving] = useState(false);
-  const [showGrid, setShowGrid] = useState(true);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState(event);
-  const [isPublic, setIsPublic] = useState(event.isPublic);
-  const [shareToken, setShareToken] = useState(event.shareToken);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [showPublishModal, setShowPublishModal] = useState(false);
-  const [expiresAt, setExpiresAt] = useState('');
-  const [rightPanel, setRightPanel] = useState<'ai' | 'history' | 'bids'>('ai');
-  const [bids, setBids] = useState<{ id: string; boothId: string; status: string }[]>([]);
+  } = useCanvasStore()
+  const [isSaving, setIsSaving] = useState(false)
+  const [showGrid, setShowGrid] = useState(true)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [currentEvent, setCurrentEvent] = useState(event)
+  const [isPublic, setIsPublic] = useState(event.isPublic)
+  const [shareToken, setShareToken] = useState(event.shareToken)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [showPublishModal, setShowPublishModal] = useState(false)
+  const [expiresAt, setExpiresAt] = useState("")
+  const [rightPanel, setRightPanel] = useState<"ai" | "history" | "bids">("ai")
+  const [bids, setBids] = useState<{ id: string; boothId: string; status: string }[]>([])
   useEffect(() => {
     if (event.elements) {
       setElements(
@@ -131,195 +125,175 @@ export function EventEditorClient({ event }: Props) {
           properties: (el.properties as Record<string, unknown>) || {},
         })),
         true
-      );
+      )
     }
-  }, [event.elements, setElements]);
+  }, [event.elements, setElements])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-        e.preventDefault();
+      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+        e.preventDefault()
         if (e.shiftKey) {
-          redo();
+          redo()
         } else {
-          undo();
+          undo()
         }
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-        e.preventDefault();
-        redo();
+      if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+        e.preventDefault()
+        redo()
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-        e.preventDefault();
-        copyElement();
+      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+        e.preventDefault()
+        copyElement()
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        e.preventDefault();
-        pasteElement();
+      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+        e.preventDefault()
+        pasteElement()
       }
-      if ((e.key === 'Delete' || e.key === 'Backspace') && e.target === document.body) {
-        e.preventDefault();
-        deleteSelectedElements();
+      if ((e.key === "Delete" || e.key === "Backspace") && e.target === document.body) {
+        e.preventDefault()
+        deleteSelectedElements()
       }
-    };
+    }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [undo, redo, copyElement, pasteElement, deleteSelectedElements]);
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [undo, redo, copyElement, pasteElement, deleteSelectedElements])
 
   useEffect(() => {
     const currentIds = elements
       .map((e) => e.id)
       .sort()
-      .join(',');
+      .join(",")
     const savedIds = event.elements
       .map((e) => e.id)
       .sort()
-      .join(',');
-    setHasUnsavedChanges(
-      currentIds !== savedIds || elements.length !== event.elements.length
-    );
-  }, [elements, event.elements]);
+      .join(",")
+    setHasUnsavedChanges(currentIds !== savedIds || elements.length !== event.elements.length)
+  }, [elements, event.elements])
 
   const handleSave = async () => {
-    setIsSaving(true);
+    setIsSaving(true)
     try {
       const res = await fetch(`/api/events/${event.id}/elements`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ elements }),
-      });
+      })
 
-      if (!res.ok) throw new Error('Failed to save layout');
+      if (!res.ok) throw new Error("Failed to save layout")
 
-      toast.success('Layout saved successfully!');
-      setHasUnsavedChanges(false);
+      toast.success("Layout saved successfully!")
+      setHasUnsavedChanges(false)
       // Fire-and-forget version snapshot
-      fetch(`/api/events/${event.id}/versions`, { method: 'POST' })
-        .catch((err) => console.error('Version snapshot failed:', err));
-      router.refresh();
+      fetch(`/api/events/${event.id}/versions`, { method: "POST" }).catch((err) =>
+        console.error("Version snapshot failed:", err)
+      )
+      router.refresh()
     } catch (error) {
-      console.error('Failed to save layout:', error);
-      toast.error('Failed to save layout');
+      console.error("Failed to save layout:", error)
+      toast.error("Failed to save layout")
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const handlePublish = async (expiry?: string) => {
-    setIsPublishing(true);
+    setIsPublishing(true)
     try {
       if (isPublic && shareToken) {
         // Unpublish
-        await fetch(`/api/events/${event.id}/publish`, { method: 'DELETE' });
-        setIsPublic(false);
-        setShareToken(null);
-        toast.success('Event unpublished');
+        await fetch(`/api/events/${event.id}/publish`, { method: "DELETE" })
+        setIsPublic(false)
+        setShareToken(null)
+        toast.success("Event unpublished")
       } else {
         // Publish
         const res = await fetch(`/api/events/${event.id}/publish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ expiresAt: expiry || null }),
-        });
-        const data = await res.json();
-        setIsPublic(true);
-        setShareToken(data.shareToken);
-        const url = `${window.location.origin}/e/${data.shareToken}`;
-        await navigator.clipboard.writeText(url);
-        toast.success('Published! Link copied to clipboard.');
-        setShowPublishModal(false);
-        setExpiresAt('');
+        })
+        const data = await res.json()
+        setIsPublic(true)
+        setShareToken(data.shareToken)
+        const url = `${window.location.origin}/e/${data.shareToken}`
+        await navigator.clipboard.writeText(url)
+        toast.success("Published! Link copied to clipboard.")
+        setShowPublishModal(false)
+        setExpiresAt("")
       }
     } catch {
-      toast.error('Failed to update publish status');
+      toast.error("Failed to update publish status")
     } finally {
-      setIsPublishing(false);
+      setIsPublishing(false)
     }
-  };
+  }
 
   const handleCopyLink = async () => {
-    if (!shareToken) return;
-    const url = `${window.location.origin}/e/${shareToken}`;
-    await navigator.clipboard.writeText(url);
-    toast.success('Link copied to clipboard');
-  };
+    if (!shareToken) return
+    const url = `${window.location.origin}/e/${shareToken}`
+    await navigator.clipboard.writeText(url)
+    toast.success("Link copied to clipboard")
+  }
 
-  const zoomPresets = [50, 75, 100, 125, 150];
+  const zoomPresets = [50, 75, 100, 125, 150]
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className='h-screen flex flex-col bg-zinc-100'>
-        <header className='bg-white border-b h-14 px-4 flex items-center justify-between shrink-0'>
-          <div className='flex items-center gap-3'>
+      <div className="flex h-screen flex-col bg-zinc-100">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-white px-4">
+          <div className="flex items-center gap-3">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href='/dashboard'
-                  className='p-2 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors'
+                  href="/dashboard"
+                  className="rounded-md p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900"
                 >
-                  <ArrowLeft className='w-5 h-5' />
+                  <ArrowLeft className="h-5 w-5" />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side='bottom'>Back to Dashboard</TooltipContent>
+              <TooltipContent side="bottom">Back to Dashboard</TooltipContent>
             </Tooltip>
 
-            <Separator
-              orientation='vertical'
-              className='h-6'
-            />
+            <Separator orientation="vertical" className="h-6" />
 
-            <div className='flex items-center gap-3'>
+            <div className="flex items-center gap-3">
               <div>
-                <div className='flex items-center gap-2'>
-                  <h1 className='font-semibold text-zinc-900'>
-                    {currentEvent.title}
-                  </h1>
-                  {currentEvent.eventType && (
-                    <Badge
-                      variant='secondary'
-                      className='text-xs capitalize'
-                    >
-                      {currentEvent.eventType}
+                <div className="flex items-center gap-2">
+                  <h1 className="font-semibold text-zinc-900">{event.title}</h1>
+                  {event.eventType && (
+                    <Badge variant="secondary" className="text-xs capitalize">
+                      {event.eventType}
                     </Badge>
                   )}
                   {hasUnsavedChanges && (
                     <Badge
-                      variant='outline'
-                      className='text-xs text-amber-600 border-amber-300 bg-amber-50'
+                      variant="outline"
+                      className="border-amber-300 bg-amber-50 text-xs text-amber-600"
                     >
                       Unsaved
                     </Badge>
                   )}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setIsEditDialogOpen(true)}
-                        className='p-1 rounded text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors'
-                      >
-                        <Pencil className='w-3.5 h-3.5' />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit Event Details</TooltipContent>
-                  </Tooltip>
                 </div>
-                <div className='flex items-center gap-3 text-xs text-zinc-500'>
-                  {currentEvent.eventDate && (
-                    <span className='flex items-center gap-1'>
-                      <Calendar className='w-3 h-3' />
-                      {format(new Date(currentEvent.eventDate), 'MMM d, yyyy')}
+                <div className="flex items-center gap-3 text-xs text-zinc-500">
+                  {event.eventDate && (
+                    <span className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(event.eventDate), "MMM d, yyyy")}
                     </span>
                   )}
-                  {currentEvent.venue && (
-                    <span className='flex items-center gap-1'>
-                      <MapPin className='w-3 h-3' />
-                      {currentEvent.venue}
+                  {event.venue && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {event.venue}
                     </span>
                   )}
-                  {currentEvent.capacity && (
-                    <span className='flex items-center gap-1'>
-                      <Users className='w-3 h-3' />
-                      {currentEvent.capacity} guests
+                  {event.capacity && (
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      {event.capacity} guests
                     </span>
                   )}
                 </div>
@@ -327,17 +301,17 @@ export function EventEditorClient({ event }: Props) {
             </div>
           </div>
 
-          <div className='flex items-center gap-2'>
+          <div className="flex items-center gap-2">
             {isPublic && shareToken && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant='ghost'
-                    size='sm'
+                    variant="ghost"
+                    size="sm"
                     onClick={handleCopyLink}
-                    className='text-zinc-500'
+                    className="text-zinc-500"
                   >
-                    <LinkIcon className='w-4 h-4' />
+                    <LinkIcon className="h-4 w-4" />
                     Copy Link
                   </Button>
                 </TooltipTrigger>
@@ -348,52 +322,47 @@ export function EventEditorClient({ event }: Props) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={isPublic ? 'secondary' : 'outline'}
-                  size='sm'
+                  variant={isPublic ? "secondary" : "outline"}
+                  size="sm"
                   onClick={isPublic ? () => handlePublish() : () => setShowPublishModal(true)}
                   disabled={isPublishing}
-                  className={isPublic ? 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border-emerald-200' : ''}
+                  className={
+                    isPublic
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                      : ""
+                  }
                 >
                   {isPublic ? (
                     <>
-                      <Globe className='w-4 h-4' />
-                      {isPublishing ? 'Unpublishing...' : 'Published'}
+                      <Globe className="h-4 w-4" />
+                      {isPublishing ? "Unpublishing..." : "Published"}
                     </>
                   ) : (
                     <>
-                      <EyeOff className='w-4 h-4' />
-                      {isPublishing ? 'Publishing...' : 'Publish'}
+                      <EyeOff className="h-4 w-4" />
+                      {isPublishing ? "Publishing..." : "Publish"}
                     </>
                   )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {isPublic ? 'Click to unpublish and revoke link' : 'Generate a public share link'}
+                {isPublic ? "Click to unpublish and revoke link" : "Generate a public share link"}
               </TooltipContent>
             </Tooltip>
 
-            <Button
-              size='sm'
-              onClick={handleSave}
-              disabled={isSaving}
-            >
-              <Save className='w-4 h-4' />
-              {isSaving ? 'Saving...' : 'Save Layout'}
+            <Button size="sm" onClick={handleSave} disabled={isSaving}>
+              <Save className="h-4 w-4" />
+              {isSaving ? "Saving..." : "Save Layout"}
             </Button>
           </div>
         </header>
 
-        <div className='bg-white border-b px-4 py-2 flex items-center justify-between shrink-0'>
-          <div className='flex items-center gap-1'>
+        <div className="flex shrink-0 items-center justify-between border-b bg-white px-4 py-2">
+          <div className="flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant='ghost'
-                  size='icon-sm'
-                  onClick={undo}
-                  disabled={past.length === 0}
-                >
-                  <Undo2 className='w-4 h-4' />
+                <Button variant="ghost" size="icon-sm" onClick={undo} disabled={past.length === 0}>
+                  <Undo2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
@@ -402,30 +371,27 @@ export function EventEditorClient({ event }: Props) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='icon-sm'
+                  variant="ghost"
+                  size="icon-sm"
                   onClick={redo}
                   disabled={future.length === 0}
                 >
-                  <Redo2 className='w-4 h-4' />
+                  <Redo2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
             </Tooltip>
 
-            <Separator
-              orientation='vertical'
-              className='h-5 mx-1'
-            />
+            <Separator orientation="vertical" className="mx-1 h-5" />
 
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant={showGrid ? 'secondary' : 'ghost'}
-                  size='icon-sm'
+                  variant={showGrid ? "secondary" : "ghost"}
+                  size="icon-sm"
                   onClick={() => setShowGrid(!showGrid)}
                 >
-                  <Grid3X3 className='w-4 h-4' />
+                  <Grid3X3 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Toggle Grid</TooltipContent>
@@ -433,42 +399,38 @@ export function EventEditorClient({ event }: Props) {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant='ghost'
-                  size='icon-sm'
-                  onClick={handleResetView}
-                >
-                  <Maximize className='w-4 h-4' />
+                <Button variant="ghost" size="icon-sm" onClick={() => resetView()}>
+                  <Maximize className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Center on Layout</TooltipContent>
+              <TooltipContent>Reset View (100%)</TooltipContent>
             </Tooltip>
           </div>
 
-          <div className='flex items-center gap-1 bg-zinc-100 rounded-lg p-1'>
+          <div className="flex items-center gap-1 rounded-lg bg-zinc-100 p-1">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='icon-sm'
-                  onClick={() => handleZoom(scale - 0.1)}
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setScale(Math.max(0.5, scale - 0.1))}
                   disabled={scale <= 0.5}
                 >
-                  <ZoomOut className='w-4 h-4' />
+                  <ZoomOut className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Zoom Out</TooltipContent>
             </Tooltip>
 
-            <div className='flex items-center gap-1 px-1'>
+            <div className="flex items-center gap-1 px-1">
               {zoomPresets.map((preset) => (
                 <button
                   key={preset}
-                  onClick={() => handleZoom(preset / 100)}
-                  className={`px-2 py-1 text-xs rounded transition-colors ${
+                  onClick={() => setScale(preset / 100)}
+                  className={`rounded px-2 py-1 text-xs transition-colors ${
                     Math.round(scale * 100) === preset
-                      ? 'bg-white text-zinc-900 shadow-sm font-medium'
-                      : 'text-zinc-500 hover:text-zinc-900'
+                      ? "bg-white font-medium text-zinc-900 shadow-sm"
+                      : "text-zinc-500 hover:text-zinc-900"
                   }`}
                 >
                   {preset}%
@@ -479,21 +441,21 @@ export function EventEditorClient({ event }: Props) {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
-                  variant='ghost'
-                  size='icon-sm'
-                  onClick={() => handleZoom(scale + 0.1)}
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setScale(Math.min(2, scale + 0.1))}
                   disabled={scale >= 2}
                 >
-                  <ZoomIn className='w-4 h-4' />
+                  <ZoomIn className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Zoom In</TooltipContent>
             </Tooltip>
           </div>
 
-          <div className='flex items-center gap-1'>
-            <div className='text-xs text-zinc-500 mr-2'>
-              {elements.length} element{elements.length !== 1 ? 's' : ''}
+          <div className="flex items-center gap-1">
+            <div className="mr-2 text-xs text-zinc-500">
+              {elements.length} element{elements.length !== 1 ? "s" : ""}
             </div>
 
             <AlertDialog>
@@ -501,11 +463,11 @@ export function EventEditorClient({ event }: Props) {
                 <TooltipTrigger asChild>
                   <AlertDialogTrigger asChild>
                     <Button
-                      variant='ghost'
-                      size='icon-sm'
-                      className='text-zinc-500 hover:text-red-600'
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-zinc-500 hover:text-red-600"
                     >
-                      <RotateCcw className='w-4 h-4' />
+                      <RotateCcw className="h-4 w-4" />
                     </Button>
                   </AlertDialogTrigger>
                 </TooltipTrigger>
@@ -515,16 +477,13 @@ export function EventEditorClient({ event }: Props) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Clear Canvas?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will remove all {elements.length} elements from your
-                    layout. You&apos;ll need to save to make this permanent.
+                    This will remove all {elements.length} elements from your layout. You&apos;ll
+                    need to save to make this permanent.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={clearCanvas}
-                    className='bg-red-600 hover:bg-red-700'
-                  >
+                  <AlertDialogAction onClick={clearCanvas} className="bg-red-600 hover:bg-red-700">
                     Clear All
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -533,32 +492,30 @@ export function EventEditorClient({ event }: Props) {
           </div>
         </div>
 
-        <div className='flex-1 flex overflow-hidden'>
+        <div className="flex flex-1 overflow-hidden">
           <ElementToolbar />
-          <div className='flex-1 overflow-auto relative'>
+          <div className="relative flex-1 overflow-auto">
             <AlignmentToolbar />
             <EventCanvas showGrid={showGrid} />
 
             {elements.length === 0 && (
-              <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-                <div className='text-center max-w-sm p-8 bg-white/80 backdrop-blur-sm rounded-xl border shadow-sm'>
-                  <div className='w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center mx-auto mb-4'>
-                    <Layers className='w-6 h-6 text-zinc-400' />
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="max-w-sm rounded-xl border bg-white/80 p-8 text-center shadow-sm backdrop-blur-sm">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
+                    <Layers className="h-6 w-6 text-zinc-400" />
                   </div>
-                  <h3 className='font-semibold text-zinc-900 mb-2'>
-                    Start designing your layout
-                  </h3>
-                  <p className='text-sm text-zinc-500 mb-4'>
-                    Drag elements from the left panel onto the canvas, or use AI
-                    to generate a suggested layout.
+                  <h3 className="mb-2 font-semibold text-zinc-900">Start designing your layout</h3>
+                  <p className="mb-4 text-sm text-zinc-500">
+                    Drag elements from the left panel onto the canvas, or use AI to generate a
+                    suggested layout.
                   </p>
-                  <div className='flex items-center justify-center gap-4 text-xs text-zinc-400'>
-                    <span className='flex items-center gap-1'>
-                      <MousePointer2 className='w-3 h-3' />
+                  <div className="flex items-center justify-center gap-4 text-xs text-zinc-400">
+                    <span className="flex items-center gap-1">
+                      <MousePointer2 className="h-3 w-3" />
                       Drag to add
                     </span>
-                    <span className='flex items-center gap-1'>
-                      <Hand className='w-3 h-3' />
+                    <span className="flex items-center gap-1">
+                      <Hand className="h-3 w-3" />
                       Click to select
                     </span>
                   </div>
@@ -566,7 +523,7 @@ export function EventEditorClient({ event }: Props) {
               </div>
             )}
           </div>
-          <div className='w-72 bg-white border-l flex flex-col'>
+          <div className="flex w-72 flex-col border-l bg-white">
             {/* Element properties — shown when any element is selected */}
             {(() => {
               const selectedEl = elements.find((e) => e.id === selectedElement)
@@ -578,45 +535,45 @@ export function EventEditorClient({ event }: Props) {
             })()}
 
             {/* Tab bar */}
-            <div className='flex border-b shrink-0'>
+            <div className="flex shrink-0 border-b">
               <button
-                onClick={() => setRightPanel('ai')}
+                onClick={() => setRightPanel("ai")}
                 className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
-                  rightPanel === 'ai'
-                    ? 'border-b-2 border-zinc-900 text-zinc-900'
-                    : 'text-zinc-400 hover:text-zinc-600'
+                  rightPanel === "ai"
+                    ? "border-b-2 border-zinc-900 text-zinc-900"
+                    : "text-zinc-400 hover:text-zinc-600"
                 }`}
               >
                 AI
               </button>
               <button
-                onClick={() => setRightPanel('history')}
+                onClick={() => setRightPanel("history")}
                 className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
-                  rightPanel === 'history'
-                    ? 'border-b-2 border-zinc-900 text-zinc-900'
-                    : 'text-zinc-400 hover:text-zinc-600'
+                  rightPanel === "history"
+                    ? "border-b-2 border-zinc-900 text-zinc-900"
+                    : "text-zinc-400 hover:text-zinc-600"
                 }`}
               >
                 History
               </button>
               <button
-                onClick={() => setRightPanel('bids')}
-                className={`flex-1 px-3 py-2.5 text-xs font-medium transition-colors relative ${
-                  rightPanel === 'bids'
-                    ? 'border-b-2 border-zinc-900 text-zinc-900'
-                    : 'text-zinc-400 hover:text-zinc-600'
+                onClick={() => setRightPanel("bids")}
+                className={`relative flex-1 px-3 py-2.5 text-xs font-medium transition-colors ${
+                  rightPanel === "bids"
+                    ? "border-b-2 border-zinc-900 text-zinc-900"
+                    : "text-zinc-400 hover:text-zinc-600"
                 }`}
               >
                 Bids
-                {bids.filter((b) => b.status === 'pending').length > 0 && (
-                  <span className='absolute top-1.5 right-1.5 w-3.5 h-3.5 text-[9px] bg-amber-500 text-white rounded-full flex items-center justify-center'>
-                    {bids.filter((b) => b.status === 'pending').length}
+                {bids.filter((b) => b.status === "pending").length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-[9px] text-white">
+                    {bids.filter((b) => b.status === "pending").length}
                   </span>
                 )}
               </button>
             </div>
 
-            {rightPanel === 'ai' ? (
+            {rightPanel === "ai" ? (
               <AISuggestionPanel
                 eventId={event.id}
                 eventData={{
@@ -625,9 +582,9 @@ export function EventEditorClient({ event }: Props) {
                   capacity: event.capacity || undefined,
                   venue: event.venue || undefined,
                 }}
-                className='border-none w-full'
+                className="w-full border-none"
               />
-            ) : rightPanel === 'history' ? (
+            ) : rightPanel === "history" ? (
               <VersionHistoryPanel eventId={event.id} />
             ) : (
               <BidsPanel eventId={event.id} onBidsLoaded={(loaded) => setBids(loaded)} />
@@ -637,19 +594,19 @@ export function EventEditorClient({ event }: Props) {
       </div>
       {/* Publish modal */}
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal}>
-        <DialogContent className='sm:max-w-sm'>
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Publish Event</DialogTitle>
           </DialogHeader>
-          <div className='space-y-4 py-2'>
-            <p className='text-sm text-zinc-500'>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-zinc-500">
               Anyone with the link can view this event's layout in read-only mode.
             </p>
-            <div className='space-y-1.5'>
-              <Label htmlFor='expires-at'>Link expires (optional)</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="expires-at">Link expires (optional)</Label>
               <Input
-                id='expires-at'
-                type='date'
+                id="expires-at"
+                type="date"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
                 min={new Date().toISOString().slice(0, 10)}
@@ -657,15 +614,15 @@ export function EventEditorClient({ event }: Props) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant='outline' onClick={() => setShowPublishModal(false)}>
+            <Button variant="outline" onClick={() => setShowPublishModal(false)}>
               Cancel
             </Button>
             <Button onClick={() => handlePublish(expiresAt || undefined)} disabled={isPublishing}>
-              {isPublishing ? 'Publishing...' : 'Publish & Copy Link'}
+              {isPublishing ? "Publishing..." : "Publish & Copy Link"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </TooltipProvider>
-  );
+  )
 }

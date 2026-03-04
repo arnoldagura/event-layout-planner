@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server"
+import bcrypt from "bcryptjs"
+import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,10 +8,7 @@ export async function POST(request: NextRequest) {
     const { name, email, password } = body
 
     if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "Email and password are required" }, { status: 400 })
     }
 
     // Check if user already exists
@@ -20,10 +17,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser) {
-      return NextResponse.json(
-        { error: 'User with this email already exists' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "User with this email already exists" }, { status: 400 })
     }
 
     // Hash password
@@ -46,10 +40,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ user }, { status: 201 })
   } catch (error: any) {
-    console.error('Registration error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to register user' },
-      { status: 500 }
-    )
+    console.error("Registration error:", error)
+    return NextResponse.json({ error: error.message || "Failed to register user" }, { status: 500 })
   }
 }

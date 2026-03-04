@@ -1,9 +1,9 @@
-import { Resend } from 'resend'
+import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Use "Friendly Name <email>" format as required by Resend
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? 'noreply@eventlayoutplanner.com'
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "noreply@eventlayoutplanner.com"
 const FROM = `Event Layout Planner <${FROM_EMAIL}>`
 
 interface ApprovedParams {
@@ -11,7 +11,7 @@ interface ApprovedParams {
   vendorEmail: string
   boothName: string
   eventTitle: string
-  eventDate: string       // pre-formatted, e.g. "March 15, 2026"
+  eventDate: string // pre-formatted, e.g. "March 15, 2026"
   eventVenue: string | null
 }
 
@@ -38,7 +38,7 @@ export async function sendBidApprovedEmail(params: ApprovedParams) {
           <tr><td style="padding:4px 0;color:#71717a;font-size:13px">Event</td><td style="padding:4px 0;font-weight:600">${eventTitle}</td></tr>
           <tr><td style="padding:4px 0;color:#71717a;font-size:13px">Booth</td><td style="padding:4px 0;font-weight:600">${boothName}</td></tr>
           <tr><td style="padding:4px 0;color:#71717a;font-size:13px">Date</td><td style="padding:4px 0">${eventDate}</td></tr>
-          ${eventVenue ? `<tr><td style="padding:4px 0;color:#71717a;font-size:13px">Venue</td><td style="padding:4px 0">${eventVenue}</td></tr>` : ''}
+          ${eventVenue ? `<tr><td style="padding:4px 0;color:#71717a;font-size:13px">Venue</td><td style="padding:4px 0">${eventVenue}</td></tr>` : ""}
         </table>
         <p style="color:#52525b">The event organizer will be in touch with you shortly to confirm the details and next steps.</p>
         <p style="color:#52525b">Congratulations and we look forward to seeing you at the event!</p>

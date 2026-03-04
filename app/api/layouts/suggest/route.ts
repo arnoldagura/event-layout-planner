@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/auth'
-import { generateLayoutSuggestion } from '@/lib/gemini'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth"
+import { generateLayoutSuggestion } from "@/lib/gemini"
+import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const body = await request.json()
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     if (!eventId || !eventType || !capacity) {
       return NextResponse.json(
-        { error: 'Missing required fields: eventId, eventType, capacity' },
+        { error: "Missing required fields: eventId, eventType, capacity" },
         { status: 400 }
       )
     }
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
     // Generate AI layout suggestion
@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
       suggestion,
     })
   } catch (error) {
-    console.error('Layout suggestion error:', error)
+    console.error("Layout suggestion error:", error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to generate layout suggestion' },
+      { error: error instanceof Error ? error.message : "Failed to generate layout suggestion" },
       { status: 500 }
     )
   }

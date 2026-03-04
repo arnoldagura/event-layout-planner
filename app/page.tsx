@@ -1,12 +1,12 @@
-import { redirect } from 'next/navigation'
-import { auth } from '@/auth'
+import { redirect } from "next/navigation"
+import { auth } from "@/auth"
 
 export default async function Home() {
   const session = await auth()
 
   if (session?.user) {
-    redirect('/dashboard')
+    redirect("/dashboard")
   } else {
-    redirect('/auth/signin')
+    redirect("/auth/signin")
   }
 }

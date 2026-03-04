@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create } from "zustand"
 
 export interface CanvasElement {
   id: string
@@ -36,14 +36,14 @@ interface CanvasStore {
   setScale: (scale: number) => void
   setPanOffset: (offset: { x: number; y: number }) => void
   setSnapGuides: (guides: { x: number | null; y: number | null }) => void
-  alignElements: (alignment: 'left' | 'center-h' | 'right' | 'top' | 'center-v' | 'bottom') => void
-  distributeElements: (direction: 'horizontal' | 'vertical') => void
+  alignElements: (alignment: "left" | "center-h" | "right" | "top" | "center-v" | "bottom") => void
+  distributeElements: (direction: "horizontal" | "vertical") => void
   bringToFront: (id: string) => void
   bringForward: (id: string) => void
   sendBackward: (id: string) => void
   sendToBack: (id: string) => void
   clearCanvas: () => void
-  resetView: (viewportWidth?: number, viewportHeight?: number) => void
+  resetView: () => void
   undo: () => void
   redo: () => void
   canUndo: () => boolean
@@ -87,18 +87,14 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   updateElement: (id, updates) =>
     set((state) => ({
-      elements: state.elements.map((el) =>
-        el.id === id ? { ...el, ...updates } : el
-      ),
+      elements: state.elements.map((el) => (el.id === id ? { ...el, ...updates } : el)),
       past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
       future: [],
     })),
 
   updateElementSilent: (id, updates) =>
     set((state) => ({
-      elements: state.elements.map((el) =>
-        el.id === id ? { ...el, ...updates } : el
-      ),
+      elements: state.elements.map((el) => (el.id === id ? { ...el, ...updates } : el)),
     })),
 
   _setPendingSnapshot: () =>
@@ -151,7 +147,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         x: src.x + 20,
         y: src.y + 20,
         properties:
-          src.type === 'booth'
+          src.type === "booth"
             ? { ...src.properties, boothId: crypto.randomUUID() }
             : src.properties,
       }
@@ -194,13 +190,20 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       const updated = state.elements.map((el) => {
         if (!state.selectedElements.includes(el.id)) return el
         switch (alignment) {
-          case 'left':     return { ...el, x: minX }
-          case 'center-h': return { ...el, x: centerX - el.width / 2 }
-          case 'right':    return { ...el, x: maxX - el.width }
-          case 'top':      return { ...el, y: minY }
-          case 'center-v': return { ...el, y: centerY - el.height / 2 }
-          case 'bottom':   return { ...el, y: maxY - el.height }
-          default:         return el
+          case "left":
+            return { ...el, x: minX }
+          case "center-h":
+            return { ...el, x: centerX - el.width / 2 }
+          case "right":
+            return { ...el, x: maxX - el.width }
+          case "top":
+            return { ...el, y: minY }
+          case "center-v":
+            return { ...el, y: centerY - el.height / 2 }
+          case "bottom":
+            return { ...el, y: maxY - el.height }
+          default:
+            return el
         }
       })
       return {
@@ -216,25 +219,33 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       const selected = state.elements.filter((el) => state.selectedElements.includes(el.id))
       let updated: CanvasElement[]
 
-      if (direction === 'horizontal') {
+      if (direction === "horizontal") {
         const sorted = [...selected].sort((a, b) => a.x - b.x)
-        const totalSpan = sorted[sorted.length - 1].x + sorted[sorted.length - 1].width - sorted[0].x
+        const totalSpan =
+          sorted[sorted.length - 1].x + sorted[sorted.length - 1].width - sorted[0].x
         const totalWidth = sorted.reduce((s, el) => s + el.width, 0)
         const gap = (totalSpan - totalWidth) / (sorted.length - 1)
         const positions = new Map<string, number>()
         let cur = sorted[0].x
-        for (const el of sorted) { positions.set(el.id, cur); cur += el.width + gap }
+        for (const el of sorted) {
+          positions.set(el.id, cur)
+          cur += el.width + gap
+        }
         updated = state.elements.map((el) =>
           positions.has(el.id) ? { ...el, x: positions.get(el.id)! } : el
         )
       } else {
         const sorted = [...selected].sort((a, b) => a.y - b.y)
-        const totalSpan = sorted[sorted.length - 1].y + sorted[sorted.length - 1].height - sorted[0].y
+        const totalSpan =
+          sorted[sorted.length - 1].y + sorted[sorted.length - 1].height - sorted[0].y
         const totalHeight = sorted.reduce((s, el) => s + el.height, 0)
         const gap = (totalSpan - totalHeight) / (sorted.length - 1)
         const positions = new Map<string, number>()
         let cur = sorted[0].y
-        for (const el of sorted) { positions.set(el.id, cur); cur += el.height + gap }
+        for (const el of sorted) {
+          positions.set(el.id, cur)
+          cur += el.height + gap
+        }
         updated = state.elements.map((el) =>
           positions.has(el.id) ? { ...el, y: positions.get(el.id)! } : el
         )
@@ -252,7 +263,11 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       const el = state.elements.find((e) => e.id === id)
       if (!el) return state
       const rest = state.elements.filter((e) => e.id !== id)
-      return { elements: [...rest, el], past: [...state.past.slice(-MAX_HISTORY + 1), state.elements], future: [] }
+      return {
+        elements: [...rest, el],
+        past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+        future: [],
+      }
     }),
 
   bringForward: (id) =>
@@ -261,7 +276,11 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       if (idx < 0 || idx === state.elements.length - 1) return state
       const els = [...state.elements]
       ;[els[idx], els[idx + 1]] = [els[idx + 1], els[idx]]
-      return { elements: els, past: [...state.past.slice(-MAX_HISTORY + 1), state.elements], future: [] }
+      return {
+        elements: els,
+        past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+        future: [],
+      }
     }),
 
   sendBackward: (id) =>
@@ -270,7 +289,11 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       if (idx <= 0) return state
       const els = [...state.elements]
       ;[els[idx - 1], els[idx]] = [els[idx], els[idx - 1]]
-      return { elements: els, past: [...state.past.slice(-MAX_HISTORY + 1), state.elements], future: [] }
+      return {
+        elements: els,
+        past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+        future: [],
+      }
     }),
 
   sendToBack: (id) =>
@@ -278,7 +301,11 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       const el = state.elements.find((e) => e.id === id)
       if (!el) return state
       const rest = state.elements.filter((e) => e.id !== id)
-      return { elements: [el, ...rest], past: [...state.past.slice(-MAX_HISTORY + 1), state.elements], future: [] }
+      return {
+        elements: [el, ...rest],
+        past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+        future: [],
+      }
     }),
 
   clearCanvas: () =>
@@ -290,25 +317,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
       future: [],
     })),
 
-  resetView: (viewportWidth?: number, viewportHeight?: number) =>
-    set((state) => {
-      if (!viewportWidth || !viewportHeight || state.elements.length === 0) {
-        return { scale: 1, panOffset: { x: 0, y: 0 } }
-      }
-
-      const minX = Math.min(...state.elements.map((el) => el.x))
-      const minY = Math.min(...state.elements.map((el) => el.y))
-      const maxX = Math.max(...state.elements.map((el) => el.x + el.width))
-      const maxY = Math.max(...state.elements.map((el) => el.y + el.height))
-
-      const layoutCenterX = (minX + maxX) / 2
-      const layoutCenterY = (minY + maxY) / 2
-
-      const offsetX = viewportWidth / 2 - layoutCenterX
-      const offsetY = viewportHeight / 2 - layoutCenterY
-
-      return { scale: 1, panOffset: { x: offsetX, y: offsetY } }
-    }),
+  resetView: () => set({ scale: 1, panOffset: { x: 0, y: 0 } }),
 
   undo: () =>
     set((state) => {

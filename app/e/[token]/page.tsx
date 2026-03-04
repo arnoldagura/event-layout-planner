@@ -1,6 +1,6 @@
-import { notFound } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
-import { PublicEventView } from './PublicEventView'
+import { notFound } from "next/navigation"
+import { prisma } from "@/lib/prisma"
+import { PublicEventView } from "./PublicEventView"
 
 interface Props {
   params: Promise<{ token: string }>
@@ -13,11 +13,13 @@ export async function generateMetadata({ params }: Props) {
     select: { title: true, description: true, venue: true },
   })
 
-  if (!event) return { title: 'Event Not Found' }
+  if (!event) return { title: "Event Not Found" }
 
   return {
     title: event.title,
-    description: event.description ?? `View the layout for ${event.title}${event.venue ? ` at ${event.venue}` : ''}`,
+    description:
+      event.description ??
+      `View the layout for ${event.title}${event.venue ? ` at ${event.venue}` : ""}`,
   }
 }
 

@@ -1,9 +1,9 @@
-import { prisma } from '@/lib/prisma'
-import { MarketplaceClient } from './MarketplaceClient'
+import { prisma } from "@/lib/prisma"
+import { MarketplaceClient } from "./MarketplaceClient"
 
 export const metadata = {
-  title: 'Booth Marketplace',
-  description: 'Discover and bid on available booths at upcoming events.',
+  title: "Booth Marketplace",
+  description: "Discover and bid on available booths at upcoming events.",
 }
 
 export interface MarketplaceEvent {
@@ -38,11 +38,11 @@ export default async function MarketplacePage() {
       eventType: true,
       shareToken: true,
       elements: {
-        where: { type: 'booth' },
+        where: { type: "booth" },
         select: { properties: true },
       },
     },
-    orderBy: { eventDate: 'asc' },
+    orderBy: { eventDate: "asc" },
   })
 
   // Build summary per event; only keep events with ≥1 available for-rent booth
@@ -53,7 +53,7 @@ export default async function MarketplacePage() {
 
     const forRentBooths = event.elements.filter((el) => {
       const p = (el.properties ?? {}) as Record<string, unknown>
-      return p.forRent === true && p.status !== 'rented'
+      return p.forRent === true && p.status !== "rented"
     })
 
     if (forRentBooths.length === 0) continue
@@ -61,7 +61,7 @@ export default async function MarketplacePage() {
     const prices = forRentBooths
       .map((el) => {
         const p = (el.properties ?? {}) as Record<string, unknown>
-        return typeof p.askingPrice === 'number' ? p.askingPrice : null
+        return typeof p.askingPrice === "number" ? p.askingPrice : null
       })
       .filter((p): p is number => p !== null)
 
@@ -70,7 +70,7 @@ export default async function MarketplacePage() {
         forRentBooths
           .map((el) => {
             const p = (el.properties ?? {}) as Record<string, unknown>
-            return typeof p.category === 'string' && p.category ? p.category : null
+            return typeof p.category === "string" && p.category ? p.category : null
           })
           .filter((c): c is string => c !== null)
       )

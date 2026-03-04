@@ -1,10 +1,10 @@
-'use client'
+"use client"
 
-import React, { useState } from 'react'
-import { Sparkles, Loader2, Check, Lightbulb, LayoutGrid } from 'lucide-react'
-import { useCanvasStore, CanvasElement } from '@/lib/store'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import React, { useState } from "react"
+import { Sparkles, Loader2, Check, Lightbulb, LayoutGrid } from "lucide-react"
+import { useCanvasStore, CanvasElement } from "@/lib/store"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 const CANVAS_W = 2000
 const CANVAS_H = 1500
@@ -28,7 +28,17 @@ function clampToCanvas(el: CanvasElement): CanvasElement {
 }
 
 // Type priority: anchors placed first so they keep their AI positions
-const TYPE_PRIORITY = ['stage', 'entrance', 'exit', 'registration', 'restroom', 'bar', 'booth', 'table', 'chair']
+const TYPE_PRIORITY = [
+  "stage",
+  "entrance",
+  "exit",
+  "registration",
+  "restroom",
+  "bar",
+  "booth",
+  "table",
+  "chair",
+]
 
 function resolveOverlaps(elements: CanvasElement[]): CanvasElement[] {
   const sorted = [...elements].sort(
@@ -108,14 +118,14 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
       setIsLoading(true)
       setError(null)
 
-      const response = await fetch('/api/layouts/suggest', {
-        method: 'POST',
+      const response = await fetch("/api/layouts/suggest", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           eventId,
-          eventType: eventData.eventType || 'conference',
+          eventType: eventData.eventType || "conference",
           capacity: eventData.capacity || 100,
           venue: eventData.venue,
           existingElements: elements.map((el) => ({
@@ -127,20 +137,20 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to generate suggestion')
+        throw new Error(data.error || "Failed to generate suggestion")
       }
 
       const data = await response.json()
       setSuggestion(data.suggestion)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
       setIsLoading(false)
     }
   }
 
   const applySuggestion = async () => {
-    if (suggestion?.elements && suggestion.elements.length > 0) {
+    if (suggestion?.elements) {
       const hasNoSavedElements = elements.length === 0
 
       const canvasWidth = 2000
@@ -160,8 +170,6 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
       const centered = suggestion.elements.map((el, index) => ({
         ...el,
         id: el.id || `ai-element-${Date.now()}-${index}`,
-        x: el.x + offsetX,
-        y: el.y + offsetY,
       }))
 
       const elementsWithIds = resolveOverlaps(centered)
@@ -173,27 +181,27 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
         try {
           for (const element of elementsWithIds) {
             await fetch(`/api/events/${eventId}/elements`, {
-              method: 'POST',
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify(element),
             })
           }
         } catch (err) {
-          console.error('Failed to auto-save layout:', err)
+          console.error("Failed to auto-save layout:", err)
         }
       }
     }
   }
 
   return (
-    <div className={cn("w-72 bg-white border-l flex flex-col", className)}>
+    <div className={cn("flex w-72 flex-col border-l bg-white", className)}>
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="border-b p-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900">
+            <Sparkles className="h-4 w-4 text-white" />
           </div>
           <div>
             <h2 className="font-semibold text-zinc-900">AI Assistant</h2>
@@ -205,35 +213,32 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {/* Event context */}
-        <div className="mb-4 p-3 bg-zinc-50 rounded-lg">
-          <h3 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Event Details</h3>
+        <div className="mb-4 rounded-lg bg-zinc-50 p-3">
+          <h3 className="mb-2 text-xs font-medium tracking-wider text-zinc-500 uppercase">
+            Event Details
+          </h3>
           <div className="space-y-1 text-sm">
             <p className="text-zinc-700">
-              <span className="text-zinc-500">Type:</span>{' '}
-              <span className="capitalize">{eventData.eventType || 'Not specified'}</span>
+              <span className="text-zinc-500">Type:</span>{" "}
+              <span className="capitalize">{eventData.eventType || "Not specified"}</span>
             </p>
             <p className="text-zinc-700">
-              <span className="text-zinc-500">Capacity:</span>{' '}
-              {eventData.capacity ? `${eventData.capacity} guests` : 'Not specified'}
+              <span className="text-zinc-500">Capacity:</span>{" "}
+              {eventData.capacity ? `${eventData.capacity} guests` : "Not specified"}
             </p>
           </div>
         </div>
 
         {/* Generate button */}
-        <Button
-          onClick={generateSuggestion}
-          disabled={isLoading}
-          className="w-full mb-4"
-          size="lg"
-        >
+        <Button onClick={generateSuggestion} disabled={isLoading} className="mb-4 w-full" size="lg">
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Generating...
             </>
           ) : (
             <>
-              <LayoutGrid className="w-4 h-4" />
+              <LayoutGrid className="h-4 w-4" />
               Generate Layout
             </>
           )}
@@ -241,7 +246,7 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
 
         {/* Error state */}
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg mb-4">
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
@@ -251,47 +256,47 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
           <div className="space-y-4">
             {/* Reasoning */}
             {suggestion.reasoning && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                  <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                   <p className="text-sm text-amber-800">{suggestion.reasoning}</p>
                 </div>
               </div>
             )}
 
             {/* Elements preview */}
-            <div className="p-3 bg-zinc-50 rounded-lg">
-              <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
+            <div className="rounded-lg bg-zinc-50 p-3">
+              <h4 className="mb-2 text-xs font-medium tracking-wider text-zinc-500 uppercase">
                 Generated Elements
               </h4>
-              <div className="flex flex-wrap gap-1.5 mb-3">
+              <div className="mb-3 flex flex-wrap gap-1.5">
                 {suggestion.elements?.slice(0, 8).map((el, idx) => (
                   <span
                     key={idx}
-                    className="px-2 py-1 bg-white border rounded text-xs text-zinc-600"
+                    className="rounded border bg-white px-2 py-1 text-xs text-zinc-600"
                   >
                     {el.name}
                   </span>
                 ))}
                 {(suggestion.elements?.length || 0) > 8 && (
-                  <span className="px-2 py-1 bg-zinc-100 rounded text-xs text-zinc-500">
+                  <span className="rounded bg-zinc-100 px-2 py-1 text-xs text-zinc-500">
                     +{(suggestion.elements?.length || 0) - 8} more
                   </span>
                 )}
               </div>
-              <p className="text-xs text-zinc-500 mb-3">
+              <p className="mb-3 text-xs text-zinc-500">
                 {suggestion.elements?.length || 0} elements total
               </p>
               <Button onClick={applySuggestion} className="w-full" size="sm">
-                <Check className="w-4 h-4" />
+                <Check className="h-4 w-4" />
                 Apply Layout
               </Button>
             </div>
 
             {/* Alternatives */}
             {suggestion.alternatives && suggestion.alternatives.length > 0 && (
-              <div className="p-3 bg-zinc-50 rounded-lg">
-                <h4 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">
+              <div className="rounded-lg bg-zinc-50 p-3">
+                <h4 className="mb-2 text-xs font-medium tracking-wider text-zinc-500 uppercase">
                   Alternative Ideas
                 </h4>
                 <ul className="space-y-2">
@@ -309,11 +314,11 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
 
         {/* Empty state */}
         {!suggestion && !isLoading && !error && (
-          <div className="text-center py-6">
-            <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center mx-auto mb-3">
-              <Sparkles className="w-5 h-5 text-zinc-400" />
+          <div className="py-6 text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
+              <Sparkles className="h-5 w-5 text-zinc-400" />
             </div>
-            <p className="text-sm text-zinc-500 mb-1">No layout generated yet</p>
+            <p className="mb-1 text-sm text-zinc-500">No layout generated yet</p>
             <p className="text-xs text-zinc-400">
               Click the button above to generate a suggested layout based on your event details.
             </p>
@@ -322,8 +327,8 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t bg-zinc-50">
-        <p className="text-xs text-zinc-500 text-center">
+      <div className="border-t bg-zinc-50 p-3">
+        <p className="text-center text-xs text-zinc-500">
           AI suggestions are starting points. Customize as needed.
         </p>
       </div>
