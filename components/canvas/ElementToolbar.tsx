@@ -3,12 +3,10 @@
 import React from 'react';
 import {
   Presentation,
-  Table,
   Armchair,
   Store,
   DoorOpen,
   DoorClosed,
-  Bath,
   Wine,
   ClipboardList,
   GripVertical,
@@ -19,6 +17,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { FaRestroom } from 'react-icons/fa';
+import { MdTableRestaurant } from 'react-icons/md';
 
 interface ElementType {
   type: string;
@@ -34,13 +34,13 @@ const elements: ElementType[] = [
   { type: 'entrance', label: 'Entrance', icon: <DoorOpen className='w-4 h-4' />, color: 'bg-emerald-500', category: 'venue' },
   { type: 'exit', label: 'Exit', icon: <DoorClosed className='w-4 h-4' />, color: 'bg-red-500', category: 'venue' },
   // Seating elements
-  { type: 'table', label: 'Table', icon: <Table className='w-4 h-4' />, color: 'bg-amber-500', category: 'seating' },
+  { type: 'table', label: 'Table', icon: <MdTableRestaurant className='w-4 h-4' />, color: 'bg-amber-500', category: 'seating' },
   { type: 'chair', label: 'Chair', icon: <Armchair className='w-4 h-4' />, color: 'bg-zinc-500', category: 'seating' },
   { type: 'booth', label: 'Booth', icon: <Store className='w-4 h-4' />, color: 'bg-purple-500', category: 'seating' },
   // Service elements
   { type: 'registration', label: 'Registration', icon: <ClipboardList className='w-4 h-4' />, color: 'bg-cyan-500', category: 'services' },
   { type: 'bar', label: 'Bar', icon: <Wine className='w-4 h-4' />, color: 'bg-orange-500', category: 'services' },
-  { type: 'restroom', label: 'Restroom', icon: <Bath className='w-4 h-4' />, color: 'bg-slate-500', category: 'services' },
+  { type: 'restroom', label: 'Restroom', icon: <FaRestroom className='w-4 h-4' />, color: 'bg-slate-500', category: 'services' },
 ];
 
 const categories = [

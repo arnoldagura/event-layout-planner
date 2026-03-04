@@ -3,25 +3,27 @@
 import React, { useEffect, useState } from 'react'
 import {
   Presentation,
-  Table,
   Armchair,
   Store,
   DoorOpen,
   DoorClosed,
-  Bath,
   Wine,
   ClipboardList,
   Type,
   Ruler,
   Crosshair,
+  RotateCw,
   Trash2,
 } from 'lucide-react'
+import { FaRestroom } from 'react-icons/fa'
+
 import { useCanvasStore } from '@/lib/store'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { MdTableRestaurant } from 'react-icons/md'
 
 interface Props {
   elementId: string
@@ -30,12 +32,12 @@ interface Props {
 
 const ELEMENT_ICONS: Record<string, { icon: React.ReactNode; bgClass: string; iconClass: string }> = {
   stage:        { icon: <Presentation className="w-5 h-5" />, bgClass: 'bg-blue-100',    iconClass: 'text-blue-600'    },
-  table:        { icon: <Table        className="w-5 h-5" />, bgClass: 'bg-amber-100',   iconClass: 'text-amber-600'   },
+  table:        { icon: <MdTableRestaurant        className="w-5 h-5" />, bgClass: 'bg-amber-100',   iconClass: 'text-amber-600'   },
   chair:        { icon: <Armchair     className="w-5 h-5" />, bgClass: 'bg-zinc-100',    iconClass: 'text-zinc-600'    },
   booth:        { icon: <Store        className="w-5 h-5" />, bgClass: 'bg-teal-100',    iconClass: 'text-teal-600'    },
   entrance:     { icon: <DoorOpen     className="w-5 h-5" />, bgClass: 'bg-emerald-100', iconClass: 'text-emerald-600' },
   exit:         { icon: <DoorClosed   className="w-5 h-5" />, bgClass: 'bg-red-100',     iconClass: 'text-red-600'     },
-  restroom:     { icon: <Bath         className="w-5 h-5" />, bgClass: 'bg-slate-100',   iconClass: 'text-slate-600'   },
+  restroom:     { icon: <FaRestroom         className="w-5 h-5" />, bgClass: 'bg-slate-100',   iconClass: 'text-slate-600'   },
   bar:          { icon: <Wine         className="w-5 h-5" />, bgClass: 'bg-orange-100',  iconClass: 'text-orange-600'  },
   registration: { icon: <ClipboardList className="w-5 h-5"/>, bgClass: 'bg-cyan-100',    iconClass: 'text-cyan-600'    },
 }
@@ -50,6 +52,9 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
   const [name, setName]               = useState(element?.name ?? '')
   const [width, setWidth]             = useState(element?.width ?? 80)
   const [height, setHeight]           = useState(element?.height ?? 80)
+  const [rotation, setRotation]       = useState(element?.rotation ?? 0)
+  const [posX, setPosX]               = useState(Math.round(element?.x ?? 0))
+  const [posY, setPosY]               = useState(Math.round(element?.y ?? 0))
   const [forRent, setForRent]         = useState(Boolean(props.forRent))
   const [askingPrice, setAskingPrice] = useState(String(props.askingPrice ?? ''))
   const [category, setCategory]       = useState(String(props.category ?? ''))
@@ -67,6 +72,9 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     setName(element.name)
     setWidth(element.width)
     setHeight(element.height)
+    setRotation(element.rotation)
+    setPosX(Math.round(element.x))
+    setPosY(Math.round(element.y))
     setForRent(Boolean(p.forRent))
     setAskingPrice(String(p.askingPrice ?? ''))
     setCategory(String(p.category ?? ''))
@@ -97,6 +105,16 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     if (w !== element.width || h !== element.height) {
       updateElement(elementId, { width: w, height: h })
     }
+  }
+
+  // Apply rotation on blur / Enter
+  const applyRotation = () => {
+    updateElement(elementId, { rotation: rotation % 360 })
+  }
+
+  // Apply position on blur / Enter
+  const applyPosition = () => {
+    updateElement(elementId, { x: posX, y: posY })
   }
 
   // Apply booth rental props on blur
@@ -136,7 +154,7 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           <span className={typeConfig.iconClass}>{typeConfig.icon}</span>
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-zinc-900 text-sm leading-tight">Element Properties</h3>
+          <h3 className="font-semibold text-zinc-900 text-sm leading-tight">Properties</h3>
           <p className="text-xs text-zinc-400 capitalize mt-0.5">{element.type}</p>
         </div>
         {isBooth && forRent && (
@@ -202,7 +220,26 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           </div>
         </div>
 
-        {/* ── Position (read-only) ── */}
+        {/* ── Rotation ── */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <RotateCw className="w-3.5 h-3.5 text-zinc-400" />
+            <Label className="text-xs font-medium text-zinc-600">Rotation</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              value={Math.round(rotation)}
+              onChange={(e) => setRotation(Number(e.target.value))}
+              onBlur={applyRotation}
+              onKeyDown={(e) => { if (e.key === 'Enter') applyRotation() }}
+              className="h-9 text-sm"
+            />
+            <span className="text-sm text-zinc-400 shrink-0">°</span>
+          </div>
+        </div>
+
+        {/* ── Position ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <Crosshair className="w-3.5 h-3.5 text-zinc-400" />
@@ -211,15 +248,25 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <p className="text-[10px] text-zinc-400 uppercase tracking-wide font-medium">X</p>
-              <div className="h-9 bg-zinc-50 border border-zinc-200 rounded-md px-3 flex items-center">
-                <span className="text-sm font-medium text-zinc-700">{Math.round(element.x)}</span>
-              </div>
+              <Input
+                type="number"
+                value={posX}
+                onChange={(e) => setPosX(Number(e.target.value))}
+                onBlur={applyPosition}
+                onKeyDown={(e) => { if (e.key === 'Enter') applyPosition() }}
+                className="h-9 text-sm"
+              />
             </div>
             <div className="space-y-1">
               <p className="text-[10px] text-zinc-400 uppercase tracking-wide font-medium">Y</p>
-              <div className="h-9 bg-zinc-50 border border-zinc-200 rounded-md px-3 flex items-center">
-                <span className="text-sm font-medium text-zinc-700">{Math.round(element.y)}</span>
-              </div>
+              <Input
+                type="number"
+                value={posY}
+                onChange={(e) => setPosY(Number(e.target.value))}
+                onBlur={applyPosition}
+                onKeyDown={(e) => { if (e.key === 'Enter') applyPosition() }}
+                className="h-9 text-sm"
+              />
             </div>
           </div>
         </div>

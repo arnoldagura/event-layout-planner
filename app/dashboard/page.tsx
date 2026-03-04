@@ -16,6 +16,9 @@ export default async function Dashboard() {
     },
     include: {
       layouts: true,
+      elements: {
+        select: { type: true },
+      },
       _count: {
         select: {
           elements: true,

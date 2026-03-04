@@ -48,20 +48,39 @@
 
 ## Up Next — Choose a Phase
 
-### Option A — Canvas UX Polish
-- [ ] Multi-select (shift+click, drag-to-select)
-- [ ] Copy/paste elements
-- [ ] Snap to grid while dragging
+### Option A — Canvas UX Polish ✅
+- [x] Multi-select (shift+click) + blue ring on multi-selected elements
+- [x] Copy/paste elements (Ctrl+C/V, preserves fresh boothId on booth paste)
+- [x] Snap to grid while dragging (20px grid)
+- [x] Delete key removes selected elements
+- [x] 8-point Photoshop-style resize handles (nw/n/ne/e/se/s/sw/w)
+- [x] Rectangular selection ring (two-div structure decouples ring from border-radius)
+- [x] Drag threshold (4px) — prevents elements from jumping on plain click
+- [x] Scale-aware drag/resize — correct movement at any zoom level
 
-### Option B — Dashboard Improvements
-- [ ] Element count breakdown by type on event cards
-- [ ] Duplicate event (clone layout + elements)
-- [ ] Sort/filter by date, type, published status
+### Option B — Dashboard Improvements ✅
+- [x] Element type breakdown on cards (colored pills per type, up to 4 shown)
+- [x] Duplicate event — `POST /api/events/[id]/duplicate`, Copy button on card, optimistic UI
+- [x] Sort by: Newest / Oldest / Event Date / Title A–Z
+- [x] Filter by: Published status + event type (shown only when >1 type exists)
+- [x] Clear filters button when any filter is active
 
-### Option C — Global Marketplace Page
-- [ ] `/marketplace` page listing all published events with for-rent booths
-- [ ] Filter by category, price range, event date
+### Option C — Global Marketplace Page ✅
+- [x] `app/marketplace/page.tsx` — server component, fetches public non-expired events with ≥1 available for-rent booth; computes price range + categories per event
+- [x] `app/marketplace/MarketplaceClient.tsx` — search by title/venue, filter by event type / category / max price; event cards with booth count, price range, category pills, "View Booths" CTA
+- [x] Marketplace link in dashboard navbar (ShoppingBag icon)
 
+###  Option D — New ideas
+
+- [] Alignment tools — align selected elements left/center/right/top/middle/bottom, distribute evenly
+- [] Element locking — lock individual elements so they can't be accidentally moved
+- [] Canvas export — export the layout as PNG/PDF for sharing outside the app
+- [] Attendee view — separate public view mode showing seat assignments or booth directory
+
+- [] Notifications — email vendors when their bid is approved/rejected
+- [] Event analytics — views, bid conversion rates per booth
+- [x] Mobile — responsive public page for vendors browsing on phone
+- [] Booth floor plan improvements — dimensions in real units (ft/m), scale ruler overlay
 ---
 
 ## Review

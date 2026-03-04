@@ -19,6 +19,7 @@ interface CanvasStore {
   clipboard: CanvasElement | null
   scale: number
   panOffset: { x: number; y: number }
+  snapGuides: { x: number | null; y: number | null }
   past: CanvasElement[][]
   future: CanvasElement[][]
   setElements: (elements: CanvasElement[], skipHistory?: boolean) => void
@@ -34,6 +35,13 @@ interface CanvasStore {
   deleteSelectedElements: () => void
   setScale: (scale: number) => void
   setPanOffset: (offset: { x: number; y: number }) => void
+  setSnapGuides: (guides: { x: number | null; y: number | null }) => void
+  alignElements: (alignment: 'left' | 'center-h' | 'right' | 'top' | 'center-v' | 'bottom') => void
+  distributeElements: (direction: 'horizontal' | 'vertical') => void
+  bringToFront: (id: string) => void
+  bringForward: (id: string) => void
+  sendBackward: (id: string) => void
+  sendToBack: (id: string) => void
   clearCanvas: () => void
   resetView: () => void
   undo: () => void
@@ -53,6 +61,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   clipboard: null,
   scale: 1,
   panOffset: { x: 0, y: 0 },
+  snapGuides: { x: null, y: null },
   past: [],
   future: [],
   _pendingHistorySnapshot: null,
@@ -170,6 +179,107 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   setScale: (scale) => set({ scale }),
   setPanOffset: (offset) => set({ panOffset: offset }),
+  setSnapGuides: (guides) => set({ snapGuides: guides }),
+
+  alignElements: (alignment) =>
+    set((state) => {
+      if (state.selectedElements.length < 2) return state
+      const selected = state.elements.filter((el) => state.selectedElements.includes(el.id))
+      const minX = Math.min(...selected.map((el) => el.x))
+      const maxX = Math.max(...selected.map((el) => el.x + el.width))
+      const minY = Math.min(...selected.map((el) => el.y))
+      const maxY = Math.max(...selected.map((el) => el.y + el.height))
+      const centerX = (minX + maxX) / 2
+      const centerY = (minY + maxY) / 2
+      const updated = state.elements.map((el) => {
+        if (!state.selectedElements.includes(el.id)) return el
+        switch (alignment) {
+          case 'left':     return { ...el, x: minX }
+          case 'center-h': return { ...el, x: centerX - el.width / 2 }
+          case 'right':    return { ...el, x: maxX - el.width }
+          case 'top':      return { ...el, y: minY }
+          case 'center-v': return { ...el, y: centerY - el.height / 2 }
+          case 'bottom':   return { ...el, y: maxY - el.height }
+          default:         return el
+        }
+      })
+      return {
+        elements: updated,
+        past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+        future: [],
+      }
+    }),
+
+  distributeElements: (direction) =>
+    set((state) => {
+      if (state.selectedElements.length < 3) return state
+      const selected = state.elements.filter((el) => state.selectedElements.includes(el.id))
+      let updated: CanvasElement[]
+
+      if (direction === 'horizontal') {
+        const sorted = [...selected].sort((a, b) => a.x - b.x)
+        const totalSpan = sorted[sorted.length - 1].x + sorted[sorted.length - 1].width - sorted[0].x
+        const totalWidth = sorted.reduce((s, el) => s + el.width, 0)
+        const gap = (totalSpan - totalWidth) / (sorted.length - 1)
+        const positions = new Map<string, number>()
+        let cur = sorted[0].x
+        for (const el of sorted) { positions.set(el.id, cur); cur += el.width + gap }
+        updated = state.elements.map((el) =>
+          positions.has(el.id) ? { ...el, x: positions.get(el.id)! } : el
+        )
+      } else {
+        const sorted = [...selected].sort((a, b) => a.y - b.y)
+        const totalSpan = sorted[sorted.length - 1].y + sorted[sorted.length - 1].height - sorted[0].y
+        const totalHeight = sorted.reduce((s, el) => s + el.height, 0)
+        const gap = (totalSpan - totalHeight) / (sorted.length - 1)
+        const positions = new Map<string, number>()
+        let cur = sorted[0].y
+        for (const el of sorted) { positions.set(el.id, cur); cur += el.height + gap }
+        updated = state.elements.map((el) =>
+          positions.has(el.id) ? { ...el, y: positions.get(el.id)! } : el
+        )
+      }
+
+      return {
+        elements: updated,
+        past: [...state.past.slice(-MAX_HISTORY + 1), state.elements],
+        future: [],
+      }
+    }),
+
+  bringToFront: (id) =>
+    set((state) => {
+      const el = state.elements.find((e) => e.id === id)
+      if (!el) return state
+      const rest = state.elements.filter((e) => e.id !== id)
+      return { elements: [...rest, el], past: [...state.past.slice(-MAX_HISTORY + 1), state.elements], future: [] }
+    }),
+
+  bringForward: (id) =>
+    set((state) => {
+      const idx = state.elements.findIndex((e) => e.id === id)
+      if (idx < 0 || idx === state.elements.length - 1) return state
+      const els = [...state.elements]
+      ;[els[idx], els[idx + 1]] = [els[idx + 1], els[idx]]
+      return { elements: els, past: [...state.past.slice(-MAX_HISTORY + 1), state.elements], future: [] }
+    }),
+
+  sendBackward: (id) =>
+    set((state) => {
+      const idx = state.elements.findIndex((e) => e.id === id)
+      if (idx <= 0) return state
+      const els = [...state.elements]
+      ;[els[idx - 1], els[idx]] = [els[idx], els[idx - 1]]
+      return { elements: els, past: [...state.past.slice(-MAX_HISTORY + 1), state.elements], future: [] }
+    }),
+
+  sendToBack: (id) =>
+    set((state) => {
+      const el = state.elements.find((e) => e.id === id)
+      if (!el) return state
+      const rest = state.elements.filter((e) => e.id !== id)
+      return { elements: [el, ...rest], past: [...state.past.slice(-MAX_HISTORY + 1), state.elements], future: [] }
+    }),
 
   clearCanvas: () =>
     set((state) => ({

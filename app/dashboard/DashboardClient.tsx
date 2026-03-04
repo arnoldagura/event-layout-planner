@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, LogOut, Trash2, MapPin, Users, Calendar, Pencil, Globe } from 'lucide-react'
+import { Plus, LogOut, Trash2, MapPin, Users, Calendar, Pencil, Globe, Copy, ArrowUpDown, ShoppingBag } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
@@ -50,9 +50,28 @@ interface Event {
   capacity: number | null
   eventType: string | null
   isPublic: boolean
+  elements: { type: string }[]
   _count: {
     elements: number
   }
+}
+
+const TYPE_COLORS: Record<string, string> = {
+  stage:        'bg-blue-100 text-blue-700',
+  table:        'bg-amber-100 text-amber-700',
+  chair:        'bg-zinc-100 text-zinc-600',
+  booth:        'bg-teal-100 text-teal-700',
+  entrance:     'bg-emerald-100 text-emerald-700',
+  exit:         'bg-red-100 text-red-700',
+  restroom:     'bg-slate-100 text-slate-600',
+  bar:          'bg-orange-100 text-orange-700',
+  registration: 'bg-cyan-100 text-cyan-700',
+}
+
+function elementTypeSummary(elements: { type: string }[]) {
+  const counts: Record<string, number> = {}
+  for (const el of elements) counts[el.type] = (counts[el.type] ?? 0) + 1
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])
 }
 
 interface Props {
@@ -69,6 +88,10 @@ export function DashboardClient({ initialEvents, user }: Props) {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'event-date' | 'title'>('newest')
+  const [filterStatus, setFilterStatus] = useState<'all' | 'published' | 'unpublished'>('all')
+  const [filterType, setFilterType] = useState<string>('all')
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -144,13 +167,58 @@ export function DashboardClient({ initialEvents, user }: Props) {
     })
   }
 
+  const handleDuplicate = async (eventId: string) => {
+    setDuplicatingId(eventId)
+    try {
+      const res = await fetch(`/api/events/${eventId}/duplicate`, { method: 'POST' })
+      if (res.ok) {
+        const { event } = await res.json()
+        setEvents((prev) => [event, ...prev])
+        toast.success('Event duplicated')
+      } else {
+        toast.error('Failed to duplicate event')
+      }
+    } catch {
+      toast.error('An error occurred')
+    } finally {
+      setDuplicatingId(null)
+    }
+  }
+
+  // Derive filtered + sorted list (client-side, no extra fetch)
+  const visibleEvents = events
+    .filter((e) => {
+      if (filterStatus === 'published' && !e.isPublic) return false
+      if (filterStatus === 'unpublished' && e.isPublic) return false
+      if (filterType !== 'all' && e.eventType !== filterType) return false
+      return true
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest')     return new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+      if (sortBy === 'oldest')     return new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+      if (sortBy === 'event-date') return new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+      if (sortBy === 'title')      return a.title.localeCompare(b.title)
+      return 0
+    })
+
+  // Collect unique event types for the filter dropdown
+  const eventTypes = Array.from(new Set(events.map((e) => e.eventType).filter(Boolean))) as string[]
+
   return (
     <div className="min-h-screen bg-muted/30">
       <nav className="bg-background border-b">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex justify-between items-center h-14">
             <span className="text-lg font-semibold">Event Layout Planner</span>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/marketplace"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                Marketplace
+              </Link>
+              <span className="text-muted-foreground/40">|</span>
               <span className="text-sm text-muted-foreground">{user.name || user.email}</span>
               <Button
                 variant="ghost"
@@ -298,7 +366,65 @@ export function DashboardClient({ initialEvents, user }: Props) {
           </Dialog>
         </div>
 
-        {events.length === 0 ? (
+        {/* Sort / Filter bar */}
+        {events.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="h-8 w-36 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
+                <SelectItem value="event-date">By event date</SelectItem>
+                <SelectItem value="title">Title A–Z</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as typeof filterStatus)}>
+              <SelectTrigger className="h-8 w-36 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="unpublished">Unpublished</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {eventTypes.length > 1 && (
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="h-8 w-36 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  {eventTypes.map((t) => (
+                    <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {(filterStatus !== 'all' || filterType !== 'all') && (
+              <button
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+                onClick={() => { setFilterStatus('all'); setFilterType('all') }}
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        )}
+
+        {visibleEvents.length === 0 && events.length > 0 ? (
+          <Card className="text-center py-12">
+            <CardContent>
+              <p className="text-muted-foreground text-sm">No events match the current filters.</p>
+            </CardContent>
+          </Card>
+        ) : visibleEvents.length === 0 ? (
           <Card className="text-center py-16">
             <CardContent>
               <p className="text-muted-foreground mb-4">No events yet</p>
@@ -309,7 +435,7 @@ export function DashboardClient({ initialEvents, user }: Props) {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {events.map((event) => (
+            {visibleEvents.map((event) => (
               <Card key={event.id} className="group overflow-hidden">
                 <Link href={`/events/${event.id}`}>
                   <CardHeader className="pb-3">
@@ -354,45 +480,79 @@ export function DashboardClient({ initialEvents, user }: Props) {
                     </div>
                   </CardContent>
                 </Link>
-                <CardFooter className="border-t pt-3 flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">{event._count.elements} elements</span>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="text-muted-foreground hover:text-foreground"
-                      onClick={() => setEditingEvent(event)}
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="text-muted-foreground hover:text-destructive"
+                <CardFooter className="border-t pt-3 flex flex-col gap-2">
+                  {/* Element type breakdown */}
+                  {event._count.elements > 0 ? (
+                    <div className="flex flex-wrap gap-1 w-full">
+                      {elementTypeSummary(event.elements).slice(0, 4).map(([type, count]) => (
+                        <span
+                          key={type}
+                          className={`text-[10px] font-medium px-1.5 py-0.5 rounded capitalize ${TYPE_COLORS[type] ?? 'bg-zinc-100 text-zinc-600'}`}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete &quot;{event.title}&quot;? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(event.id)}
-                            className="bg-destructive text-white hover:bg-destructive/90"
+                          {count}× {type}
+                        </span>
+                      ))}
+                      {elementTypeSummary(event.elements).length > 4 && (
+                        <span className="text-[10px] text-muted-foreground px-1">
+                          +{elementTypeSummary(event.elements).length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground w-full">No elements yet</span>
+                  )}
+
+                  {/* Actions row */}
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-xs text-muted-foreground">{event._count.elements} elements</span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-muted-foreground hover:text-foreground"
+                        disabled={duplicatingId === event.id}
+                        onClick={(e) => { e.preventDefault(); handleDuplicate(event.id) }}
+                        title="Duplicate event"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={() => setEditingEvent(event)}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-muted-foreground hover:text-destructive"
                           >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete &quot;{event.title}&quot;? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(event.id)}
+                              className="bg-destructive text-white hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </CardFooter>
               </Card>

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
-  const { elements, addElement, selectElement, scale, panOffset, setPanOffset, setScale } = useCanvasStore()
+  const { elements, addElement, selectElement, scale, panOffset, setPanOffset, setScale, snapGuides } = useCanvasStore()
   const containerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
 
@@ -219,6 +219,34 @@ export const EventCanvas: React.FC<Props> = ({ showGrid = true }) => {
         {elements.map((element) => (
           <CanvasElement key={element.id} element={element} />
         ))}
+
+        {/* Snap guide lines */}
+        {snapGuides.x !== null && (
+          <div
+            style={{
+              position: 'absolute', top: 0, bottom: 0,
+              left: snapGuides.x,
+              width: 1,
+              background: '#3b82f6',
+              opacity: 0.7,
+              pointerEvents: 'none',
+              zIndex: 50,
+            }}
+          />
+        )}
+        {snapGuides.y !== null && (
+          <div
+            style={{
+              position: 'absolute', left: 0, right: 0,
+              top: snapGuides.y,
+              height: 1,
+              background: '#3b82f6',
+              opacity: 0.7,
+              pointerEvents: 'none',
+              zIndex: 50,
+            }}
+          />
+        )}
       </div>
 
       {/* Controls hint */}

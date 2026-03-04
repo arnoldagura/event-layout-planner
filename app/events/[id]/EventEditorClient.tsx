@@ -29,6 +29,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { EventCanvas } from '@/components/canvas/EventCanvas';
 import { ElementToolbar } from '@/components/canvas/ElementToolbar';
+import { AlignmentToolbar } from '@/components/canvas/AlignmentToolbar';
 import { AISuggestionPanel } from '@/components/canvas/AISuggestionPanel';
 import { VersionHistoryPanel } from '@/components/layout/VersionHistoryPanel';
 import { BidsPanel } from '@/components/layout/BidsPanel';
@@ -512,6 +513,7 @@ export function EventEditorClient({ event }: Props) {
         <div className='flex-1 flex overflow-hidden'>
           <ElementToolbar />
           <div className='flex-1 overflow-auto relative'>
+            <AlignmentToolbar />
             <EventCanvas showGrid={showGrid} />
 
             {elements.length === 0 && (
