@@ -140,7 +140,7 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
   }
 
   const applySuggestion = async () => {
-    if (suggestion?.elements) {
+    if (suggestion?.elements && suggestion.elements.length > 0) {
       const hasNoSavedElements = elements.length === 0
 
       const canvasWidth = 2000
@@ -160,6 +160,8 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
       const centered = suggestion.elements.map((el, index) => ({
         ...el,
         id: el.id || `ai-element-${Date.now()}-${index}`,
+        x: el.x + offsetX,
+        y: el.y + offsetY,
       }))
 
       const elementsWithIds = resolveOverlaps(centered)

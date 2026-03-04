@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useState, useRef } from 'react'
 import { useCanvasStore, type CanvasElement as CanvasElementType } from '@/lib/store'
@@ -18,7 +18,7 @@ import { MdTableRestaurant } from 'react-icons/md'
 
 
 interface Props {
-  element: CanvasElementType
+  element: CanvasElementType;
 }
 
 type ResizeHandle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
@@ -256,7 +256,7 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
       if (e.shiftKey) newRotation = Math.round(newRotation / 15) * 15
       updateElementSilent(element.id, { rotation: newRotation })
     }
-  }
+  };
 
   const handleMouseUp = () => {
     setPendingDrag(false)
@@ -272,9 +272,9 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
       window.addEventListener('mousemove', handleMouseMove)
       window.addEventListener('mouseup', handleMouseUp)
       return () => {
-        window.removeEventListener('mousemove', handleMouseMove)
-        window.removeEventListener('mouseup', handleMouseUp)
-      }
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
     }
   }, [isDragging, isResizing, pendingDrag, isRotating, dragStart, resizeStart, rotateStart])
 
@@ -448,5 +448,5 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};

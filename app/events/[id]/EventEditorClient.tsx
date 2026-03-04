@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -17,7 +17,6 @@ import {
   MapPin,
   Users,
   Maximize,
-  Trash2,
   Undo2,
   Redo2,
   Pencil,
@@ -99,6 +98,8 @@ export function EventEditorClient({ event }: Props) {
     setElements,
     scale,
     setScale,
+    panOffset,
+    setPanOffset,
     clearCanvas,
     resetView,
     undo,
@@ -263,15 +264,23 @@ export function EventEditorClient({ event }: Props) {
               <TooltipContent side='bottom'>Back to Dashboard</TooltipContent>
             </Tooltip>
 
-            <Separator orientation='vertical' className='h-6' />
+            <Separator
+              orientation='vertical'
+              className='h-6'
+            />
 
             <div className='flex items-center gap-3'>
               <div>
                 <div className='flex items-center gap-2'>
-                  <h1 className='font-semibold text-zinc-900'>{event.title}</h1>
-                  {event.eventType && (
-                    <Badge variant='secondary' className='text-xs capitalize'>
-                      {event.eventType}
+                  <h1 className='font-semibold text-zinc-900'>
+                    {currentEvent.title}
+                  </h1>
+                  {currentEvent.eventType && (
+                    <Badge
+                      variant='secondary'
+                      className='text-xs capitalize'
+                    >
+                      {currentEvent.eventType}
                     </Badge>
                   )}
                   {hasUnsavedChanges && (
@@ -282,24 +291,35 @@ export function EventEditorClient({ event }: Props) {
                       Unsaved
                     </Badge>
                   )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setIsEditDialogOpen(true)}
+                        className='p-1 rounded text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 transition-colors'
+                      >
+                        <Pencil className='w-3.5 h-3.5' />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit Event Details</TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className='flex items-center gap-3 text-xs text-zinc-500'>
-                  {event.eventDate && (
+                  {currentEvent.eventDate && (
                     <span className='flex items-center gap-1'>
                       <Calendar className='w-3 h-3' />
-                      {format(new Date(event.eventDate), 'MMM d, yyyy')}
+                      {format(new Date(currentEvent.eventDate), 'MMM d, yyyy')}
                     </span>
                   )}
-                  {event.venue && (
+                  {currentEvent.venue && (
                     <span className='flex items-center gap-1'>
                       <MapPin className='w-3 h-3' />
-                      {event.venue}
+                      {currentEvent.venue}
                     </span>
                   )}
-                  {event.capacity && (
+                  {currentEvent.capacity && (
                     <span className='flex items-center gap-1'>
                       <Users className='w-3 h-3' />
-                      {event.capacity} guests
+                      {currentEvent.capacity} guests
                     </span>
                   )}
                 </div>
@@ -393,7 +413,10 @@ export function EventEditorClient({ event }: Props) {
               <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
             </Tooltip>
 
-            <Separator orientation='vertical' className='h-5 mx-1' />
+            <Separator
+              orientation='vertical'
+              className='h-5 mx-1'
+            />
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -413,12 +436,12 @@ export function EventEditorClient({ event }: Props) {
                 <Button
                   variant='ghost'
                   size='icon-sm'
-                  onClick={resetView}
+                  onClick={handleResetView}
                 >
                   <Maximize className='w-4 h-4' />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Reset View (100%)</TooltipContent>
+              <TooltipContent>Center on Layout</TooltipContent>
             </Tooltip>
           </div>
 
@@ -428,7 +451,7 @@ export function EventEditorClient({ event }: Props) {
                 <Button
                   variant='ghost'
                   size='icon-sm'
-                  onClick={() => setScale(Math.max(0.5, scale - 0.1))}
+                  onClick={() => handleZoom(scale - 0.1)}
                   disabled={scale <= 0.5}
                 >
                   <ZoomOut className='w-4 h-4' />
@@ -441,7 +464,7 @@ export function EventEditorClient({ event }: Props) {
               {zoomPresets.map((preset) => (
                 <button
                   key={preset}
-                  onClick={() => setScale(preset / 100)}
+                  onClick={() => handleZoom(preset / 100)}
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     Math.round(scale * 100) === preset
                       ? 'bg-white text-zinc-900 shadow-sm font-medium'
@@ -458,7 +481,7 @@ export function EventEditorClient({ event }: Props) {
                 <Button
                   variant='ghost'
                   size='icon-sm'
-                  onClick={() => setScale(Math.min(2, scale + 0.1))}
+                  onClick={() => handleZoom(scale + 0.1)}
                   disabled={scale >= 2}
                 >
                   <ZoomIn className='w-4 h-4' />
