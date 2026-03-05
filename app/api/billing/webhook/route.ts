@@ -22,7 +22,11 @@ export async function POST(req: NextRequest) {
       const userId = cs.metadata?.userId
       if (!userId || !cs.subscription) break
       const stripeSub = await stripe.subscriptions.retrieve(cs.subscription as string)
-      const sub = stripeSub as unknown as { id: string; items: { data: Array<{ price: { id: string } }> }; current_period_end: number }
+      const sub = stripeSub as unknown as {
+        id: string
+        items: { data: Array<{ price: { id: string } }> }
+        current_period_end: number
+      }
       await prisma.subscription.upsert({
         where: { userId },
         update: {
@@ -47,13 +51,19 @@ export async function POST(req: NextRequest) {
 
     case "customer.subscription.updated": {
       const stripeSub = event.data.object as Stripe.Subscription
-      const rawSub = stripeSub as unknown as { id: string; status: string; current_period_end?: number }
+      const rawSub = stripeSub as unknown as {
+        id: string
+        status: string
+        current_period_end?: number
+      }
       await prisma.subscription.updateMany({
         where: { stripeSubscriptionId: rawSub.id },
         data: {
           status: rawSub.status,
           plan: rawSub.status === "active" ? "pro" : "free",
-          currentPeriodEnd: rawSub.current_period_end ? new Date(rawSub.current_period_end * 1000) : null,
+          currentPeriodEnd: rawSub.current_period_end
+            ? new Date(rawSub.current_period_end * 1000)
+            : null,
         },
       })
       break

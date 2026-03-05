@@ -1,35 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import {
-  Plus,
-  LogOut,
-  Trash2,
-  MapPin,
-  Users,
-  Calendar,
-  Pencil,
-  Globe,
-  Copy,
-  ArrowUpDown,
-  ShoppingBag,
-  Zap,
-} from "lucide-react"
+import { LogOut, Trash2, Copy, Plus, Terminal, Cpu, Database } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { format } from "date-fns"
 import { toast } from "sonner"
-import { Cormorant_Garamond } from "next/font/google"
-
-const playfair = Cormorant_Garamond({ subsets: ["latin"], weight: ["700"] })
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -72,42 +53,6 @@ interface Event {
   }
 }
 
-// Time slots for the styled time selects (6 AM – 11:30 PM in 30-min increments)
-function buildTimeSlots() {
-  const slots: { value: string; label: string }[] = []
-  for (let h = 0; h < 24; h++) {
-    for (const m of [0, 30]) {
-      const hh = String(h).padStart(2, "0")
-      const mm = String(m).padStart(2, "0")
-      const value = `${hh}:${mm}`
-      const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h
-      const ampm = h < 12 ? "AM" : "PM"
-      const label = `${hour12}:${mm} ${ampm}`
-      slots.push({ value, label })
-    }
-  }
-  return slots
-}
-const TIME_SLOTS = buildTimeSlots()
-
-const TYPE_COLORS: Record<string, string> = {
-  stage: "bg-blue-100 text-blue-700",
-  table: "bg-amber-100 text-amber-700",
-  chair: "bg-zinc-100 text-zinc-600",
-  booth: "bg-teal-100 text-teal-700",
-  entrance: "bg-emerald-100 text-emerald-700",
-  exit: "bg-red-100 text-red-700",
-  restroom: "bg-slate-100 text-slate-600",
-  bar: "bg-orange-100 text-orange-700",
-  registration: "bg-cyan-100 text-cyan-700",
-}
-
-function elementTypeSummary(elements: { type: string }[]) {
-  const counts: Record<string, number> = {}
-  for (const el of elements) counts[el.type] = (counts[el.type] ?? 0) + 1
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])
-}
-
 interface Props {
   initialEvents: Event[]
   user: {
@@ -123,10 +68,9 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
-  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "event-date" | "title">("newest")
-  const [filterStatus, setFilterStatus] = useState<"all" | "published" | "unpublished">("all")
-  const [filterType, setFilterType] = useState<string>("all")
-  const [duplicatingId, setDuplicatingId] = useState<string | null>(null)
+
+  // Removed timeStr state and effect per user request
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -139,32 +83,26 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
     eventType: "conference",
   })
 
+  // Data fetching / Mutations
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsCreating(true)
-
     try {
       const response = await fetch("/api/events", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
-
       const data = await response.json()
-
       if (response.ok) {
         setShowCreateModal(false)
-        toast.success("Event created successfully")
         router.push(`/events/${data.event.id}`)
         router.refresh()
       } else {
         toast.error(data.error || "Failed to create event")
       }
     } catch (error) {
-      console.error("Failed to create event:", error)
-      toast.error("An error occurred while creating the event")
+      toast.error("An error occurred")
     } finally {
       setIsCreating(false)
     }
@@ -172,23 +110,31 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
 
   const handleDelete = async (eventId: string) => {
     try {
-      const response = await fetch(`/api/events/${eventId}`, {
-        method: "DELETE",
-      })
+      const response = await fetch(`/api/events/${eventId}`, { method: "DELETE" })
       if (response.ok) {
         setEvents((prev) => prev.filter((e) => e.id !== eventId))
-        toast.success("Event deleted successfully")
+        toast.success("Event deleted")
       } else {
         toast.error("Failed to delete event")
       }
     } catch (error) {
-      console.error("Failed to delete event:", error)
-      toast.error("An error occurred while deleting the event")
+      toast.error("An error occurred")
     }
   }
 
-  const handleEventUpdated = (updated: Event) => {
-    setEvents((prev) => prev.map((e) => (e.id === updated.id ? { ...e, ...updated } : e)))
+  const handleDuplicate = async (eventId: string) => {
+    try {
+      const res = await fetch(`/api/events/${eventId}/duplicate`, { method: "POST" })
+      if (res.ok) {
+        const { event } = await res.json()
+        setEvents((prev) => [event, ...prev])
+        toast.success("Event duplicated")
+      } else {
+        toast.error("Failed to duplicate event")
+      }
+    } catch {
+      toast.error("An error occurred")
+    }
   }
 
   const resetForm = () => {
@@ -205,503 +151,378 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
     })
   }
 
-  const handleDuplicate = async (eventId: string) => {
-    setDuplicatingId(eventId)
-    try {
-      const res = await fetch(`/api/events/${eventId}/duplicate`, { method: "POST" })
-      if (res.ok) {
-        const { event } = await res.json()
-        setEvents((prev) => [event, ...prev])
-        toast.success("Event duplicated")
-      } else {
-        toast.error("Failed to duplicate event")
-      }
-    } catch {
-      toast.error("An error occurred")
-    } finally {
-      setDuplicatingId(null)
-    }
-  }
-
-  // Derive filtered + sorted list (client-side, no extra fetch)
-  const visibleEvents = events
-    .filter((e) => {
-      if (filterStatus === "published" && !e.isPublic) return false
-      if (filterStatus === "unpublished" && e.isPublic) return false
-      if (filterType !== "all" && e.eventType !== filterType) return false
-      return true
-    })
-    .sort((a, b) => {
-      if (sortBy === "newest")
-        return new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
-      if (sortBy === "oldest")
-        return new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-      if (sortBy === "event-date")
-        return new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-      if (sortBy === "title") return a.title.localeCompare(b.title)
-      return 0
-    })
-
-  // Collect unique event types for the filter dropdown
-  const eventTypes = Array.from(new Set(events.map((e) => e.eventType).filter(Boolean))) as string[]
-
   return (
-    <div className="min-h-screen bg-muted/30">
-      <nav className="border-b bg-zinc-950">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="flex h-14 items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-amber-500">
-                <span className="text-sm font-bold text-white">E</span>
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f8f8f8] font-sans text-black selection:bg-black selection:text-white">
+      {/* Top Navigation Bar */}
+      <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[#d4d4d8] bg-white px-6 font-mono text-[10px] tracking-widest uppercase">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center bg-black text-sm leading-none font-bold tracking-tighter text-white shadow-sm">
+              V
+            </div>
+            <div className="hidden sm:block">
+              <div className="mb-1 font-mono text-[9px] leading-none tracking-[0.2em] text-[#999] uppercase">
+                Event Layout
               </div>
-              <span className={`${playfair.className} text-lg font-bold text-white`}>
-                EventPlanner
-              </span>
-              {plan === "pro" && (
-                <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400">
-                  Pro
-                </span>
-              )}
+              <div className="text-sm leading-none font-bold tracking-tight uppercase">Planner</div>
             </div>
-            <div className="flex items-center gap-3">
-              <Link
-                href="/marketplace"
-                className="flex items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-white"
-              >
-                <ShoppingBag className="h-4 w-4" />
-                Marketplace
-              </Link>
-              <span className="text-zinc-700">|</span>
-              <span className="text-sm text-zinc-400">{user.name || user.email}</span>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-zinc-400 hover:bg-zinc-800 hover:text-white"
-                onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+          </Link>
 
-      {plan === "free" && (
-        <div className="border-b bg-amber-50">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2.5">
-            <p className="text-sm text-amber-800">
-              <span className="font-semibold">Free plan</span> &mdash;{" "}
-              {events.length}/3 events used. Unlock unlimited events, AI layouts, version history,
-              and more.
-            </p>
-            <Link href="/pricing">
-              <Button size="sm" className="gap-1.5 bg-amber-500 hover:bg-amber-400 text-white">
-                <Zap className="h-3.5 w-3.5" />
-                Upgrade to Pro
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
+          <div className="hidden h-6 w-[1px] bg-[#d4d4d8] md:block" />
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Events</h1>
-          <Dialog
-            open={showCreateModal}
-            onOpenChange={(open) => {
-              setShowCreateModal(open)
-              if (!open) resetForm()
-            }}
-          >
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4" />
-                New Event
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-lg font-semibold">Create New Event</DialogTitle>
-                <p className="text-sm text-zinc-500">Fill in the details to get started with your event layout.</p>
-              </DialogHeader>
-              <form onSubmit={handleSubmit} className="mt-2 space-y-5">
-
-                {/* Basic info */}
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="title" className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Event Name *</Label>
-                    <Input
-                      id="title"
-                      required
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Annual Conference 2025"
-                      className="h-10"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="eventType" className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Event Type</Label>
-                    <Select
-                      value={formData.eventType}
-                      onValueChange={(value) => setFormData({ ...formData, eventType: value })}
-                    >
-                      <SelectTrigger id="eventType" className="h-10">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="conference">Conference</SelectItem>
-                        <SelectItem value="wedding">Wedding</SelectItem>
-                        <SelectItem value="concert">Concert</SelectItem>
-                        <SelectItem value="exhibition">Exhibition</SelectItem>
-                        <SelectItem value="corporate">Corporate</SelectItem>
-                        <SelectItem value="party">Party</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="description" className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      rows={2}
-                      placeholder="Optional — describe your event"
-                      className="resize-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Date &amp; Time</p>
-
-                  {/* Date range */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="eventDate" className="text-xs text-zinc-500">Start Date *</Label>
-                      <Input
-                        id="eventDate"
-                        type="date"
-                        required
-                        value={formData.eventDate}
-                        onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                        className="h-10"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="endDate" className="text-xs text-zinc-500">End Date</Label>
-                      <Input
-                        id="endDate"
-                        type="date"
-                        value={formData.endDate}
-                        min={formData.eventDate || undefined}
-                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                        className="h-10"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Time range */}
-                  <div className="mt-3 grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-zinc-500">Start Time</Label>
-                      <Select
-                        value={formData.startTime}
-                        onValueChange={(v) => setFormData({ ...formData, startTime: v })}
-                      >
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Select time" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-52">
-                          {TIME_SLOTS.map((slot) => (
-                            <SelectItem key={slot.value} value={slot.value}>
-                              {slot.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-zinc-500">End Time</Label>
-                      <Select
-                        value={formData.endTime}
-                        onValueChange={(v) => setFormData({ ...formData, endTime: v })}
-                      >
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder="Select time" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-52">
-                          {TIME_SLOTS.map((slot) => (
-                            <SelectItem key={slot.value} value={slot.value}>
-                              {slot.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Venue & capacity */}
-                <div className="border-t pt-4">
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Venue &amp; Capacity</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-2 space-y-1.5">
-                      <Label htmlFor="venue" className="text-xs text-zinc-500">Venue</Label>
-                      <Input
-                        id="venue"
-                        value={formData.venue}
-                        onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                        placeholder="Grand Ballroom, City Hotel"
-                        className="h-10"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="capacity" className="text-xs text-zinc-500">Capacity</Label>
-                      <Input
-                        id="capacity"
-                        type="number"
-                        min="1"
-                        value={formData.capacity}
-                        onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                        placeholder="250"
-                        className="h-10"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 border-t pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setShowCreateModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" className="flex-1 bg-zinc-900 hover:bg-zinc-700" disabled={isCreating}>
-                    {isCreating ? "Creating..." : "Create Event"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Sort / Filter bar */}
-        {events.length > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="h-8 w-36 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest first</SelectItem>
-                <SelectItem value="oldest">Oldest first</SelectItem>
-                <SelectItem value="event-date">By event date</SelectItem>
-                <SelectItem value="title">Title A–Z</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filterStatus}
-              onValueChange={(v) => setFilterStatus(v as typeof filterStatus)}
+          <nav className="flex items-center gap-6">
+            <Link
+              href="/dashboard"
+              className="group relative flex items-center gap-2 font-bold tracking-widest text-black uppercase"
             >
-              <SelectTrigger className="h-8 w-36 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-                <SelectItem value="unpublished">Unpublished</SelectItem>
-              </SelectContent>
-            </Select>
+              <Database className="h-3.5 w-3.5" />
+              <span>Events</span>
+              <div className="absolute -bottom-[19px] left-0 h-[2px] w-full bg-black" />
+            </Link>
+            <Link
+              href="/marketplace"
+              className="group flex items-center gap-2 tracking-widest text-[#666] uppercase transition-colors hover:text-black"
+            >
+              <Cpu className="h-3.5 w-3.5 transition-colors group-hover:text-black" />
+              <span>Marketplace</span>
+            </Link>
+          </nav>
+        </div>
 
-            {eventTypes.length > 1 && (
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="h-8 w-36 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All types</SelectItem>
-                  {eventTypes.map((t) => (
-                    <SelectItem key={t} value={t} className="capitalize">
-                      {t}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-
-            {(filterStatus !== "all" || filterType !== "all") && (
-              <button
-                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
-                onClick={() => {
-                  setFilterStatus("all")
-                  setFilterType("all")
-                }}
-              >
-                Clear filters
-              </button>
-            )}
+        <div className="flex items-center gap-6">
+          <div className="hidden items-center gap-2 md:flex">
+            <span className="text-[#999]">PLAN:</span>
+            <span
+              className={`border px-1.5 py-0.5 font-bold ${plan === "pro" ? "border-[#ffb300] bg-[#fffdf0] text-[#ffb300]" : "border-[#666] text-[#333]"} tracking-widest`}
+            >
+              {plan}
+            </span>
           </div>
-        )}
+          <div className="hidden items-center gap-2 sm:flex">
+            <span className="text-[#999]">USER:</span>
+            <span className="max-w-[120px] truncate border-b border-black font-bold text-black select-all lg:max-w-none">
+              {user.email || user.name}
+            </span>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+            className="flex items-center gap-2 border-l border-[#d4d4d8] py-1 pl-2 tracking-widest text-[#999] uppercase transition-colors hover:text-[#cc0000]"
+            title="Log Out"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden lg:inline">LOG OUT</span>
+          </button>
+        </div>
+      </header>
 
-        {visibleEvents.length === 0 && events.length > 0 ? (
-          <Card className="py-12 text-center">
-            <CardContent>
-              <p className="text-sm text-muted-foreground">No events match the current filters.</p>
-            </CardContent>
-          </Card>
-        ) : visibleEvents.length === 0 ? (
-          <Card className="py-16 text-center">
-            <CardContent>
-              <p className="mb-4 text-muted-foreground">No events yet</p>
-              <Button variant="link" onClick={() => setShowCreateModal(true)}>
-                Create your first event
+      {/* Dashboard Canvas */}
+      <main className="relative w-full flex-1 overflow-y-auto p-8">
+        <div className="mx-auto max-w-6xl">
+          {/* Header Area */}
+          <div className="mb-8 flex items-center justify-between border-b border-black pb-4">
+            <div>
+              <h1 className="mb-1 text-3xl font-bold tracking-tighter uppercase">Events</h1>
+              <p className="font-mono text-xs tracking-widest text-[#666] uppercase">
+                Total Events: {events.length} {plan === "free" && `(MAX 3)`}
+              </p>
+            </div>
+
+            {/* Initialize Dialog */}
+            <Dialog
+              open={showCreateModal}
+              onOpenChange={(open) => {
+                setShowCreateModal(open)
+                if (!open) resetForm()
+              }}
+            >
+              <DialogTrigger asChild>
+                <Button className="h-10 rounded-none border border-black bg-black px-5 font-mono text-xs tracking-widest text-white uppercase shadow-none transition-all hover:bg-[#333] hover:shadow-[2px_2px_0px_rgba(0,0,0,0.2)]">
+                  + Create Event
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-xl overflow-hidden rounded-none border-2 border-black p-0 shadow-[8px_8px_0_0_rgba(0,0,0,0.1)]">
+                <div className="flex items-center justify-between border-b border-black bg-black px-6 py-4 text-white">
+                  <DialogTitle className="font-mono text-sm tracking-widest uppercase">
+                    New Event
+                  </DialogTitle>
+                  <Terminal className="h-4 w-4 text-[#ffb300]" />
+                </div>
+                <div className="max-h-[80vh] overflow-y-auto bg-white px-6 py-6">
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                          Event Name *
+                        </label>
+                        <Input
+                          required
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                          className="h-10 rounded-none border-black font-mono text-sm placeholder:text-[#ccc] focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0"
+                          placeholder="Annual Tech Conference 2026"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                          Type
+                        </label>
+                        <Select
+                          value={formData.eventType}
+                          onValueChange={(value) => setFormData({ ...formData, eventType: value })}
+                        >
+                          <SelectTrigger className="h-10 rounded-none border-black font-mono text-sm uppercase">
+                            <SelectValue placeholder="SELECT TYPE" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-none border-black font-mono text-xs uppercase">
+                            {[
+                              "conference",
+                              "wedding",
+                              "concert",
+                              "exhibition",
+                              "corporate",
+                              "party",
+                            ].map((t) => (
+                              <SelectItem
+                                key={t}
+                                value={t}
+                                className="cursor-pointer rounded-none focus:bg-black focus:text-white"
+                              >
+                                {t}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 border-t border-[#d4d4d8] pt-4">
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                          Start Date *
+                        </label>
+                        <Input
+                          type="date"
+                          required
+                          value={formData.eventDate}
+                          onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                          className="h-10 rounded-none border-black font-mono text-sm"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                          End Date
+                        </label>
+                        <Input
+                          type="date"
+                          value={formData.endDate}
+                          min={formData.eventDate || undefined}
+                          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                          className="h-10 rounded-none border-black font-mono text-sm"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                          Start Time
+                        </label>
+                        <Input
+                          type="time"
+                          value={formData.startTime}
+                          onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                          className="h-10 rounded-none border-black font-mono text-sm"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                          End Time
+                        </label>
+                        <Input
+                          type="time"
+                          value={formData.endTime}
+                          onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                          className="h-10 rounded-none border-black font-mono text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 border-t border-[#d4d4d8] pt-4">
+                      <div className="col-span-1 space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                          Venue
+                        </label>
+                        <Input
+                          value={formData.venue}
+                          onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                          className="h-10 rounded-none border-black font-mono text-sm uppercase"
+                          placeholder="Grand Hall A"
+                        />
+                      </div>
+                      <div className="col-span-1 space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                          Capacity
+                        </label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={formData.capacity}
+                          onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                          className="h-10 w-full rounded-none border-black font-mono text-sm uppercase"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 border-t border-[#d4d4d8] pt-6">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-10 flex-1 rounded-none border-black font-mono text-xs tracking-widest text-black uppercase"
+                        onClick={() => setShowCreateModal(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="h-10 flex-1 rounded-none border border-black bg-black font-mono text-xs tracking-widest text-white uppercase shadow-[2px_2px_0px_#000] transition-all hover:bg-black hover:text-[#0055ff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                        disabled={isCreating}
+                      >
+                        {isCreating ? "Saving..." : "Create Event"}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Grid display */}
+          {events.length === 0 ? (
+            <div className="flex flex-col items-center justify-center border border-dashed border-[#ccc] bg-white p-12 text-center">
+              <Terminal className="mb-4 h-8 w-8 text-[#ccc]" />
+              <p className="mb-6 font-mono text-sm tracking-widest text-[#999] uppercase">
+                No events found.
+              </p>
+              <Button
+                variant="outline"
+                className="rounded-none border-black font-mono text-xs tracking-widest uppercase"
+                onClick={() => setShowCreateModal(true)}
+              >
+                Create Your First Event
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {visibleEvents.map((event) => (
-              <Card key={event.id} className="group overflow-hidden">
-                <Link href={`/events/${event.id}`}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-medium transition-colors group-hover:text-muted-foreground">
-                        {event.title}
-                      </h3>
-                      <div className="flex items-center gap-1.5">
-                        {event.isPublic && (
-                          <Badge className="flex items-center gap-1 border-emerald-200 bg-emerald-50 text-xs text-emerald-700">
-                            <Globe className="h-3 w-3" />
-                            Published
-                          </Badge>
-                        )}
-                        <Badge variant="secondary">{event.eventType}</Badge>
-                      </div>
-                    </div>
-                    {event.description && (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {event.description}
-                      </p>
-                    )}
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <div className="space-y-1.5 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3.5 w-3.5" />
-                        <span>{format(new Date(event.eventDate), "MMM d, yyyy")}</span>
-                      </div>
-                      {event.venue && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-3.5 w-3.5" />
-                          <span>{event.venue}</span>
-                        </div>
-                      )}
-                      {event.capacity && (
-                        <div className="flex items-center gap-2">
-                          <Users className="h-3.5 w-3.5" />
-                          <span>{event.capacity} people</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Link>
-                <CardFooter className="flex flex-col gap-2 border-t pt-3">
-                  {/* Element type breakdown */}
-                  {event._count.elements > 0 ? (
-                    <div className="flex w-full flex-wrap gap-1">
-                      {elementTypeSummary(event.elements)
-                        .slice(0, 4)
-                        .map(([type, count]) => (
-                          <span
-                            key={type}
-                            className={`rounded px-1.5 py-0.5 text-[10px] font-medium capitalize ${TYPE_COLORS[type] ?? "bg-zinc-100 text-zinc-600"}`}
-                          >
-                            {count}× {type}
-                          </span>
-                        ))}
-                      {elementTypeSummary(event.elements).length > 4 && (
-                        <span className="px-1 text-[10px] text-muted-foreground">
-                          +{elementTypeSummary(event.elements).length - 4} more
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="w-full text-xs text-muted-foreground">No elements yet</span>
-                  )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {events.map((event) => (
+                <div
+                  key={event.id}
+                  className="group flex flex-col border border-[#cccccc] bg-white shadow-sm transition-colors hover:border-black"
+                >
+                  {/* Top status line */}
+                  <div
+                    className={`h-1 w-full ${event.isPublic ? "bg-[#009944]" : "bg-[#e0e0e0] group-hover:bg-[#0055ff]"}`}
+                  />
 
-                  {/* Actions row */}
-                  <div className="flex w-full items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      {event._count.elements} elements
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-muted-foreground hover:text-foreground"
-                        disabled={duplicatingId === event.id}
-                        onClick={(e) => {
-                          e.preventDefault()
-                          handleDuplicate(event.id)
-                        }}
-                        title="Duplicate event"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-muted-foreground hover:text-foreground"
-                        onClick={() => setEditingEvent(event)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete &quot;{event.title}&quot;? This action
-                              cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <Link href={`/events/${event.id}`} className="block flex-1 p-5">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div className="mb-1 max-w-[80%] overflow-hidden font-mono text-[10px] tracking-widest text-ellipsis whitespace-nowrap text-[#666] uppercase">
+                        ID: {event.id.split("-")[0]}
+                      </div>
+                      {event.isPublic && (
+                        <div
+                          className="h-2 w-2 rounded-full bg-[#009944] shadow-[0_0_8px_#009944]"
+                          title="Published"
+                        />
+                      )}
+                    </div>
+                    <h3 className="mb-4 line-clamp-2 text-lg font-bold tracking-tight uppercase transition-colors group-hover:text-[#0055ff]">
+                      {event.title}
+                    </h3>
+
+                    <div className="my-4 h-[1px] w-full bg-[#f0f0f0]" />
+
+                    <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-2 font-mono text-xs">
+                      <span className="text-[10px] tracking-widest text-[#999] uppercase">
+                        DATE
+                      </span>
+                      <span className="text-right font-medium">
+                        {format(new Date(event.eventDate), "yyyy.MM.dd")}
+                      </span>
+
+                      <span className="text-[10px] tracking-widest text-[#999] uppercase">
+                        TYPE
+                      </span>
+                      <span className="truncate text-right">
+                        {event.eventType?.toUpperCase() || "UNKNOWN"}
+                      </span>
+
+                      <span className="text-[10px] tracking-widest text-[#999] uppercase">
+                        ELEMENTS
+                      </span>
+                      <span className="text-right font-medium">{event._count.elements}</span>
+                    </div>
+                  </Link>
+
+                  {/* Actions Bar */}
+                  <div className="flex h-10 divide-x divide-[#e0e0e0] border-t border-[#e0e0e0] bg-[#fdfdfd]">
+                    <Link
+                      href={`/events/${event.id}`}
+                      className="flex flex-1 items-center justify-center font-mono text-[10px] tracking-widest text-[#666] uppercase transition-colors hover:bg-black hover:text-white"
+                    >
+                      OPEN
+                    </Link>
+                    <button
+                      onClick={() => handleDuplicate(event.id)}
+                      className="flex w-10 items-center justify-center text-[#999] transition-colors hover:bg-[#f0f0f0]"
+                      title="Duplicate"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="flex w-10 items-center justify-center text-[#999] transition-colors hover:bg-[#ffcccc] hover:text-[#cc0000]"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="max-w-md overflow-hidden rounded-none border-2 border-black p-0 shadow-[8px_8px_0_0_rgba(0,0,0,0.1)]">
+                        <div className="border-b border-black bg-[#cc0000] px-5 py-3 text-white">
+                          <AlertDialogTitle className="font-mono text-xs font-bold tracking-widest uppercase">
+                            Delete Event
+                          </AlertDialogTitle>
+                        </div>
+                        <div className="bg-white p-6">
+                          <AlertDialogDescription className="mb-6 font-mono text-sm text-black">
+                            Are you sure you want to delete "{event.title.toUpperCase()}"?
+                            <br />
+                            <br />
+                            <span className="text-[#666]">
+                              This action cannot be undone. All event elements and data will be
+                              removed.
+                            </span>
+                          </AlertDialogDescription>
+                          <AlertDialogFooter className="space-x-4 sm:space-x-4">
+                            <AlertDialogCancel className="mt-0 h-10 w-full rounded-none border border-black font-mono text-xs tracking-widest uppercase sm:w-1/2">
+                              Cancel
+                            </AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(event.id)}
-                              className="bg-destructive text-white hover:bg-destructive/90"
+                              className="h-10 w-full rounded-none border border-black bg-black font-mono text-xs tracking-widest text-[#ff3333] uppercase shadow-[2px_2px_0px_#cc0000] hover:bg-black hover:text-[#ff0000] sm:w-1/2"
                             >
-                              Delete
+                              Confirm Delete
                             </AlertDialogAction>
                           </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                        </div>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </main>
 
+      {/* Keeping EventDetailsDialog as is for now, but will likely require its own tactical reskin next */}
       {editingEvent && (
         <EventDetailsDialog
           event={editingEvent}
@@ -710,7 +531,9 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
             if (!open) setEditingEvent(null)
           }}
           onEventUpdated={(updated) => {
-            handleEventUpdated(updated as unknown as Event)
+            setEvents((prev) =>
+              prev.map((e) => (e.id === updated.id ? { ...e, ...(updated as Event) } : e))
+            )
             setEditingEvent(null)
           }}
         />

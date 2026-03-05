@@ -4,19 +4,10 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Loader2, Eye, EyeOff, CalendarDays, Sparkles, Download } from "lucide-react"
-import { Cormorant_Garamond } from "next/font/google"
+import { Loader2, Terminal, ShieldAlert } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-
-const playfair = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
-})
 
 export default function SignIn() {
   const router = useRouter()
@@ -24,7 +15,6 @@ export default function SignIn() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,158 +35,138 @@ export default function SignIn() {
         router.refresh()
       }
     } catch {
-      setError("An error occurred. Please try again.")
+      setError("An error occurred during sign in")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* ── Left panel ── */}
-      <div
-        className="relative hidden flex-col justify-between overflow-hidden p-12 lg:flex lg:w-[45%]"
-        style={{
-          background: "#09090b",
-          backgroundImage:
-            "radial-gradient(circle at 25% 65%, rgba(245,158,11,0.14) 0%, transparent 55%), radial-gradient(circle, rgba(255,255,255,0.055) 1px, transparent 1px)",
-          backgroundSize: "auto, 26px 26px",
-        }}
-      >
-        {/* Amber accent bar */}
-        <div className="absolute left-0 top-0 h-full w-0.5 bg-gradient-to-b from-transparent via-amber-500/60 to-transparent" />
+    <div className="flex min-h-screen bg-black font-mono text-white selection:bg-white selection:text-black">
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-[#333] p-12 lg:flex">
+        <div
+          className="absolute inset-0 z-0 opacity-20"
+          style={{
+            backgroundImage:
+              "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
 
-        {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 shadow-lg shadow-amber-900/40">
-            <span className="text-base font-bold text-white">E</span>
+        <Link href="/" className="relative z-10 flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center border border-white text-sm font-bold shadow-[2px_2px_0_0_#fff]">
+            V
           </div>
-          <span className={`${playfair.className} text-xl font-bold text-white`}>EventPlanner</span>
-        </div>
+          <div className="flex flex-col">
+            <div className="mb-1 text-[10px] leading-none tracking-[0.2em] text-[#999] uppercase">
+              Event Layout
+            </div>
+            <div className="text-lg leading-none font-bold tracking-tight uppercase">Planner</div>
+          </div>
+        </Link>
 
-        {/* Quote */}
-        <div>
-          <p className={`${playfair.className} text-4xl font-normal italic leading-tight text-white/90`}>
-            Design your event
+        <div className="z-10">
+          <h1 className="mb-6 text-6xl leading-none font-bold tracking-tighter text-white uppercase">
+            DESIGN
             <br />
-            <span className="text-amber-400">spaces</span> with
+            <span className="text-[#999]">BEAUTIFUL</span>
             <br />
-            precision.
-          </p>
-          <div className="mt-8 space-y-3">
-            {[
-              { icon: CalendarDays, label: "Floor plans for any event type" },
-              { icon: Sparkles, label: "AI-generated layout suggestions" },
-              { icon: Download, label: "Export to PNG in one click" },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex items-center gap-3">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white/5">
-                  <Icon className="h-3.5 w-3.5 text-amber-400" />
-                </div>
-                <span className="text-sm text-zinc-400">{label}</span>
-              </div>
-            ))}
+            EVENT SPACES
+          </h1>
+          <div className="space-y-2 text-xs leading-loose tracking-widest text-[#999] uppercase">
+            <p>{">"} SIGN IN TO ACCESS YOUR DASHBOARD</p>
+            <p>{">"} MANAGE YOUR EVENTS AND FLOOR PLANS</p>
+            <p>{">"} SECURE CONNECTION ESTABLISHED</p>
           </div>
         </div>
 
-        <p className="text-xs text-zinc-600">
-          &copy; {new Date().getFullYear()} EventPlanner. All rights reserved.
-        </p>
+        <div className="z-10 flex items-end justify-between border-t border-[#333] pt-6">
+          <div className="text-right text-[10px] tracking-widest text-[#666] uppercase">
+            V 2.0.4 <br /> EVENT_PLANNER
+          </div>
+        </div>
       </div>
 
-      {/* ── Right panel ── */}
-      <div className="flex flex-1 items-center justify-center bg-white px-8">
-        <div className="w-full max-w-sm">
-          {/* Mobile logo */}
-          <div className="mb-8 flex items-center gap-2 lg:hidden">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-amber-500">
-              <span className="text-sm font-bold text-white">E</span>
+      <div className="relative flex w-full flex-col justify-center bg-black px-8 py-12 lg:w-1/2 lg:px-24 xl:px-32">
+        <div className="mx-auto w-full max-w-sm">
+          <div className="mb-12 flex items-center justify-center gap-3 lg:hidden">
+            <div className="flex h-8 w-8 items-center justify-center border border-white text-sm font-bold shadow-[2px_2px_0_0_#fff]">
+              V
             </div>
-            <span className={`${playfair.className} text-lg font-bold text-zinc-900`}>
-              EventPlanner
-            </span>
+            <span className="text-lg font-bold tracking-widest uppercase">EVENT PLANNER</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-zinc-900">Welcome back</h2>
-          <p className="mt-1 text-sm text-zinc-500">Sign in to your account to continue</p>
+          <div className="mb-8 flex items-center gap-3 border-b border-[#333] pb-4 text-[#0055ff]">
+            <Terminal className="h-5 w-5" />
+            <h2 className="text-base font-bold tracking-widest uppercase">SIGN IN</h2>
+          </div>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
+              <div className="flex items-start gap-3 border border-[#cc0000] bg-[#cc0000]/10 p-4">
+                <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#ff3333]" />
+                <p className="text-[11px] font-bold tracking-widest text-[#ff3333] uppercase">
+                  {error}
+                </p>
+              </div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-zinc-700">
-                Email
-              </Label>
+            <div className="space-y-3">
+              <label className="block text-[10px] tracking-widest text-[#999] uppercase">
+                Email Address
+              </label>
               <Input
-                id="email"
-                name="email"
                 type="email"
-                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                className="border-zinc-200 focus-visible:ring-amber-500/30"
+                placeholder="NAME@COMPANY.COM"
+                className="h-12 rounded-none border-[#333] bg-transparent font-mono text-sm tracking-widest text-white uppercase shadow-none transition-all placeholder:text-[#333] focus-visible:border-white focus-visible:ring-1 focus-visible:ring-white"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-zinc-700">
+            <div className="space-y-3">
+              <label className="block text-[10px] tracking-widest text-[#999] uppercase">
                 Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="border-zinc-200 pr-10 focus-visible:ring-amber-500/30"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 transition-colors hover:text-zinc-700"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+              </label>
+              <Input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="h-12 rounded-none border-[#333] bg-transparent font-mono text-sm tracking-widest text-white shadow-none transition-all placeholder:text-[#333] focus-visible:border-white focus-visible:ring-1 focus-visible:ring-white"
+              />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-amber-500 text-white hover:bg-amber-400"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Signing in…
-                </span>
-              ) : (
-                "Sign in"
-              )}
-            </Button>
+            <div className="pt-4">
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="h-12 w-full rounded-none border border-white bg-white text-xs font-bold tracking-widest text-black uppercase shadow-[4px_4px_0_0_#333] transition-all hover:bg-white hover:text-[#0055ff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+              >
+                {isLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" /> SIGNING IN...
+                  </span>
+                ) : (
+                  "SIGN IN"
+                )}
+              </Button>
+            </div>
           </form>
 
-          <p className="mt-6 text-sm text-zinc-500">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/auth/signup"
-              className="font-medium text-zinc-900 underline-offset-4 hover:underline"
-            >
-              Create one free
-            </Link>
-          </p>
+          <div className="mt-12 border-t border-[#333] pt-6 text-center">
+            <p className="text-[10px] tracking-widest text-[#666] uppercase">
+              DON'T HAVE AN ACCOUNT?{" "}
+              <Link
+                href="/auth/signup"
+                className="ml-2 font-bold text-white underline underline-offset-4 hover:text-[#0055ff]"
+              >
+                SIGN UP
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

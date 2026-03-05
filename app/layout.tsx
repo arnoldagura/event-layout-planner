@@ -1,22 +1,21 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, JetBrains_Mono } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 })
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 })
 
 export const metadata: Metadata = {
-  title: "Event Layout Planner — Design Beautiful Event Spaces",
-  description:
-    "Drag-and-drop floor planning for conferences, weddings, and corporate events. AI-powered layouts, booth marketplace, and real-time collaboration.",
+  title: "Event Layout Planner",
+  description: "Design beautiful event spaces easily.",
 }
 
 export default function RootLayout({
@@ -26,7 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${inter.variable} ${jetbrainsMono.variable} bg-background font-sans tracking-tight text-foreground antialiased`}
+      >
         {children}
         <Toaster richColors position="top-right" />
       </body>

@@ -1,32 +1,24 @@
 "use client"
 
 import Link from "next/link"
-import { Cormorant_Garamond } from "next/font/google"
-import { Check, ArrowRight, Zap } from "lucide-react"
+import { ArrowRight, Zap, Loader2, CheckSquare } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 
-const playfair = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  style: ["normal", "italic"],
-})
-
 const FREE_FEATURES = [
-  "Up to 3 events",
-  "Drag-and-drop canvas editor",
-  "Public sharing links",
-  "Booth marketplace listings",
-  "PNG export",
+  "MANAGE UP TO 3 ACTIVE EVENTS",
+  "ACCESS TO CORE LAYOUT BUILDER",
+  "READ-ONLY PUBLIC LINKS",
+  "MARKETPLACE LISTINGS",
+  "HIGH-RES PNG EXPORTS",
 ]
 
 const PRO_FEATURES = [
-  "Unlimited events",
-  "AI layout generation",
-  "Version history (20 snapshots)",
-  "Email notifications to vendors",
-  "Priority support",
-  "Everything in Free",
+  "UNLIMITED EVENTS",
+  "AI LAYOUT GENERATION ENABLED",
+  "EXTENDED VERSION HISTORY (20 SAVES)",
+  "PRIORITY SUPPORT",
+  "ALL FREE TIER FEATURES",
 ]
 
 export function PricingPage({
@@ -37,6 +29,7 @@ export function PricingPage({
   currentPlan: "free" | "pro"
 }) {
   const [loading, setLoading] = useState(false)
+  const [portalLoading, setPortalLoading] = useState(false)
 
   const handleUpgrade = async () => {
     if (!isLoggedIn) {
@@ -50,43 +43,58 @@ export function PricingPage({
       const { url } = await res.json()
       window.location.href = url
     } catch {
-      toast.error("Failed to start checkout. Please try again.")
+      toast.error("SYSTEM ERROR: Failed to initialize checkout protocol.")
     } finally {
       setLoading(false)
     }
   }
 
+  const handlePortal = async () => {
+    setPortalLoading(true)
+    try {
+      const res = await fetch("/api/billing/portal", { method: "POST" })
+      if (!res.ok) throw new Error()
+      const { url } = await res.json()
+      window.location.href = url
+    } catch {
+      toast.error("SYSTEM ERROR: Failed to access billing portal.")
+    } finally {
+      setPortalLoading(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans">
-      {/* Navbar */}
-      <header className="border-b border-zinc-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-amber-500">
-              <span className="text-sm font-bold text-white">E</span>
+    <div className="flex flex-col min-h-screen bg-black text-white font-mono selection:bg-white selection:text-black">
+      {/* ── Navbar ── */}
+      <header className="border-b border-[#333] bg-black">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="h-8 w-8 border border-white flex items-center justify-center font-bold text-sm shadow-[2px_2px_0_0_#fff]">
+              V
             </div>
-            <span className={`${playfair.className} text-lg font-bold text-zinc-900`}>
-              EventPlanner
-            </span>
+            <div className="flex flex-col">
+              <div className="text-[10px] tracking-[0.2em] text-[#999] uppercase leading-none mb-1">Event Layout</div>
+              <div className="font-bold uppercase tracking-tight text-lg leading-none">Planner</div>
+            </div>
           </Link>
           <div className="flex items-center gap-4">
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+                className="flex items-center gap-2 border border-[#333] bg-[#111] px-4 py-2 text-[10px] font-bold tracking-widest text-[#ccc] uppercase hover:bg-[#222] hover:text-white transition-colors"
               >
-                Go to Dashboard
+                ACCESS DASHBOARD
               </Link>
             ) : (
               <>
-                <Link href="/auth/signin" className="text-sm text-zinc-500 hover:text-zinc-900">
-                  Sign in
+                <Link href="/auth/signin" className="text-[10px] font-bold tracking-widest text-[#999] uppercase hover:text-white transition-colors">
+                  SIGN IN
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-400"
+                  className="flex items-center gap-2 border border-white bg-white px-4 py-2 text-[10px] font-bold tracking-widest text-black uppercase hover:bg-black hover:text-white transition-all shadow-[2px_2px_0_0_#fff] hover:shadow-none"
                 >
-                  Get started free
+                  INITIALIZE ACCOUNT
                 </Link>
               </>
             )}
@@ -94,114 +102,152 @@ export function PricingPage({
         </div>
       </header>
 
-      {/* Hero */}
-      <div className="px-6 py-20 text-center">
-        <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-amber-600">Pricing</p>
-        <h1 className={`${playfair.className} mb-4 text-5xl font-bold text-zinc-900`}>
-          Simple, honest pricing.
-        </h1>
-        <p className="text-lg text-zinc-500">Start free. Upgrade when you need more power.</p>
-      </div>
+      {/* ── Main content ── */}
+      <main className="flex-1 px-6 py-20 flex flex-col items-center relative z-10 w-full overflow-hidden">
+        {/* Background Grid */}
+        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none"
+          style={{ backgroundImage: "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
 
-      {/* Cards */}
-      <div className="mx-auto max-w-4xl px-6 pb-24">
-        <div className="grid gap-8 md:grid-cols-2">
-          {/* Free */}
-          <div className="flex flex-col rounded-2xl bg-white p-8 shadow-sm ring-1 ring-zinc-200">
-            <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-amber-600">Free</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-bold text-zinc-900">Free</span>
+        <div className="relative z-10 w-full max-w-5xl">
+          <div className="mb-20 text-center">
+            <div className="mb-6 inline-flex items-center gap-2 border border-[#333] bg-[#111] px-3 py-1 font-mono text-[9px] font-bold tracking-widest text-[#999] uppercase">
+              <span className="h-1.5 w-1.5 bg-[#0055ff] animate-pulse" />
+              SYSTEM MODULE: PRICING
             </div>
-            <p className="mt-2 text-sm text-zinc-500">Perfect for getting started.</p>
+            <h1 className="mb-4 text-4xl font-bold tracking-tighter text-white uppercase sm:text-5xl">
+              PRICING PLANS
+            </h1>
+            <p className="font-mono text-xs tracking-widest text-[#666] uppercase">
+              SELECT THE APPROPRIATE PLAN FOR YOUR EVENT SCALE.
+            </p>
+          </div>
 
-            <ul className="my-8 flex flex-col gap-3">
-              {FREE_FEATURES.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm">
-                  <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
-                  <span className="text-zinc-600">{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-auto">
-              {currentPlan === "free" && isLoggedIn ? (
-                <div className="flex items-center justify-center gap-2 rounded-lg bg-zinc-100 px-5 py-3 text-sm font-semibold text-zinc-500">
-                  Current plan
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* Free Plan */}
+            <div className="relative flex flex-col border border-[#333] bg-[#050505] p-10 transition-all hover:bg-[#111]">
+              <div className="mb-8 border-b border-[#333] pb-8">
+                <p className="mb-2 text-[10px] font-bold tracking-widest text-[#666] uppercase">
+                  PLAN: FREE
+                </p>
+                <div className="flex items-baseline gap-2 text-white">
+                  <span className="font-mono text-5xl font-bold tracking-tight">FREE</span>
                 </div>
-              ) : (
-                <Link
-                  href="/auth/signup"
-                  className="flex items-center justify-center gap-2 rounded-lg bg-zinc-100 px-5 py-3 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-200"
-                >
-                  Get started free
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              )}
+                <p className="mt-4 text-[10px] leading-relaxed tracking-widest text-[#999] uppercase">
+                  STANDARD FEATURES. PERFECT FOR SMALL EVENTS.
+                </p>
+              </div>
+
+              <ul className="mb-10 flex flex-col gap-4 font-mono text-[10px] tracking-widest uppercase">
+                {FREE_FEATURES.map((f) => (
+                  <li key={f} className="flex items-start gap-3">
+                    <div className="mt-[1px] h-3 w-3 border border-[#666] bg-transparent flex-shrink-0" />
+                    <span className="text-[#ccc]">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-auto">
+                {currentPlan === "free" && isLoggedIn ? (
+                  <div className="flex items-center justify-center gap-2 border border-[#333] bg-[#111] px-5 py-4 text-xs font-bold tracking-widest text-[#999] uppercase">
+                    CURRENT PROTOCOL
+                  </div>
+                ) : (
+                  <Link
+                    href="/auth/signup"
+                    className="flex items-center justify-center gap-2 border border-[#333] bg-transparent px-5 py-4 text-xs font-bold tracking-widest text-white uppercase transition-colors hover:bg-white hover:text-black"
+                  >
+                    START FOR FREE <ArrowRight className="h-4 w-4" />
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Pro Plan */}
+            <div className="relative flex flex-col border border-[#0055ff] bg-[#00051a] p-10 shadow-[8px_8px_0_0_#0055ff] transition-all">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 border border-[#0055ff] bg-[#0055ff] px-4 py-1 text-[10px] font-bold tracking-widest text-white uppercase">
+                RECOMMENDED PROTOCOL
+              </div>
+              <div className="mb-8 border-b border-[#333] pb-8">
+                <p className="mb-2 text-[10px] font-bold tracking-widest text-[#0055ff] uppercase">
+                  PLAN: PRO
+                </p>
+                <div className="flex items-baseline gap-2 text-white">
+                  <span className="font-mono text-5xl font-bold tracking-tight">$19</span>
+                  <span className="text-xs tracking-widest text-[#999] uppercase">/MONTH</span>
+                </div>
+                <p className="mt-4 text-[10px] leading-relaxed tracking-widest text-[#999] uppercase">
+                  FULL PLATFORM UNLOCKED. FOR PROFESSIONAL EVENT ORGANIZERS.
+                </p>
+              </div>
+
+              <ul className="mb-10 flex flex-col gap-4 font-mono text-[10px] tracking-widest uppercase">
+                {PRO_FEATURES.map((f) => (
+                  <li key={f} className="flex items-start gap-3">
+                    <div className="mt-[1px] h-3 w-3 border border-[#0055ff] bg-[#0055ff]/20 flex-shrink-0" />
+                    <span className="text-[#ccc]">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-auto">
+                {currentPlan === "pro" && isLoggedIn ? (
+                  <div className="flex items-center justify-center gap-2 border border-[#0055ff] bg-[#0055ff]/10 px-5 py-4 text-xs font-bold tracking-widest text-[#0055ff] uppercase">
+                    <Zap className="h-4 w-4" />
+                    CURRENT PROTOCOL
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleUpgrade}
+                    disabled={loading}
+                    className="flex w-full items-center justify-center gap-2 border border-white bg-white px-5 py-4 text-xs font-bold tracking-widest text-black uppercase transition-all shadow-[4px_4px_0_0_#333] hover:bg-black hover:text-white hover:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> INITIALIZING...</span>
+                    ) : (
+                      <span className="flex items-center gap-2">UPGRADE TO PRO <ArrowRight className="h-4 w-4" /></span>
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Pro */}
-          <div className="relative flex flex-col rounded-2xl bg-zinc-900 p-8 shadow-2xl ring-2 ring-amber-500">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-white">
-              Most Popular
-            </div>
-            <p className="mb-1 text-sm font-semibold uppercase tracking-widest text-amber-400">Pro</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-5xl font-bold text-white">$19</span>
-              <span className="text-sm text-zinc-400">/month</span>
-            </div>
-            <p className="mt-2 text-sm text-zinc-400">For professional event organizers.</p>
-
-            <ul className="my-8 flex flex-col gap-3">
-              {PRO_FEATURES.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm">
-                  <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-400" />
-                  <span className="text-zinc-300">{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-auto">
-              {currentPlan === "pro" && isLoggedIn ? (
-                <div className="flex items-center justify-center gap-2 rounded-lg bg-amber-500/20 px-5 py-3 text-sm font-semibold text-amber-300">
-                  <Zap className="h-4 w-4" />
-                  Current plan
-                </div>
-              ) : (
-                <button
-                  onClick={handleUpgrade}
-                  disabled={loading}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-amber-400 disabled:opacity-60"
-                >
-                  {loading ? "Redirecting…" : "Upgrade to Pro"}
-                  {!loading && <ArrowRight className="h-4 w-4" />}
-                </button>
-              )}
-            </div>
+          {/* Data Note */}
+          <div className="mt-16 border-t border-[#333] pt-8 text-center font-mono text-[10px] tracking-widest text-[#666] uppercase">
+            <p className="mb-4">
+              SECURE TRANSACTION PROTOCOL // POWERED BY STRIPE.
+              <br />
+              NO LONG-TERM CONTRACTS. CANCEL ANYTIME.
+            </p>
+            {isLoggedIn && currentPlan === "pro" && (
+              <button
+                onClick={handlePortal}
+                disabled={portalLoading}
+                className="group inline-flex items-center justify-center gap-2 font-bold text-white hover:text-[#0055ff] transition-colors disabled:opacity-50"
+              >
+                {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckSquare className="h-3 w-3" />}
+                ACCESS BILLING PORTAL <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+              </button>
+            )}
           </div>
         </div>
+      </main>
 
-        {/* Trust note */}
-        <p className="mt-10 text-center text-sm text-zinc-400">
-          Payments are processed securely via Stripe. Cancel anytime — no lock-in.
-          {isLoggedIn && currentPlan === "pro" && (
-            <>
-              {" "}
-              <button
-                onClick={async () => {
-                  const res = await fetch("/api/billing/portal", { method: "POST" })
-                  if (res.ok) {
-                    const { url } = await res.json()
-                    window.location.href = url
-                  }
-                }}
-                className="underline hover:text-zinc-600"
-              >
-                Manage your subscription →
-              </button>
-            </>
-          )}
-        </p>
+      {/* ── System Status Footer ── */}
+      <div className="border-t border-[#333] bg-[#0a0a0a] px-6 py-4 font-mono text-[10px] tracking-widest uppercase text-[#666] flex justify-between items-center relative z-20">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#009944] animate-pulse" />
+            STATUS / <span className="text-[#009944] font-bold">OPERATIONAL</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-2">
+            WORKSPACE / SECURE
+          </div>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="hidden sm:block">VERSION / 2.0.0</div>
+          <div>TERMINAL / SECURE_CONNECT</div>
+        </div>
       </div>
     </div>
   )

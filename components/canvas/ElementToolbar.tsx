@@ -24,15 +24,69 @@ interface ElementType {
 }
 
 const elements: ElementType[] = [
-  { type: "stage", label: "Stage", icon: <Presentation className="h-4 w-4" />, color: "bg-blue-500", category: "venue" },
-  { type: "entrance", label: "Entrance", icon: <DoorOpen className="h-4 w-4" />, color: "bg-emerald-500", category: "venue" },
-  { type: "exit", label: "Exit", icon: <DoorClosed className="h-4 w-4" />, color: "bg-red-500", category: "venue" },
-  { type: "table", label: "Table", icon: <MdTableRestaurant className="h-4 w-4" />, color: "bg-amber-500", category: "seating" },
-  { type: "chair", label: "Chair", icon: <Armchair className="h-4 w-4" />, color: "bg-zinc-500", category: "seating" },
-  { type: "booth", label: "Booth", icon: <Store className="h-4 w-4" />, color: "bg-purple-500", category: "seating" },
-  { type: "registration", label: "Registration", icon: <ClipboardList className="h-4 w-4" />, color: "bg-cyan-500", category: "services" },
-  { type: "bar", label: "Bar", icon: <Wine className="h-4 w-4" />, color: "bg-orange-500", category: "services" },
-  { type: "restroom", label: "Restroom", icon: <FaRestroom className="h-4 w-4" />, color: "bg-slate-500", category: "services" },
+  {
+    type: "stage",
+    label: "Stage",
+    icon: <Presentation className="h-4 w-4" />,
+    color: "bg-blue-500",
+    category: "venue",
+  },
+  {
+    type: "entrance",
+    label: "Entrance",
+    icon: <DoorOpen className="h-4 w-4" />,
+    color: "bg-emerald-500",
+    category: "venue",
+  },
+  {
+    type: "exit",
+    label: "Exit",
+    icon: <DoorClosed className="h-4 w-4" />,
+    color: "bg-red-500",
+    category: "venue",
+  },
+  {
+    type: "table",
+    label: "Table",
+    icon: <MdTableRestaurant className="h-4 w-4" />,
+    color: "bg-amber-500",
+    category: "seating",
+  },
+  {
+    type: "chair",
+    label: "Chair",
+    icon: <Armchair className="h-4 w-4" />,
+    color: "bg-zinc-500",
+    category: "seating",
+  },
+  {
+    type: "booth",
+    label: "Booth",
+    icon: <Store className="h-4 w-4" />,
+    color: "bg-purple-500",
+    category: "seating",
+  },
+  {
+    type: "registration",
+    label: "Registration",
+    icon: <ClipboardList className="h-4 w-4" />,
+    color: "bg-cyan-500",
+    category: "services",
+  },
+  {
+    type: "bar",
+    label: "Bar",
+    icon: <Wine className="h-4 w-4" />,
+    color: "bg-orange-500",
+    category: "services",
+  },
+  {
+    type: "restroom",
+    label: "Restroom",
+    icon: <FaRestroom className="h-4 w-4" />,
+    color: "bg-slate-500",
+    category: "services",
+  },
 ]
 
 const categories = [
@@ -55,10 +109,9 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
     <TooltipProvider delayDuration={300}>
       {/* Outer wrapper — width is controlled by parent; this fills it */}
       <div className="relative flex h-full w-full flex-col overflow-hidden">
-
         {/* ── Collapsed view (icon strip) ── */}
         <div
-          className={`absolute inset-0 flex flex-col items-center gap-1.5 overflow-y-auto py-3 px-2 transition-opacity duration-150 ${
+          className={`absolute inset-0 flex flex-col items-center gap-1.5 overflow-y-auto px-2 py-3 transition-opacity duration-150 ${
             collapsed ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
@@ -94,7 +147,7 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
           <div className="flex-1 space-y-4 overflow-y-auto p-3">
             {categories.map((category) => (
               <div key={category.id}>
-                <h3 className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-zinc-400">
+                <h3 className="mb-2 px-1 text-xs font-medium tracking-wider text-zinc-400 uppercase">
                   {category.label}
                 </h3>
                 <div className="space-y-1">
@@ -108,10 +161,14 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
                             onDragStart={(e) => handleDragStart(e, element.type)}
                             className="group flex cursor-grab items-center gap-3 rounded-lg border border-transparent p-2.5 transition-colors hover:border-zinc-200 hover:bg-zinc-50 active:cursor-grabbing"
                           >
-                            <div className={`flex h-8 w-8 items-center justify-center rounded-md ${element.color} text-white shadow-sm`}>
+                            <div
+                              className={`flex h-8 w-8 items-center justify-center rounded-md ${element.color} text-white shadow-sm`}
+                            >
                               {element.icon}
                             </div>
-                            <span className="flex-1 text-sm font-medium text-zinc-700">{element.label}</span>
+                            <span className="flex-1 text-sm font-medium text-zinc-700">
+                              {element.label}
+                            </span>
                             <GripVertical className="h-4 w-4 text-zinc-300 opacity-0 transition-opacity group-hover:opacity-100" />
                           </div>
                         </TooltipTrigger>
@@ -132,7 +189,6 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
             </p>
           </div>
         </div>
-
       </div>
     </TooltipProvider>
   )

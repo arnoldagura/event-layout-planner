@@ -3,7 +3,19 @@
 import { useState, useMemo } from "react"
 import Link from "next/link"
 import { format } from "date-fns"
-import { Search, MapPin, Store, SlidersHorizontal, X, Calendar } from "lucide-react"
+import {
+  Search,
+  MapPin,
+  SlidersHorizontal,
+  X,
+  ArrowLeft,
+  Terminal,
+  Database,
+  Shield,
+  Cpu,
+  LogOut,
+} from "lucide-react"
+import { signOut } from "next-auth/react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,38 +29,13 @@ import {
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import type { MarketplaceEvent } from "./page"
 
-// ─── Event type color map ────────────────────────────────────────────────────
-
-const EVENT_TYPE_COLORS: Record<string, string> = {
-  conference:
-    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",
-  trade_show:
-    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800",
-  expo: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800",
-  festival:
-    "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800",
-  market:
-    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800",
-  summit:
-    "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800",
-}
-
-function getEventTypeColor(type: string | null): string {
-  if (!type)
-    return "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
-  return (
-    EVENT_TYPE_COLORS[type.toLowerCase()] ??
-    "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
-  )
-}
-
 // ─── Price formatting ─────────────────────────────────────────────────────────
 
 function formatPrice(min: number | null, max: number | null): string {
-  if (min === null) return "Price on request"
+  if (min === null) return "VARIES"
   if (min === max) return `$${min.toLocaleString()}`
-  if (max === null) return `from $${min.toLocaleString()}`
-  return `$${min.toLocaleString()} – $${max.toLocaleString()}`
+  if (max === null) return `FROM $${min.toLocaleString()}`
+  return `$${min.toLocaleString()} - $${max.toLocaleString()}`
 }
 
 // ─── Single event card ────────────────────────────────────────────────────────
@@ -56,9 +43,9 @@ function formatPrice(min: number | null, max: number | null): string {
 function EventCard({ event }: { event: MarketplaceEvent }) {
   const dateStr = (() => {
     try {
-      return format(new Date(event.eventDate), "MMM d, yyyy")
+      return format(new Date(event.eventDate), "yyyy.MM.dd")
     } catch {
-      return "—"
+      return "UNKNOWN"
     }
   })()
 
@@ -69,113 +56,100 @@ function EventCard({ event }: { event: MarketplaceEvent }) {
   const isPriceKnown = event.minPrice !== null
 
   return (
-    <Card className="group relative flex flex-col gap-0 overflow-hidden border-zinc-200 bg-white py-0 transition-all duration-200 hover:border-teal-400 hover:shadow-lg hover:shadow-teal-500/5 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-teal-600">
-      {/* Top accent stripe — visible on hover */}
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-teal-400 to-cyan-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+    <div className="group relative flex flex-col border border-[#d4d4d8] bg-white shadow-none transition-colors hover:border-black">
+      <div className="h-1 w-full bg-[#e0e0e0] transition-colors group-hover:bg-[#009944]" />
 
-      <CardHeader className="grid-rows-none gap-3 px-5 pt-5 pb-0">
-        {/* Type badge + date row */}
-        <div className="flex items-center justify-between gap-2">
-          {event.eventType && (
-            <span
-              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium tracking-wide capitalize ${getEventTypeColor(event.eventType)}`}
-            >
-              {event.eventType.replace(/_/g, " ")}
-            </span>
-          )}
-          <span className="ml-auto flex items-center gap-1 text-[11px] whitespace-nowrap text-zinc-400 dark:text-zinc-500">
-            <Calendar className="size-3 shrink-0" />
-            {dateStr}
-          </span>
+      <div className="flex flex-1 flex-col p-5">
+        <div className="mb-3 flex items-start justify-between">
+          <div className="mb-1 max-w-[80%] overflow-hidden font-mono text-[10px] tracking-widest text-ellipsis whitespace-nowrap text-[#666] uppercase">
+            HOST: {event.id.split("-")[0]}
+          </div>
+          <Shield className="h-3.5 w-3.5 text-[#009944]" />
         </div>
 
-        {/* Title */}
         <Link
           href={`/e/${event.shareToken}`}
-          className="line-clamp-2 block text-[15px] leading-snug font-semibold text-zinc-900 transition-colors hover:text-teal-600 dark:text-zinc-50 dark:hover:text-teal-400"
+          className="mb-3 line-clamp-2 text-lg font-bold tracking-tight uppercase transition-colors group-hover:text-[#0055ff]"
         >
           {event.title}
         </Link>
 
-        {/* Venue */}
         {event.venue && (
-          <p className="flex items-center gap-1.5 text-[13px] text-zinc-500 dark:text-zinc-400">
-            <MapPin className="size-3.5 shrink-0 text-zinc-400 dark:text-zinc-500" />
+          <p className="mb-4 flex items-center gap-2 font-mono text-xs text-[#666] uppercase">
+            <MapPin className="size-3 shrink-0" />
             <span className="truncate">{event.venue}</span>
           </p>
         )}
-      </CardHeader>
 
-      <CardContent className="flex flex-col gap-3 px-5 pt-4 pb-0">
-        {/* Description */}
         {event.description && (
-          <p className="line-clamp-2 text-[13px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-            {event.description}
-          </p>
+          <p className="mb-4 line-clamp-2 text-sm text-[#333]">{event.description}</p>
         )}
 
-        {/* Stats row */}
-        <div className="flex items-center gap-4">
-          {/* Available booths */}
-          <div className="flex items-center gap-1.5">
-            <Store className="size-3.5 shrink-0 text-teal-500" />
-            <span className="text-[13px] font-medium text-teal-700 dark:text-teal-400">
-              {event.availableBooths} booth{event.availableBooths !== 1 ? "s" : ""} available
-            </span>
-          </div>
+        <div className="my-2 h-[1px] w-full bg-[#f0f0f0]" />
 
-          {/* Price */}
-          <div className="ml-auto text-right">
-            <span
-              className={`text-[13px] font-medium ${isPriceKnown ? "text-zinc-700 dark:text-zinc-200" : "text-zinc-400 italic dark:text-zinc-500"}`}
-            >
-              {priceLabel}
-            </span>
-          </div>
+        <div className="mt-2 grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-2 font-mono text-xs">
+          <span className="text-[10px] tracking-widest text-[#999] uppercase">DATE</span>
+          <span className="text-right font-medium">{dateStr}</span>
+
+          <span className="text-[10px] tracking-widest text-[#999] uppercase">TYPE</span>
+          <span className="truncate text-right">{event.eventType?.toUpperCase() || "UNKNOWN"}</span>
+
+          <span className="text-[10px] tracking-widest text-[#999] uppercase">AVAILABLE</span>
+          <span className="text-right font-medium text-[#009944]">{event.availableBooths}</span>
+
+          <span className="text-[10px] tracking-widest text-[#999] uppercase">PRICE</span>
+          <span className={`text-right font-medium ${isPriceKnown ? "text-black" : "text-[#999]"}`}>
+            {priceLabel}
+          </span>
         </div>
 
-        {/* Category pills */}
         {event.categories.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="mt-4 flex flex-wrap gap-1.5">
             {visibleCats.map((cat) => (
               <span
                 key={cat}
-                className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 capitalize dark:bg-zinc-800 dark:text-zinc-400"
+                className="border border-[#e0e0e0] px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-[#666] uppercase"
               >
                 {cat}
               </span>
             ))}
             {extraCats > 0 && (
-              <span className="inline-flex items-center rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500">
-                +{extraCats} more
+              <span className="border border-[#e0e0e0] px-1.5 py-0.5 font-mono text-[9px] tracking-widest text-[#999] uppercase">
+                +{extraCats} MORE
               </span>
             )}
           </div>
         )}
-      </CardContent>
+      </div>
 
-      <CardFooter className="mt-auto px-5 pt-4 pb-5">
-        <Button
-          asChild
-          size="sm"
-          className="h-8 w-full rounded-lg border-0 bg-teal-600 text-[13px] font-medium text-white transition-colors hover:bg-teal-700"
+      <div className="flex h-10 border-t border-[#e0e0e0] bg-[#fdfdfd] transition-colors group-hover:border-black">
+        <Link
+          href={`/e/${event.shareToken}`}
+          className="flex flex-1 items-center justify-center font-mono text-[10px] tracking-widest text-[#666] uppercase transition-colors group-hover:bg-black group-hover:text-white"
         >
-          <Link href={`/e/${event.shareToken}`}>View Booths</Link>
-        </Button>
-      </CardFooter>
-    </Card>
+          VIEW EVENT
+        </Link>
+      </div>
+    </div>
   )
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function MarketplaceClient({ events }: { events: MarketplaceEvent[] }) {
+export function MarketplaceClient({
+  events,
+  user,
+  plan,
+}: {
+  events: MarketplaceEvent[]
+  user?: any
+  plan?: any
+}) {
   const [search, setSearch] = useState("")
   const [typeFilter, setTypeFilter] = useState("__all__")
   const [catFilter, setCatFilter] = useState("__all__")
   const [maxPrice, setMaxPrice] = useState("")
 
-  // Derive unique filter options
   const allTypes = useMemo(() => {
     const s = new Set<string>()
     events.forEach((e) => {
@@ -190,7 +164,6 @@ export function MarketplaceClient({ events }: { events: MarketplaceEvent[] }) {
     return Array.from(s).sort()
   }, [events])
 
-  // Apply filters
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     const maxNum = maxPrice !== "" ? parseFloat(maxPrice) : null
@@ -201,14 +174,12 @@ export function MarketplaceClient({ events }: { events: MarketplaceEvent[] }) {
       if (typeFilter !== "__all__" && e.eventType !== typeFilter) return false
       if (catFilter !== "__all__" && !e.categories.includes(catFilter)) return false
       if (maxNum !== null) {
-        // Show events where minPrice <= maxNum, or minPrice is null
         if (e.minPrice !== null && e.minPrice > maxNum) return false
       }
       return true
     })
   }, [events, search, typeFilter, catFilter, maxPrice])
 
-  // Active filter count
   const activeFilters = [
     search.trim() !== "",
     typeFilter !== "__all__",
@@ -223,163 +194,223 @@ export function MarketplaceClient({ events }: { events: MarketplaceEvent[] }) {
     setMaxPrice("")
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-1">
-            <div className="mb-1 flex items-center gap-2">
-              <Store className="size-5 text-teal-500" />
-              <span className="text-xs font-semibold tracking-widest text-teal-600 uppercase dark:text-teal-400">
-                Marketplace
+    <div className="flex min-h-screen flex-col bg-[#f8f8f8] font-sans text-black selection:bg-black selection:text-white">
+      {user && (
+        <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[#d4d4d8] bg-white px-6 font-mono text-[10px] tracking-widest uppercase">
+          <div className="flex items-center gap-8">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center bg-black text-sm leading-none font-bold tracking-tighter text-white shadow-sm">
+                V
+              </div>
+              <div className="hidden sm:block">
+                <div className="mb-1 font-mono text-[9px] leading-none tracking-[0.2em] text-[#999] uppercase">
+                  Event Layout
+                </div>
+                <div className="text-sm leading-none font-bold tracking-tight uppercase">
+                  Planner
+                </div>
+              </div>
+            </Link>
+
+            <div className="hidden h-6 w-[1px] bg-[#d4d4d8] md:block" />
+
+            <nav className="flex items-center gap-6">
+              <Link
+                href="/dashboard"
+                className="group flex items-center gap-2 tracking-widest text-[#666] uppercase transition-colors hover:text-black"
+              >
+                <Database className="h-3.5 w-3.5 transition-colors group-hover:text-black" />
+                <span>Events</span>
+              </Link>
+              <Link
+                href="/marketplace"
+                className="group relative flex items-center gap-2 font-bold tracking-widest text-black uppercase"
+              >
+                <Cpu className="h-3.5 w-3.5" />
+                <span>Marketplace</span>
+                <div className="absolute -bottom-[19px] left-0 h-[2px] w-full bg-black" />
+              </Link>
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <div className="hidden items-center gap-2 md:flex">
+              <span className="text-[#999]">PLAN:</span>
+              <span
+                className={`border px-1.5 py-0.5 font-bold ${plan === "pro" ? "border-[#ffb300] bg-[#fffdf0] text-[#ffb300]" : "border-[#666] text-[#333]"} tracking-widest`}
+              >
+                {plan}
               </span>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Booth Marketplace
-            </h1>
-            <p className="mt-0.5 text-[15px] text-zinc-500 dark:text-zinc-400">
-              Find available booths at upcoming events and connect with organizers.
-            </p>
+            <div className="hidden items-center gap-2 sm:flex">
+              <span className="text-[#999]">USER:</span>
+              <span className="max-w-[120px] truncate border-b border-black font-bold text-black select-all lg:max-w-none">
+                {user.email || user.name}
+              </span>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="flex items-center gap-2 border-l border-[#d4d4d8] py-1 pl-2 tracking-widest text-[#999] uppercase transition-colors hover:text-[#cc0000]"
+              title="Log Out"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden lg:inline">LOG OUT</span>
+            </button>
+          </div>
+        </header>
+      )}
+
+      {/* ── Page header ─────────────────────────────────────────────────── */}
+      <div className="mx-auto flex w-full max-w-6xl items-end justify-between border-b border-[#d4d4d8] px-6 pt-8 pb-6">
+        <div>
+          <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight uppercase">
+            <Database className="h-6 w-6" /> MARKETPLACE
+          </h1>
+          <p className="mt-2 font-mono text-xs tracking-widest text-[#666] uppercase">
+            DISCOVER NETWORKING EVENTS AND RESERVE YOUR BOOTH.
+          </p>
+        </div>
+        <div className="hidden text-right font-mono text-[10px] tracking-widest text-[#999] uppercase md:block">
+          <div className="mb-1">
+            RESULTS: <span className="font-bold text-black">{events.length} EVENTS</span>
+          </div>
+          <div>
+            STATUS: <span className="font-bold text-[#009944]">ONLINE</span>
           </div>
         </div>
       </div>
 
       {/* ── Filter bar ──────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center">
-            {/* Search */}
-            <div className="relative min-w-0 flex-1">
-              <Search className="pointer-events-none absolute top-1/2 left-3 size-3.5 -translate-y-1/2 text-zinc-400" />
-              <Input
-                placeholder="Search by event name or venue…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-9 border-zinc-200 bg-zinc-50 pl-9 text-sm focus-visible:border-teal-400 focus-visible:ring-teal-500/30 dark:border-zinc-700 dark:bg-zinc-800"
-              />
-            </div>
-
-            {/* Event type */}
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="h-9 w-full border-zinc-200 bg-zinc-50 text-sm sm:w-44 dark:border-zinc-700 dark:bg-zinc-800">
-                <SelectValue placeholder="All types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">All types</SelectItem>
-                {allTypes.map((t) => (
-                  <SelectItem key={t} value={t} className="capitalize">
-                    {t.replace(/_/g, " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Category */}
-            <Select value={catFilter} onValueChange={setCatFilter}>
-              <SelectTrigger className="h-9 w-full border-zinc-200 bg-zinc-50 text-sm sm:w-44 dark:border-zinc-700 dark:bg-zinc-800">
-                <SelectValue placeholder="All categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">All categories</SelectItem>
-                {allCategories.map((c) => (
-                  <SelectItem key={c} value={c} className="capitalize">
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Max price */}
-            <div className="relative w-full sm:w-36">
-              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-xs text-zinc-400 select-none">
-                $
-              </span>
-              <Input
-                type="number"
-                min={0}
-                placeholder="Max price"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-                className="h-9 border-zinc-200 bg-zinc-50 pl-6 text-sm focus-visible:border-teal-400 focus-visible:ring-teal-500/30 dark:border-zinc-700 dark:bg-zinc-800"
-              />
-            </div>
-
-            {/* Active filter indicator + clear */}
-            {activeFilters > 0 && (
-              <div className="flex shrink-0 items-center gap-1.5">
-                <Badge className="h-6 rounded-full border-0 bg-teal-600 px-2 text-[11px] font-semibold text-white hover:bg-teal-600">
-                  <SlidersHorizontal className="mr-1 size-2.5" />
-                  {activeFilters}
-                </Badge>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearAll}
-                  className="h-7 gap-1 px-2 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                >
-                  <X className="size-3" />
-                  Clear all
-                </Button>
-              </div>
-            )}
+      <div className="sticky top-0 z-10 w-full border-b border-[#d4d4d8] bg-white">
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 px-6 py-4 md:flex-row">
+          <div className="relative flex-1">
+            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#999]" />
+            <Input
+              placeholder="SEARCH EVENTS..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="h-10 rounded-none border-black pl-10 font-mono text-xs uppercase focus-visible:ring-1 focus-visible:ring-black"
+            />
           </div>
+
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="h-10 w-[180px] rounded-none border-black font-mono text-xs uppercase">
+              <SelectValue placeholder="ALL TYPES" />
+            </SelectTrigger>
+            <SelectContent className="rounded-none border-black font-mono text-[10px] uppercase">
+              <SelectItem
+                value="__all__"
+                className="cursor-pointer rounded-none focus:bg-black focus:text-white"
+              >
+                ALL TYPES
+              </SelectItem>
+              {allTypes.map((t) => (
+                <SelectItem
+                  key={t}
+                  value={t}
+                  className="cursor-pointer rounded-none focus:bg-black focus:text-white"
+                >
+                  {t.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={catFilter} onValueChange={setCatFilter}>
+            <SelectTrigger className="h-10 w-[180px] rounded-none border-black font-mono text-xs uppercase">
+              <SelectValue placeholder="ALL CATEGORIES" />
+            </SelectTrigger>
+            <SelectContent className="rounded-none border-black font-mono text-[10px] uppercase">
+              <SelectItem
+                value="__all__"
+                className="cursor-pointer rounded-none focus:bg-black focus:text-white"
+              >
+                ALL CATEGORIES
+              </SelectItem>
+              {allCategories.map((c) => (
+                <SelectItem
+                  key={c}
+                  value={c}
+                  className="cursor-pointer rounded-none focus:bg-black focus:text-white"
+                >
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <div className="relative w-[150px]">
+            <span className="absolute top-1/2 left-3 -translate-y-1/2 font-mono text-xs text-[#999]">
+              $
+            </span>
+            <Input
+              type="number"
+              min={0}
+              placeholder="MAX PRICE"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+              className="h-10 rounded-none border-black pl-6 font-mono text-xs uppercase focus-visible:ring-1 focus-visible:ring-black"
+            />
+          </div>
+
+          {activeFilters > 0 && (
+            <div className="flex shrink-0 items-center gap-2 border border-black pl-2">
+              <span className="font-mono text-[10px] font-bold text-[#0055ff]">
+                {activeFilters} FILTERS
+              </span>
+              <button
+                onClick={clearAll}
+                className="h-10 bg-black px-3 font-mono text-[10px] text-white uppercase transition-colors hover:bg-[#cc0000]"
+              >
+                CLEAR
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* ── Results area ────────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Result count */}
-        {events.length > 0 && (
-          <p className="mb-5 text-[13px] text-zinc-500 dark:text-zinc-400">
-            {filtered.length === 0
-              ? "No events match your filters"
-              : `${filtered.length} event${filtered.length !== 1 ? "s" : ""} found`}
-          </p>
-        )}
-
-        {/* ── No events at all ── */}
+      <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">
         {events.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-              <Store className="size-6 text-zinc-400" />
-            </div>
-            <h3 className="mb-1.5 text-base font-semibold text-zinc-700 dark:text-zinc-300">
-              No booths available yet
-            </h3>
-            <p className="max-w-xs text-sm leading-relaxed text-zinc-400 dark:text-zinc-500">
-              Events with available booths will appear here once organizers publish their layouts.
+          <div className="mt-12 flex flex-col items-center justify-center border border-dashed border-[#ccc] bg-white p-16 text-center">
+            <Terminal className="mb-4 h-8 w-8 text-[#ccc]" />
+            <p className="mb-2 font-mono text-sm font-bold tracking-widest text-[#999] uppercase">
+              NO EVENTS FOUND
+            </p>
+            <p className="mx-auto max-w-sm font-mono text-[10px] tracking-widest text-[#666] uppercase">
+              THERE ARE CURRENTLY NO PUBLISHED EVENTS IN THE MARKETPLACE.
             </p>
           </div>
         )}
 
-        {/* ── Events exist, but none match filters ── */}
         {events.length > 0 && filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="mb-4 flex size-14 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-              <Search className="size-6 text-zinc-400" />
-            </div>
-            <h3 className="mb-1.5 text-base font-semibold text-zinc-700 dark:text-zinc-300">
-              No events match your filters
-            </h3>
-            <p className="mb-5 max-w-xs text-sm leading-relaxed text-zinc-400 dark:text-zinc-500">
-              Try adjusting your search terms or removing some filters.
+          <div className="mt-12 flex flex-col items-center justify-center border border-dashed border-[#ccc] bg-white p-16 text-center">
+            <SlidersHorizontal className="mb-4 h-8 w-8 text-[#ccc]" />
+            <p className="mb-2 font-mono text-sm font-bold tracking-widest text-[#cc0000] uppercase">
+              NO MATCHING RESULTS FOUND
             </p>
-            <Button variant="outline" size="sm" onClick={clearAll} className="gap-1.5 text-sm">
-              <X className="size-3.5" />
-              Clear filters
+            <Button
+              variant="outline"
+              onClick={clearAll}
+              className="mt-4 rounded-none border-black font-mono text-xs uppercase"
+            >
+              CLEAR FILTERS
             </Button>
           </div>
         )}
 
-        {/* ── Event grid ── */}
         {filtered.length > 0 && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
+          <>
+            <div className="mb-4 font-mono text-[10px] tracking-widest text-[#666] uppercase">
+              {filtered.length} EVENTS FOUND
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

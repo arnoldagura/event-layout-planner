@@ -54,7 +54,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, description, eventDate, endDate, startTime, endTime, venue, capacity, eventType } = body
+    const {
+      title,
+      description,
+      eventDate,
+      endDate,
+      startTime,
+      endTime,
+      venue,
+      capacity,
+      eventType,
+    } = body
 
     if (!title || !eventDate) {
       return NextResponse.json({ error: "Title and event date are required" }, { status: 400 })

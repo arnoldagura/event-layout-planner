@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/auth"
+import { getUserPlan } from "@/lib/plans"
 import { MarketplaceClient } from "./MarketplaceClient"
 
 export const metadata = {
@@ -21,6 +23,12 @@ export interface MarketplaceEvent {
 }
 
 export default async function MarketplacePage() {
+  const session = await auth()
+  let plan = null
+  if (session?.user?.id) {
+    plan = await getUserPlan(session.user.id)
+  }
+
   const now = new Date()
 
   // Fetch all public non-expired events with their booth elements
@@ -91,5 +99,5 @@ export default async function MarketplacePage() {
     })
   }
 
-  return <MarketplaceClient events={marketplaceEvents} />
+  return <MarketplaceClient events={marketplaceEvents} user={session?.user} plan={plan} />
 }
