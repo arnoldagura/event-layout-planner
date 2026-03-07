@@ -49,8 +49,10 @@
 }
 
 :root {
-  --radius: 0px; /* Zero radius everywhere for tactical module feel */
-  --background: #f8f8f8; /* Very light gray */
+  --radius: 0px;
+  /* Zero radius everywhere for tactical module feel */
+  --background: #f8f8f8;
+  /* Very light gray */
   --foreground: #000000;
 
   --card: #ffffff;
@@ -72,12 +74,17 @@
   --accent-foreground: #000000;
 
   /* Status Colors */
-  --destructive: #cc0000; /* Deep Red */
-  --warning: #ffb300; /* Sharp Yellow */
-  --success: #009944; /* Crisp Green */
-  --info: #0055ff; /* Pure Blue */
+  --destructive: #cc0000;
+  /* Deep Red */
+  --warning: #ffb300;
+  /* Sharp Yellow */
+  --success: #009944;
+  /* Crisp Green */
+  --info: #0055ff;
+  /* Pure Blue */
 
-  --border: #d4d4d8; /* Thin zinc-300 lines */
+  --border: #d4d4d8;
+  /* Thin zinc-300 lines */
   --input: #d4d4d8;
   --ring: #000000;
 
@@ -95,6 +102,15 @@
   --sidebar-accent-foreground: #000000;
   --sidebar-border: #d4d4d8;
   --sidebar-ring: #000000;
+
+  /* Custom Canvas Variables for Day/Night mode */
+  --canvas-bg: #e5e5e5;
+  --canvas-grid: #cccccc;
+  --canvas-element-bg: #ffffff;
+  --canvas-element-border: #000000;
+  --canvas-element-text: #000000;
+  --panel-bg: #ffffff;
+  --panel-border: #d4d4d8;
 }
 
 .dark {
@@ -142,6 +158,15 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #333333;
   --sidebar-ring: #ffffff;
+
+  /* Custom Canvas Variables for Night mode */
+  --canvas-bg: #050505;
+  --canvas-grid: #4a4a4a;
+  --canvas-element-bg: #111111;
+  --canvas-element-border: #ffffff;
+  --canvas-element-text: #ffffff;
+  --panel-bg: #0a0a0a;
+  --panel-border: #333333;
 }
 
 @layer base {
@@ -150,14 +175,17 @@
     /* Sharp edges across all components automatically */
     border-radius: 0 !important;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 
   /* Additional tactical UI resets */
   button {
-    @apply transition-none; /* Disable playfulness */
+    @apply transition-none;
+    /* Disable playfulness */
   }
+
   input,
   textarea,
   select {

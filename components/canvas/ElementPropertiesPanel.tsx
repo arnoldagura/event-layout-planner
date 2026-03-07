@@ -15,6 +15,7 @@ import {
   RotateCw,
   Trash2,
   Lock,
+  Users,
 } from "lucide-react"
 import { FaRestroom } from "react-icons/fa"
 
@@ -32,53 +33,53 @@ interface Props {
 }
 
 const ELEMENT_ICONS: Record<string, { icon: React.ReactNode; bgClass: string; iconClass: string }> =
-  {
-    stage: {
-      icon: <Presentation className="h-5 w-5" />,
-      bgClass: "bg-blue-100",
-      iconClass: "text-blue-600",
-    },
-    table: {
-      icon: <MdTableRestaurant className="h-5 w-5" />,
-      bgClass: "bg-amber-100",
-      iconClass: "text-amber-600",
-    },
-    chair: {
-      icon: <Armchair className="h-5 w-5" />,
-      bgClass: "bg-zinc-100",
-      iconClass: "text-zinc-600",
-    },
-    booth: {
-      icon: <Store className="h-5 w-5" />,
-      bgClass: "bg-teal-100",
-      iconClass: "text-teal-600",
-    },
-    entrance: {
-      icon: <DoorOpen className="h-5 w-5" />,
-      bgClass: "bg-emerald-100",
-      iconClass: "text-emerald-600",
-    },
-    exit: {
-      icon: <DoorClosed className="h-5 w-5" />,
-      bgClass: "bg-red-100",
-      iconClass: "text-red-600",
-    },
-    restroom: {
-      icon: <FaRestroom className="h-5 w-5" />,
-      bgClass: "bg-slate-100",
-      iconClass: "text-slate-600",
-    },
-    bar: {
-      icon: <Wine className="h-5 w-5" />,
-      bgClass: "bg-orange-100",
-      iconClass: "text-orange-600",
-    },
-    registration: {
-      icon: <ClipboardList className="h-5 w-5" />,
-      bgClass: "bg-cyan-100",
-      iconClass: "text-cyan-600",
-    },
-  }
+{
+  stage: {
+    icon: <Presentation className="h-5 w-5" />,
+    bgClass: "bg-blue-100",
+    iconClass: "text-blue-600",
+  },
+  table: {
+    icon: <MdTableRestaurant className="h-5 w-5" />,
+    bgClass: "bg-amber-100",
+    iconClass: "text-amber-600",
+  },
+  chair: {
+    icon: <Armchair className="h-5 w-5" />,
+    bgClass: "bg-zinc-100",
+    iconClass: "text-zinc-600",
+  },
+  booth: {
+    icon: <Store className="h-5 w-5" />,
+    bgClass: "bg-teal-100",
+    iconClass: "text-teal-600",
+  },
+  entrance: {
+    icon: <DoorOpen className="h-5 w-5" />,
+    bgClass: "bg-emerald-100",
+    iconClass: "text-emerald-600",
+  },
+  exit: {
+    icon: <DoorClosed className="h-5 w-5" />,
+    bgClass: "bg-red-100",
+    iconClass: "text-red-600",
+  },
+  restroom: {
+    icon: <FaRestroom className="h-5 w-5" />,
+    bgClass: "bg-slate-100",
+    iconClass: "text-slate-600",
+  },
+  bar: {
+    icon: <Wine className="h-5 w-5" />,
+    bgClass: "bg-orange-100",
+    iconClass: "text-orange-600",
+  },
+  registration: {
+    icon: <ClipboardList className="h-5 w-5" />,
+    bgClass: "bg-cyan-100",
+    iconClass: "text-cyan-600",
+  },
+}
 
 export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
   const { elements, updateElement, deleteElement } = useCanvasStore()
@@ -97,6 +98,7 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
   const [askingPrice, setAskingPrice] = useState(String(props.askingPrice ?? ""))
   const [category, setCategory] = useState(String(props.category ?? ""))
   const [description, setDescription] = useState(String(props.description ?? ""))
+  const [attendeeName, setAttendeeName] = useState(String(props.attendeeName ?? ""))
 
   useEffect(() => {
     if (!element) return
@@ -117,6 +119,7 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     setAskingPrice(String(p.askingPrice ?? ""))
     setCategory(String(p.category ?? ""))
     setDescription(String(p.description ?? ""))
+    setAttendeeName(String(p.attendeeName ?? ""))
   }, [elementId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!element) return null
@@ -129,10 +132,10 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
   const rentStatus = String(props.status ?? "available")
   const statusColor =
     rentStatus === "rented"
-      ? "text-zinc-500 bg-zinc-100 border-zinc-200"
+      ? "text-muted-foreground bg-muted border-border"
       : rentStatus === "pending"
-        ? "text-amber-700 bg-amber-50 border-amber-200"
-        : "text-emerald-700 bg-emerald-50 border-emerald-200"
+        ? "text-warning bg-warning/10 border-warning"
+        : "text-success bg-success/10 border-success"
 
   // Apply name on blur / Enter
   const applyName = () => {
@@ -140,6 +143,18 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     if (trimmed && trimmed !== element.name) {
       updateElement(elementId, { name: trimmed })
     }
+  }
+
+  // Apply attendee name on blur / Enter
+  const applyAttendeeName = () => {
+    const existing = (element.properties ?? {}) as Record<string, unknown>
+    const trimmed = attendeeName.trim()
+    updateElement(elementId, {
+      properties: {
+        ...existing,
+        attendeeName: trimmed || undefined,
+      },
+    })
   }
 
   // Apply dimensions on blur
@@ -191,38 +206,44 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
   }
 
   return (
-    <div className="shrink-0 border-b bg-white">
+    <div className="shrink-0 border-b border-border bg-card">
       {/* ── Header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${typeConfig.bgClass}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-none shadow-none text-white ${typeConfig.bgClass}`}
         >
-          <span className={typeConfig.iconClass}>{typeConfig.icon}</span>
+          {typeConfig.icon}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm leading-tight font-semibold text-zinc-900">Properties</h3>
-          <p className="mt-0.5 text-xs text-zinc-400 capitalize">{element.type}</p>
+          <h3 className="font-mono text-xs font-bold tracking-widest text-foreground uppercase">
+            Properties
+          </h3>
+          <p className="mt-0.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+            {element.type}
+          </p>
         </div>
         {isBooth && forRent && (
-          <Badge className={`shrink-0 text-xs ${statusColor}`}>
+          <Badge className={`shrink-0 rounded-none border text-[10px] font-mono tracking-widest uppercase ${statusColor}`}>
             {rentStatus.charAt(0).toUpperCase() + rentStatus.slice(1)}
           </Badge>
         )}
         {isBooth && bidCount > 0 && (
-          <Badge variant="secondary" className="shrink-0 text-xs">
+          <Badge variant="secondary" className="shrink-0 rounded-none font-mono text-[10px] tracking-widest uppercase bg-secondary text-secondary-foreground border border-border">
             {bidCount} bid{bidCount !== 1 ? "s" : ""}
           </Badge>
         )}
       </div>
 
-      <div className="h-px bg-zinc-100" />
+      <div className="h-px bg-border" />
 
       <div className="space-y-4 p-4">
         {/* ── Name ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
-            <Type className="h-3.5 w-3.5 text-zinc-400" />
-            <Label className="text-xs font-medium text-zinc-600">Name</Label>
+            <Type className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+              Name
+            </Label>
           </div>
           <Input
             value={name}
@@ -232,30 +253,65 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
               if (e.key === "Enter") applyName()
             }}
             placeholder="Element name"
-            className="h-9 text-sm"
+            className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none focus-visible:ring-1 focus-visible:ring-primary"
           />
+        </div>
+
+        {/* ── Attendee Name ── */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+              {element.type === "chair" ? "Attendee Name" : "Attendees"}
+            </Label>
+          </div>
+          {element.type === "chair" ? (
+            <Input
+              value={attendeeName}
+              onChange={(e) => setAttendeeName(e.target.value)}
+              onBlur={applyAttendeeName}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyAttendeeName()
+              }}
+              placeholder="Assign to attendee"
+              className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none focus-visible:ring-1 focus-visible:ring-primary"
+            />
+          ) : (
+            <Textarea
+              value={attendeeName}
+              onChange={(e) => setAttendeeName(e.target.value)}
+              onBlur={applyAttendeeName}
+              placeholder="Assign attendees (one per line)"
+              rows={3}
+              className="resize-none rounded-none border-border bg-background font-mono text-xs shadow-none focus-visible:ring-1 focus-visible:ring-primary"
+            />
+          )}
         </div>
 
         {/* ── Dimensions ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
-            <Ruler className="h-3.5 w-3.5 text-zinc-400" />
-            <Label className="text-xs font-medium text-zinc-600">Dimensions</Label>
+            <Ruler className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+              Dimensions
+            </Label>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <p className="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">Width</p>
+              <p className="font-mono text-[9px] font-bold tracking-widest text-muted-foreground uppercase">
+                Width
+              </p>
               <Input
                 type="number"
                 min={30}
                 value={width}
                 onChange={(e) => setWidth(Number(e.target.value))}
                 onBlur={applyDimensions}
-                className="h-9 text-sm"
+                className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none"
               />
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">
+              <p className="font-mono text-[9px] font-bold tracking-widest text-muted-foreground uppercase">
                 Height
               </p>
               <Input
@@ -264,7 +320,7 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
                 value={height}
                 onChange={(e) => setHeight(Number(e.target.value))}
                 onBlur={applyDimensions}
-                className="h-9 text-sm"
+                className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none"
               />
             </div>
           </div>
@@ -273,8 +329,10 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
         {/* ── Rotation ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
-            <RotateCw className="h-3.5 w-3.5 text-zinc-400" />
-            <Label className="text-xs font-medium text-zinc-600">Rotation</Label>
+            <RotateCw className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+              Rotation
+            </Label>
           </div>
           <div className="flex items-center gap-2">
             <Input
@@ -285,21 +343,25 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
               onKeyDown={(e) => {
                 if (e.key === "Enter") applyRotation()
               }}
-              className="h-9 text-sm"
+              className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none"
             />
-            <span className="shrink-0 text-sm text-zinc-400">°</span>
+            <span className="shrink-0 font-mono text-xs text-muted-foreground">°</span>
           </div>
         </div>
 
         {/* ── Position ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
-            <Crosshair className="h-3.5 w-3.5 text-zinc-400" />
-            <Label className="text-xs font-medium text-zinc-600">Position</Label>
+            <Crosshair className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+              Position
+            </Label>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <p className="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">X</p>
+              <p className="font-mono text-[9px] font-bold tracking-widest text-muted-foreground uppercase">
+                X
+              </p>
               <Input
                 type="number"
                 value={posX}
@@ -308,11 +370,13 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") applyPosition()
                 }}
-                className="h-9 text-sm"
+                className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none"
               />
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-medium tracking-wide text-zinc-400 uppercase">Y</p>
+              <p className="font-mono text-[9px] font-bold tracking-widest text-muted-foreground uppercase">
+                Y
+              </p>
               <Input
                 type="number"
                 value={posY}
@@ -321,7 +385,7 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") applyPosition()
                 }}
-                className="h-9 text-sm"
+                className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none"
               />
             </div>
           </div>
@@ -330,29 +394,31 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
         {/* ── Booth rental fields ── */}
         {isBooth && (
           <>
-            <div className="h-px bg-zinc-100" />
+            <div className="h-px bg-border" />
 
             <div className="flex items-center justify-between">
-              <Label className="text-xs font-medium text-zinc-700">For Rent</Label>
+              <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+                For Rent
+              </Label>
               <button
                 role="switch"
                 aria-checked={forRent}
                 onClick={handleForRentToggle}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-                  forRent ? "bg-zinc-900" : "bg-zinc-300"
-                }`}
+                className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none border border-border ${forRent ? "bg-primary" : "bg-muted"
+                  }`}
               >
                 <span
-                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                    forRent ? "translate-x-4" : "translate-x-1"
-                  }`}
+                  className={`inline-block h-4 w-4 transform bg-background transition-transform border border-border ${forRent ? "translate-x-[18px]" : "translate-x-0"
+                    }`}
                 />
               </button>
             </div>
 
             {forRent && (
               <div className="space-y-1.5">
-                <Label className="text-xs text-zinc-600">Asking Price ($)</Label>
+                <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+                  Asking Price ($)
+                </Label>
                 <Input
                   type="number"
                   min={0}
@@ -360,42 +426,48 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
                   onChange={(e) => setAskingPrice(e.target.value)}
                   onBlur={applyBoothProps}
                   placeholder="e.g. 500"
-                  className="h-9 text-sm"
+                  className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none"
                 />
               </div>
             )}
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-600">Category</Label>
+              <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+                Category
+              </Label>
               <Input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 onBlur={applyBoothProps}
                 placeholder="e.g. Technology, Food"
-                className="h-9 text-sm"
+                className="h-9 rounded-none border-border bg-background font-mono text-xs shadow-none"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-zinc-600">Description</Label>
+              <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+                Description
+              </Label>
               <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={applyBoothProps}
                 placeholder="Booth details..."
                 rows={2}
-                className="resize-none text-sm"
+                className="resize-none rounded-none border-border bg-background font-mono text-xs shadow-none"
               />
             </div>
           </>
         )}
 
         {/* ── Lock ── */}
-        <div className="h-px bg-zinc-100" />
+        <div className="h-px bg-border" />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Lock className="h-3.5 w-3.5 text-zinc-400" />
-            <Label className="text-xs font-medium text-zinc-600">Lock element</Label>
+            <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+            <Label className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+              Lock element
+            </Label>
           </div>
           <button
             role="switch"
@@ -406,14 +478,12 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
                 properties: { ...existing, isLocked: !existing.isLocked },
               })
             }}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${
-              props.isLocked ? "bg-amber-500" : "bg-zinc-300"
-            }`}
+            className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none border border-border ${props.isLocked ? "bg-warning" : "bg-muted"
+              }`}
           >
             <span
-              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-                props.isLocked ? "translate-x-4" : "translate-x-1"
-              }`}
+              className={`inline-block h-4 w-4 transform bg-background transition-transform border border-border ${props.isLocked ? "translate-x-[18px]" : "translate-x-0"
+                }`}
             />
           </button>
         </div>
@@ -422,7 +492,7 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
         <Button
           variant="outline"
           size="sm"
-          className="w-full border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50"
+          className="w-full rounded-none border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground font-mono text-[10px] tracking-widest uppercase shadow-none"
           onClick={() => deleteElement(elementId)}
         >
           <Trash2 className="h-4 w-4" />

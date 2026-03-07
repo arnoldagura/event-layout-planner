@@ -39,15 +39,15 @@ const elementConfig: Record<
   string,
   { background: string; borderRadius: string; Icon: LucideIcon | null }
 > = {
-  stage: { background: "#3b82f6", borderRadius: "12px", Icon: Presentation },
-  table: { background: "#f59e0b", borderRadius: "12px", Icon: Table },
-  chair: { background: "#71717a", borderRadius: "12px", Icon: Armchair },
-  booth: { background: "#0d9488", borderRadius: "12px", Icon: Store },
-  entrance: { background: "#22c55e", borderRadius: "12px", Icon: DoorOpen },
-  exit: { background: "#ef4444", borderRadius: "12px", Icon: DoorClosed },
-  restroom: { background: "#475569", borderRadius: "12px", Icon: FaRestroom },
-  bar: { background: "#f97316", borderRadius: "12px", Icon: Wine },
-  registration: { background: "#06b6d4", borderRadius: "12px", Icon: ClipboardList },
+  stage: { background: "var(--info)", borderRadius: "0px", Icon: Presentation },
+  table: { background: "var(--warning)", borderRadius: "0px", Icon: Table },
+  chair: { background: "var(--muted-foreground)", borderRadius: "0px", Icon: Armchair },
+  booth: { background: "var(--info)", borderRadius: "0px", Icon: Store },
+  entrance: { background: "var(--success)", borderRadius: "0px", Icon: DoorOpen },
+  exit: { background: "var(--destructive)", borderRadius: "0px", Icon: DoorClosed },
+  restroom: { background: "var(--muted-foreground)", borderRadius: "0px", Icon: FaRestroom },
+  bar: { background: "var(--warning)", borderRadius: "0px", Icon: Wine },
+  registration: { background: "var(--info)", borderRadius: "0px", Icon: ClipboardList },
 }
 
 function iconSize(w: number, h: number): number {
@@ -269,7 +269,7 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden bg-zinc-200"
+      className="relative h-full w-full overflow-hidden bg-muted"
       style={{ cursor: getCursorStyle() }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -277,18 +277,16 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
       onMouseLeave={handleMouseUp}
     >
       {isSpacePressed && (
-        <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white shadow-lg">
+        <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-none bg-foreground px-3 py-1.5 font-mono text-[10px] tracking-widest text-background uppercase shadow-lg">
           <Hand className="h-3 w-3" />
           Pan Mode
         </div>
       )}
 
       <div
-        className="absolute bg-white"
+        className="absolute border border-border shadow-lg"
         style={{
-          backgroundImage: `radial-gradient(circle, #d4d4d8 1px, transparent 1px)`,
           backgroundSize: "20px 20px",
-          boxShadow: "0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
           transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`,
           transformOrigin: "0 0",
           width: "2000px",
@@ -296,7 +294,7 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
         }}
       >
         <div
-          className="pointer-events-none absolute rounded-lg border-2 border-dashed border-zinc-300"
+          className="pointer-events-none absolute rounded-none border border-dashed border-border"
           style={{
             left: "20px",
             top: "20px",
@@ -307,8 +305,8 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
 
         {elements.map((element) => {
           const config = elementConfig[element.type] || {
-            background: "#a1a1aa",
-            borderRadius: "12px",
+            background: "var(--muted-foreground)",
+            borderRadius: "0px",
             Icon: null,
           }
           const isHighlighted = element.id === highlightedId
@@ -317,16 +315,17 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
           const rentStatus = props.status as string | undefined
           const isBooth = element.type === "booth"
           const isSmall = element.width < 60 || element.height < 35
+          const attendeeName = props.attendeeName as string | undefined
 
           const boxShadow = isHighlighted
-            ? "0 0 0 3px #fff, 0 0 0 6px #f59e0b, 0 8px 24px rgba(245,158,11,0.4)"
+            ? "0 0 0 2px var(--background), 0 0 0 4px var(--info), 0 4px 12px rgba(0,0,0,0.1)"
             : isForRent && rentStatus === "rented"
-              ? "0 0 0 2px #a1a1aa"
+              ? "0 0 0 1px var(--border)"
               : isForRent && rentStatus === "pending"
-                ? "0 0 0 2px #f59e0b"
+                ? "0 0 0 2px var(--warning)"
                 : isForRent
-                  ? "0 0 0 2px #22c55e"
-                  : "0 2px 8px rgba(0,0,0,0.14), 0 1px 3px rgba(0,0,0,0.10)"
+                  ? "0 0 0 2px var(--success)"
+                  : "0 1px 3px rgba(0,0,0,0.1)"
 
           return (
             <div
@@ -341,8 +340,8 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
                 background: config.background,
                 borderRadius: config.borderRadius,
                 boxShadow,
-                transition: "box-shadow 0.2s ease",
-                border: isHighlighted ? "2px solid #f59e0b" : "2px solid transparent",
+                transition: "none",
+                border: isHighlighted ? "2px solid var(--info)" : "2px solid transparent",
                 cursor: isBooth ? "pointer" : "default",
               }}
               onClick={isBooth ? () => onBoothClick?.(element) : undefined}
@@ -358,23 +357,46 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
               )}
               {!isSmall && (
                 <div
-                  className="pointer-events-none w-full leading-tight font-medium text-white"
+                  className="pointer-events-none w-full leading-tight font-medium text-white flex flex-col items-center gap-0.5"
                   style={{
                     fontSize: element.width > 80 ? "12px" : "10px",
-                    textShadow: "0 1px 3px rgba(0,0,0,0.45)",
+                    fontFamily: "monospace",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
                     textAlign: "center",
                     wordBreak: "break-word",
                     overflowWrap: "anywhere",
                     padding: "0 6px",
                   }}
                 >
-                  {element.name}
+                  <div>{element.name}</div>
+                  {attendeeName && (
+                    <div className="mt-1 flex flex-col items-center gap-0.5">
+                      {attendeeName
+                        .split("\n")
+                        .filter((line) => line.trim())
+                        .slice(0, 3)
+                        .map((name, i) => (
+                          <div
+                            key={i}
+                            className="max-w-[calc(100%-8px)] truncate border border-info/30 bg-black/40 px-1.5 py-0.5 text-[8px] leading-none tracking-widest text-info uppercase"
+                          >
+                            {name.trim()}
+                          </div>
+                        ))}
+                      {attendeeName.split("\n").filter((line) => line.trim()).length > 3 && (
+                        <div className="max-w-[calc(100%-8px)] truncate border border-info/30 bg-black/40 px-1.5 py-0.5 text-[8px] leading-none tracking-widest text-info uppercase">
+                          +{attendeeName.split("\n").filter((line) => line.trim()).length - 3} MORE
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
               {isForRent && rentStatus === "rented" && (
-                <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[inherit] bg-zinc-900/20">
-                  <Lock className="h-4 w-4 text-zinc-600" />
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[inherit] bg-background/50 backdrop-blur-[1px]">
+                  <Lock className="h-4 w-4 text-foreground" />
                 </div>
               )}
 
@@ -390,16 +412,26 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
                     zIndex: 5,
                     textAlign: "center",
                     whiteSpace: "nowrap",
-                    fontSize: "10px",
-                    fontWeight: 600,
-                    color: "#18181b",
-                    background: "rgba(255,255,255,0.85)",
-                    padding: "1px 5px",
-                    borderRadius: 3,
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.12)",
+                    fontSize: "9px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    fontFamily: "monospace",
+                    fontWeight: 700,
+                    color: "var(--foreground)",
+                    background: "var(--background)",
+                    padding: "2px 6px",
+                    borderRadius: 0,
+                    border: "1px solid var(--border)",
                   }}
                 >
                   {element.name}
+                  {attendeeName && (
+                    <span className="ml-1 text-info">
+                      [{attendeeName.split("\n").filter((line) => line.trim()).length > 1
+                        ? `${attendeeName.split("\n").filter((line) => line.trim()).length} ATTENDEES`
+                        : attendeeName.trim().substring(0, 10)}]
+                    </span>
+                  )}
                 </div>
               )}
 
@@ -416,13 +448,14 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
                       letterSpacing: "0.06em",
                       lineHeight: 1,
                       padding: "2px 5px",
-                      borderRadius: 3,
+                      borderRadius: 0,
+                      border: "1px solid",
                       whiteSpace: "nowrap",
                       ...(rentStatus === "rented"
-                        ? { background: "rgba(0,0,0,0.35)", color: "#e4e4e7" }
+                        ? { background: "var(--muted)", color: "var(--muted-foreground)", borderColor: "var(--border)" }
                         : rentStatus === "pending"
-                          ? { background: "rgba(0,0,0,0.30)", color: "#fde68a" }
-                          : { background: "rgba(0,0,0,0.25)", color: "#bbf7d0" }),
+                          ? { background: "var(--warning)", color: "var(--primary-foreground)", borderColor: "var(--warning)" }
+                          : { background: "var(--success)", color: "var(--primary-foreground)", borderColor: "var(--success)" }),
                     }}
                   >
                     {isForRent
@@ -441,17 +474,17 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
       </div>
 
       {/* Zoom hint — desktop shows keyboard shortcuts, mobile shows touch hints */}
-      <div className="absolute bottom-4 left-4 space-y-1 rounded-lg border bg-white/90 px-3 py-2 text-xs text-zinc-600 shadow-sm backdrop-blur-sm">
-        <div className="font-medium text-zinc-900">{Math.round(scale * 100)}%</div>
-        <div className="hidden items-center gap-3 text-zinc-500 sm:flex">
-          <span>Scroll to zoom</span>
-          <span>•</span>
-          <span>Space + drag to pan</span>
+      <div className="absolute bottom-4 left-4 space-y-1 rounded-none border border-border bg-card/90 px-3 py-2 text-[9px] font-mono tracking-widest text-muted-foreground uppercase shadow-sm backdrop-blur-sm">
+        <div className="font-bold text-foreground">{Math.round(scale * 100)}%</div>
+        <div className="hidden items-center gap-3 text-muted-foreground sm:flex">
+          <span>SCROLL TO ZOOM</span>
+          <span className="text-border">|</span>
+          <span>SPACE + DRAG TO PAN</span>
         </div>
-        <div className="flex items-center gap-3 text-zinc-500 sm:hidden">
-          <span>Pinch to zoom</span>
-          <span>•</span>
-          <span>Drag to pan</span>
+        <div className="flex items-center gap-3 text-muted-foreground sm:hidden">
+          <span>PINCH TO ZOOM</span>
+          <span className="text-border">|</span>
+          <span>DRAG TO PAN</span>
         </div>
       </div>
     </div>

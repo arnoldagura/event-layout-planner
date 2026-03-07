@@ -7,6 +7,7 @@ import { LogOut, Trash2, Copy, Plus, Terminal, Cpu, Database } from "lucide-reac
 import { signOut } from "next-auth/react"
 import { format } from "date-fns"
 import { toast } from "sonner"
+import { ThemeToggle } from "@/components/ThemeToggle"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -152,38 +153,38 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
   }
 
   return (
-    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#f8f8f8] font-sans text-black selection:bg-black selection:text-white">
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background font-sans text-foreground selection:bg-foreground selection:text-background">
       {/* Top Navigation Bar */}
-      <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-[#d4d4d8] bg-white px-6 font-mono text-[10px] tracking-widest uppercase">
+      <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-6 font-mono text-[10px] tracking-widest uppercase">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center bg-black text-sm leading-none font-bold tracking-tighter text-white shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center border border-foreground text-lg leading-none font-bold shadow-sm">
               V
             </div>
             <div className="hidden sm:block">
-              <div className="mb-1 font-mono text-[9px] leading-none tracking-[0.2em] text-[#999] uppercase">
+              <div className="mb-1 font-mono text-[9px] leading-none tracking-[0.2em] text-muted-foreground uppercase">
                 Event Layout
               </div>
-              <div className="text-sm leading-none font-bold tracking-tight uppercase">Planner</div>
+              <div className="text-sm leading-none font-bold tracking-tight uppercase text-foreground">Planner</div>
             </div>
           </Link>
 
-          <div className="hidden h-6 w-[1px] bg-[#d4d4d8] md:block" />
+          <div className="hidden h-6 w-[1px] bg-border md:block" />
 
           <nav className="flex items-center gap-6">
             <Link
               href="/dashboard"
-              className="group relative flex items-center gap-2 font-bold tracking-widest text-black uppercase"
+              className="group relative flex items-center gap-2 font-bold tracking-widest text-foreground uppercase"
             >
               <Database className="h-3.5 w-3.5" />
               <span>Events</span>
-              <div className="absolute -bottom-[19px] left-0 h-[2px] w-full bg-black" />
+              <div className="absolute -bottom-[19px] left-0 h-[2px] w-full bg-foreground" />
             </Link>
             <Link
               href="/marketplace"
-              className="group flex items-center gap-2 tracking-widest text-[#666] uppercase transition-colors hover:text-black"
+              className="group flex items-center gap-2 tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
             >
-              <Cpu className="h-3.5 w-3.5 transition-colors group-hover:text-black" />
+              <Cpu className="h-3.5 w-3.5 transition-colors group-hover:text-foreground" />
               <span>Marketplace</span>
             </Link>
           </nav>
@@ -191,27 +192,28 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
 
         <div className="flex items-center gap-6">
           <div className="hidden items-center gap-2 md:flex">
-            <span className="text-[#999]">PLAN:</span>
+            <span className="text-muted-foreground">PLAN:</span>
             <span
-              className={`border px-1.5 py-0.5 font-bold ${plan === "pro" ? "border-[#ffb300] bg-[#fffdf0] text-[#ffb300]" : "border-[#666] text-[#333]"} tracking-widest`}
+              className={`border px-1.5 py-0.5 font-bold ${plan === "pro" ? "border-warning bg-warning/10 text-warning" : "border-muted-foreground text-muted-foreground"} tracking-widest`}
             >
               {plan}
             </span>
           </div>
           <div className="hidden items-center gap-2 sm:flex">
-            <span className="text-[#999]">USER:</span>
-            <span className="max-w-[120px] truncate border-b border-black font-bold text-black select-all lg:max-w-none">
+            <span className="text-muted-foreground">USER:</span>
+            <span className="max-w-[120px] truncate border-b border-foreground font-bold text-foreground select-all lg:max-w-none">
               {user.email || user.name}
             </span>
+            <ThemeToggle />
+            <button
+              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+              className="flex items-center gap-2 border-l border-border py-1 pl-2 tracking-widest text-muted-foreground uppercase transition-colors hover:text-destructive"
+              title="Log Out"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden lg:inline">LOG OUT</span>
+            </button>
           </div>
-          <button
-            onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-            className="flex items-center gap-2 border-l border-[#d4d4d8] py-1 pl-2 tracking-widest text-[#999] uppercase transition-colors hover:text-[#cc0000]"
-            title="Log Out"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden lg:inline">LOG OUT</span>
-          </button>
         </div>
       </header>
 
@@ -219,10 +221,10 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
       <main className="relative w-full flex-1 overflow-y-auto p-8">
         <div className="mx-auto max-w-6xl">
           {/* Header Area */}
-          <div className="mb-8 flex items-center justify-between border-b border-black pb-4">
+          <div className="mb-8 flex items-center justify-between border-b border-border pb-4">
             <div>
-              <h1 className="mb-1 text-3xl font-bold tracking-tighter uppercase">Events</h1>
-              <p className="font-mono text-xs tracking-widest text-[#666] uppercase">
+              <h1 className="mb-1 text-3xl font-bold tracking-tighter uppercase text-foreground">Events</h1>
+              <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
                 Total Events: {events.length} {plan === "free" && `(MAX 3)`}
               </p>
             </div>
@@ -236,44 +238,44 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
               }}
             >
               <DialogTrigger asChild>
-                <Button className="h-10 rounded-none border border-black bg-black px-5 font-mono text-xs tracking-widest text-white uppercase shadow-none transition-all hover:bg-[#333] hover:shadow-[2px_2px_0px_rgba(0,0,0,0.2)]">
+                <Button className="h-10 rounded-none border border-border bg-foreground px-5 font-mono text-xs tracking-widest text-background uppercase shadow-none transition-all hover:bg-foreground/80 hover:shadow-sm">
                   + Create Event
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-xl overflow-hidden rounded-none border-2 border-black p-0 shadow-[8px_8px_0_0_rgba(0,0,0,0.1)]">
-                <div className="flex items-center justify-between border-b border-black bg-black px-6 py-4 text-white">
-                  <DialogTitle className="font-mono text-sm tracking-widest uppercase">
+              <DialogContent className="max-w-xl overflow-hidden rounded-none border-2 border-border p-0 shadow-lg bg-card">
+                <div className="flex items-center justify-between border-b border-border bg-foreground px-6 py-4 text-background">
+                  <DialogTitle className="font-mono text-sm tracking-widest text-background uppercase">
                     New Event
                   </DialogTitle>
-                  <Terminal className="h-4 w-4 text-[#ffb300]" />
+                  <Terminal className="h-4 w-4 text-warning" />
                 </div>
-                <div className="max-h-[80vh] overflow-y-auto bg-white px-6 py-6">
+                <div className="max-h-[80vh] overflow-y-auto px-6 py-6 text-foreground bg-card">
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                        <label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
                           Event Name *
                         </label>
                         <Input
                           required
                           value={formData.title}
                           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                          className="h-10 rounded-none border-black font-mono text-sm placeholder:text-[#ccc] focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0"
+                          className="h-10 rounded-none border-input font-mono text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0"
                           placeholder="Annual Tech Conference 2026"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                        <label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
                           Type
                         </label>
                         <Select
                           value={formData.eventType}
                           onValueChange={(value) => setFormData({ ...formData, eventType: value })}
                         >
-                          <SelectTrigger className="h-10 rounded-none border-black font-mono text-sm uppercase">
+                          <SelectTrigger className="h-10 rounded-none border-input font-mono text-sm uppercase">
                             <SelectValue placeholder="SELECT TYPE" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-none border-black font-mono text-xs uppercase">
+                          <SelectContent className="rounded-none border-input bg-card font-mono text-xs uppercase">
                             {[
                               "conference",
                               "wedding",
@@ -285,7 +287,7 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                               <SelectItem
                                 key={t}
                                 value={t}
-                                className="cursor-pointer rounded-none focus:bg-black focus:text-white"
+                                className="cursor-pointer rounded-none focus:bg-foreground focus:text-background"
                               >
                                 {t}
                               </SelectItem>
@@ -295,9 +297,9 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 border-t border-[#d4d4d8] pt-4">
+                    <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
                       <div className="space-y-2">
-                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                        <label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
                           Start Date *
                         </label>
                         <Input
@@ -305,84 +307,61 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                           required
                           value={formData.eventDate}
                           onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                          className="h-10 rounded-none border-black font-mono text-sm"
+                          className="h-10 rounded-none border-input font-mono text-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
-                          End Date
-                        </label>
-                        <Input
-                          type="date"
-                          value={formData.endDate}
-                          min={formData.eventDate || undefined}
-                          onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                          className="h-10 rounded-none border-black font-mono text-sm"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+                        <label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
                           Start Time
                         </label>
                         <Input
                           type="time"
                           value={formData.startTime}
                           onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                          className="h-10 rounded-none border-black font-mono text-sm"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
-                          End Time
-                        </label>
-                        <Input
-                          type="time"
-                          value={formData.endTime}
-                          onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                          className="h-10 rounded-none border-black font-mono text-sm"
+                          className="h-10 rounded-none border-input font-mono text-sm focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 border-t border-[#d4d4d8] pt-4">
-                      <div className="col-span-1 space-y-2">
-                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
-                          Venue
+                    <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                          Expected Capacity
+                        </label>
+                        <Input
+                          type="number"
+                          value={formData.capacity}
+                          onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                          className="h-10 rounded-none border-input font-mono text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0"
+                          placeholder="e.g. 500"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                          Location / Venue
                         </label>
                         <Input
                           value={formData.venue}
                           onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                          className="h-10 rounded-none border-black font-mono text-sm uppercase"
-                          placeholder="Grand Hall A"
-                        />
-                      </div>
-                      <div className="col-span-1 space-y-2">
-                        <label className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
-                          Capacity
-                        </label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={formData.capacity}
-                          onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                          className="h-10 w-full rounded-none border-black font-mono text-sm uppercase"
+                          className="h-10 rounded-none border-input font-mono text-sm placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0"
+                          placeholder="e.g. Main Hall B"
                         />
                       </div>
                     </div>
 
-                    <div className="flex gap-4 border-t border-[#d4d4d8] pt-6">
+                    <div className="flex gap-4 pt-4">
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-10 flex-1 rounded-none border-black font-mono text-xs tracking-widest text-black uppercase"
                         onClick={() => setShowCreateModal(false)}
+                        className="h-12 flex-1 rounded-none border-input font-mono text-xs tracking-widest uppercase hover:bg-muted"
                       >
                         Cancel
                       </Button>
                       <Button
                         type="submit"
-                        className="h-10 flex-1 rounded-none border border-black bg-black font-mono text-xs tracking-widest text-white uppercase shadow-[2px_2px_0px_#000] transition-all hover:bg-black hover:text-[#0055ff] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                         disabled={isCreating}
+                        className="h-12 flex-1 rounded-none border border-foreground bg-foreground font-mono text-xs tracking-widest text-background uppercase transition-all shadow-sm hover:bg-foreground/80"
                       >
                         {isCreating ? "Saving..." : "Create Event"}
                       </Button>
@@ -395,14 +374,14 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
 
           {/* Grid display */}
           {events.length === 0 ? (
-            <div className="flex flex-col items-center justify-center border border-dashed border-[#ccc] bg-white p-12 text-center">
-              <Terminal className="mb-4 h-8 w-8 text-[#ccc]" />
-              <p className="mb-6 font-mono text-sm tracking-widest text-[#999] uppercase">
+            <div className="flex flex-col items-center justify-center border border-dashed border-border bg-card p-12 text-center">
+              <Terminal className="mb-4 h-8 w-8 text-muted-foreground" />
+              <p className="mb-6 font-mono text-sm tracking-widest text-muted-foreground uppercase">
                 No events found.
               </p>
               <Button
                 variant="outline"
-                className="rounded-none border-black font-mono text-xs tracking-widest uppercase"
+                className="rounded-none border-foreground text-foreground font-mono text-xs tracking-widest uppercase hover:bg-muted"
                 onClick={() => setShowCreateModal(true)}
               >
                 Create Your First Event
@@ -413,64 +392,64 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
               {events.map((event) => (
                 <div
                   key={event.id}
-                  className="group flex flex-col border border-[#cccccc] bg-white shadow-sm transition-colors hover:border-black"
+                  className="group flex flex-col border border-border bg-card shadow-sm transition-colors hover:border-foreground"
                 >
                   {/* Top status line */}
                   <div
-                    className={`h-1 w-full ${event.isPublic ? "bg-[#009944]" : "bg-[#e0e0e0] group-hover:bg-[#0055ff]"}`}
+                    className={`h-1 w-full ${event.isPublic ? "bg-success" : "bg-muted group-hover:bg-info"}`}
                   />
 
                   <Link href={`/events/${event.id}`} className="block flex-1 p-5">
                     <div className="mb-4 flex items-start justify-between">
-                      <div className="mb-1 max-w-[80%] overflow-hidden font-mono text-[10px] tracking-widest text-ellipsis whitespace-nowrap text-[#666] uppercase">
+                      <div className="mb-1 max-w-[80%] overflow-hidden font-mono text-[10px] tracking-widest text-ellipsis whitespace-nowrap text-muted-foreground uppercase">
                         ID: {event.id.split("-")[0]}
                       </div>
                       {event.isPublic && (
                         <div
-                          className="h-2 w-2 rounded-full bg-[#009944] shadow-[0_0_8px_#009944]"
+                          className="h-2 w-2 rounded-full bg-success shadow-[0_0_8px_currentColor] text-success"
                           title="Published"
                         />
                       )}
                     </div>
-                    <h3 className="mb-4 line-clamp-2 text-lg font-bold tracking-tight uppercase transition-colors group-hover:text-[#0055ff]">
+                    <h3 className="mb-4 line-clamp-2 text-lg font-bold tracking-tight uppercase transition-colors text-foreground group-hover:text-info">
                       {event.title}
                     </h3>
 
-                    <div className="my-4 h-[1px] w-full bg-[#f0f0f0]" />
+                    <div className="my-4 h-[1px] w-full bg-border" />
 
                     <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-2 font-mono text-xs">
-                      <span className="text-[10px] tracking-widest text-[#999] uppercase">
+                      <span className="text-[10px] tracking-widest text-muted-foreground uppercase">
                         DATE
                       </span>
-                      <span className="text-right font-medium">
+                      <span className="text-right font-medium text-foreground">
                         {format(new Date(event.eventDate), "yyyy.MM.dd")}
                       </span>
 
-                      <span className="text-[10px] tracking-widest text-[#999] uppercase">
+                      <span className="text-[10px] tracking-widest text-muted-foreground uppercase">
                         TYPE
                       </span>
-                      <span className="truncate text-right">
+                      <span className="truncate text-right text-foreground">
                         {event.eventType?.toUpperCase() || "UNKNOWN"}
                       </span>
 
-                      <span className="text-[10px] tracking-widest text-[#999] uppercase">
+                      <span className="text-[10px] tracking-widest text-muted-foreground uppercase">
                         ELEMENTS
                       </span>
-                      <span className="text-right font-medium">{event._count.elements}</span>
+                      <span className="text-right font-medium text-foreground">{event._count.elements}</span>
                     </div>
                   </Link>
 
                   {/* Actions Bar */}
-                  <div className="flex h-10 divide-x divide-[#e0e0e0] border-t border-[#e0e0e0] bg-[#fdfdfd]">
+                  <div className="flex h-10 divide-x divide-border border-t border-border bg-muted/20">
                     <Link
                       href={`/events/${event.id}`}
-                      className="flex flex-1 items-center justify-center font-mono text-[10px] tracking-widest text-[#666] uppercase transition-colors hover:bg-black hover:text-white"
+                      className="flex flex-1 items-center justify-center font-mono text-[10px] tracking-widest text-muted-foreground uppercase transition-colors hover:bg-foreground hover:text-background"
                     >
                       OPEN
                     </Link>
                     <button
                       onClick={() => handleDuplicate(event.id)}
-                      className="flex w-10 items-center justify-center text-[#999] transition-colors hover:bg-[#f0f0f0]"
+                      className="flex w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-muted"
                       title="Duplicate"
                     >
                       <Copy className="h-3.5 w-3.5" />
@@ -478,35 +457,35 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <button
-                          className="flex w-10 items-center justify-center text-[#999] transition-colors hover:bg-[#ffcccc] hover:text-[#cc0000]"
+                          className="flex w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                           title="Delete"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="max-w-md overflow-hidden rounded-none border-2 border-black p-0 shadow-[8px_8px_0_0_rgba(0,0,0,0.1)]">
-                        <div className="border-b border-black bg-[#cc0000] px-5 py-3 text-white">
+                      <AlertDialogContent className="max-w-md overflow-hidden rounded-none border-2 border-foreground p-0 shadow-[8px_8px_0_0_currentColor] bg-card text-foreground">
+                        <div className="border-b border-border bg-destructive px-5 py-3 text-destructive-foreground">
                           <AlertDialogTitle className="font-mono text-xs font-bold tracking-widest uppercase">
                             Delete Event
                           </AlertDialogTitle>
                         </div>
-                        <div className="bg-white p-6">
-                          <AlertDialogDescription className="mb-6 font-mono text-sm text-black">
+                        <div className="bg-card p-6">
+                          <AlertDialogDescription className="mb-6 font-mono text-sm text-foreground">
                             Are you sure you want to delete "{event.title.toUpperCase()}"?
                             <br />
                             <br />
-                            <span className="text-[#666]">
+                            <span className="text-muted-foreground">
                               This action cannot be undone. All event elements and data will be
                               removed.
                             </span>
                           </AlertDialogDescription>
                           <AlertDialogFooter className="space-x-4 sm:space-x-4">
-                            <AlertDialogCancel className="mt-0 h-10 w-full rounded-none border border-black font-mono text-xs tracking-widest uppercase sm:w-1/2">
+                            <AlertDialogCancel className="mt-0 h-10 w-full rounded-none border border-border bg-background font-mono text-xs tracking-widest uppercase text-foreground hover:bg-muted sm:w-1/2">
                               Cancel
                             </AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(event.id)}
-                              className="h-10 w-full rounded-none border border-black bg-black font-mono text-xs tracking-widest text-[#ff3333] uppercase shadow-[2px_2px_0px_#cc0000] hover:bg-black hover:text-[#ff0000] sm:w-1/2"
+                              className="h-10 w-full rounded-none border border-destructive bg-destructive font-mono text-xs tracking-widest text-destructive-foreground uppercase shadow-[2px_2px_0px_currentColor] hover:bg-destructive/90 sm:w-1/2"
                             >
                               Confirm Delete
                             </AlertDialogAction>

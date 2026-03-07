@@ -111,9 +111,8 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
       <div className="relative flex h-full w-full flex-col overflow-hidden">
         {/* ── Collapsed view (icon strip) ── */}
         <div
-          className={`absolute inset-0 flex flex-col items-center gap-1.5 overflow-y-auto px-2 py-3 transition-opacity duration-150 ${
-            collapsed ? "opacity-100" : "pointer-events-none opacity-0"
-          }`}
+          className={`absolute inset-0 flex flex-col items-center gap-1.5 overflow-y-auto px-2 py-3 transition-opacity duration-150 ${collapsed ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
         >
           {elements.map((element) => (
             <Tooltip key={element.type}>
@@ -121,12 +120,15 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
                 <div
                   draggable
                   onDragStart={(e) => handleDragStart(e, element.type)}
-                  className={`flex h-10 w-10 cursor-grab items-center justify-center rounded-lg ${element.color} text-white shadow-sm transition-opacity hover:opacity-80 active:cursor-grabbing`}
+                  className={`flex h-10 w-10 cursor-grab items-center justify-center rounded-none shadow-none ${element.color} text-white transition-opacity hover:opacity-80 active:cursor-grabbing`}
                 >
                   {element.icon}
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="right">
+              <TooltipContent
+                side="right"
+                className="rounded-none border border-border bg-card font-mono text-[10px] uppercase text-foreground"
+              >
                 <p>Drag to add {element.label.toLowerCase()}</p>
               </TooltipContent>
             </Tooltip>
@@ -135,22 +137,25 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
 
         {/* ── Expanded view (full panel) ── */}
         <div
-          className={`flex h-full flex-col transition-opacity duration-150 ${
-            collapsed ? "pointer-events-none opacity-0" : "opacity-100"
-          }`}
+          className={`flex h-full flex-col bg-card transition-opacity duration-150 ${collapsed ? "pointer-events-none opacity-0" : "opacity-100"
+            }`}
         >
-          <div className="border-b p-4">
-            <h2 className="font-semibold text-zinc-900">Elements</h2>
-            <p className="mt-1 text-xs text-zinc-500">Drag onto canvas</p>
+          <div className="border-b border-border p-4">
+            <h2 className="font-mono text-xs font-bold tracking-widest text-foreground uppercase">
+              Elements
+            </h2>
+            <p className="mt-1 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              Drag onto canvas
+            </p>
           </div>
 
-          <div className="flex-1 space-y-4 overflow-y-auto p-3">
+          <div className="flex-1 space-y-6 overflow-y-auto p-4">
             {categories.map((category) => (
               <div key={category.id}>
-                <h3 className="mb-2 px-1 text-xs font-medium tracking-wider text-zinc-400 uppercase">
+                <h3 className="mb-3 px-1 font-mono text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                   {category.label}
                 </h3>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {elements
                     .filter((el) => el.category === category.id)
                     .map((element) => (
@@ -159,20 +164,23 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
                           <div
                             draggable
                             onDragStart={(e) => handleDragStart(e, element.type)}
-                            className="group flex cursor-grab items-center gap-3 rounded-lg border border-transparent p-2.5 transition-colors hover:border-zinc-200 hover:bg-zinc-50 active:cursor-grabbing"
+                            className="group flex cursor-grab items-center gap-3 border border-border bg-background p-2 transition-colors hover:border-foreground active:cursor-grabbing"
                           >
                             <div
-                              className={`flex h-8 w-8 items-center justify-center rounded-md ${element.color} text-white shadow-sm`}
+                              className={`flex h-8 w-8 items-center justify-center ${element.color} text-white shadow-none`}
                             >
                               {element.icon}
                             </div>
-                            <span className="flex-1 text-sm font-medium text-zinc-700">
+                            <span className="flex-1 font-mono text-[10px] font-bold tracking-widest text-foreground uppercase transition-colors group-hover:text-foreground">
                               {element.label}
                             </span>
-                            <GripVertical className="h-4 w-4 text-zinc-300 opacity-0 transition-opacity group-hover:opacity-100" />
+                            <GripVertical className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                           </div>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
+                        <TooltipContent
+                          side="right"
+                          className="rounded-none border border-border bg-card font-mono text-[10px] uppercase text-foreground"
+                        >
                           <p>Drag to add {element.label.toLowerCase()}</p>
                         </TooltipContent>
                       </Tooltip>
@@ -182,10 +190,10 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
             ))}
           </div>
 
-          <div className="border-t bg-zinc-50 p-3">
-            <p className="text-xs leading-relaxed text-zinc-500">
-              <span className="font-medium text-zinc-600">Tip:</span> Click an element on canvas to
-              select it, then drag to move or resize.
+          <div className="border-t border-border bg-muted p-4">
+            <p className="font-mono text-[9px] leading-relaxed tracking-widest text-muted-foreground uppercase">
+              <span className="font-bold text-foreground">SYSTEM TIP:</span> CLICK AN ELEMENT ON CANVAS
+              TO SELECT IT, THEN DRAG TO MOVE OR RESIZE.
             </p>
           </div>
         </div>

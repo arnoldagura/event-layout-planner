@@ -26,9 +26,9 @@ interface Props {
 }
 
 const statusColors: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  approved: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  rejected: "bg-zinc-100 text-zinc-500 border-zinc-200",
+  pending: "bg-warning/10 text-warning border-warning",
+  approved: "bg-success/10 text-success border-success",
+  rejected: "bg-muted text-muted-foreground border-border",
 }
 
 export function BidsPanel({ eventId, onBidsLoaded }: Props) {
@@ -92,14 +92,18 @@ export function BidsPanel({ eventId, onBidsLoaded }: Props) {
   return (
     <>
       {/* Header */}
-      <div className="shrink-0 border-b p-4">
+      <div className="shrink-0 border-b border-border p-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900">
-            <Gavel className="h-4 w-4 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-none bg-foreground">
+            <Gavel className="h-4 w-4 text-background" />
           </div>
           <div>
-            <h2 className="font-semibold text-zinc-900">Booth Bids</h2>
-            <p className="text-xs text-zinc-500">Approve or reject vendor bids</p>
+            <h2 className="font-mono text-xs font-bold tracking-widest text-foreground uppercase">
+              Booth Bids
+            </h2>
+            <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              Approve or reject vendor bids
+            </p>
           </div>
         </div>
       </div>
@@ -108,27 +112,29 @@ export function BidsPanel({ eventId, onBidsLoaded }: Props) {
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-10">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : bids.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
-              <Gavel className="h-5 w-5 text-zinc-400" />
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-none border border-border bg-muted">
+              <Gavel className="h-5 w-5 text-muted-foreground" />
             </div>
-            <p className="mb-1 text-sm text-zinc-500">No bids yet</p>
-            <p className="text-xs text-zinc-400">
+            <p className="mb-1 font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+              No bids yet
+            </p>
+            <p className="font-mono text-[9px] leading-relaxed tracking-widest text-muted-foreground uppercase">
               Vendors can submit bids from the public event page.
             </p>
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="divide-y divide-border">
             {Object.entries(grouped).map(([boothId, boothBids]) => (
-              <div key={boothId} className="space-y-2 p-4">
+              <div key={boothId} className="space-y-4 p-4">
                 <div className="mb-3 flex items-center gap-1.5">
-                  <span className="text-xs font-semibold tracking-wide text-zinc-700 uppercase">
+                  <span className="font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
                     {getBoothName(boothId)}
                   </span>
-                  <span className="text-xs text-zinc-400">
+                  <span className="font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
                     {boothBids.length} bid{boothBids.length !== 1 ? "s" : ""}
                   </span>
                 </div>
@@ -136,52 +142,58 @@ export function BidsPanel({ eventId, onBidsLoaded }: Props) {
                 {boothBids.map((bid) => (
                   <div
                     key={bid.id}
-                    className="space-y-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3"
+                    className="space-y-3 rounded-none border border-border bg-muted/30 p-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-zinc-900">
+                        <p className="truncate font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
                           {bid.vendorName}
                         </p>
-                        <p className="truncate text-xs text-zinc-500">{bid.vendorEmail}</p>
+                        <p className="truncate font-mono text-[9px] tracking-widest text-muted-foreground lowercase">
+                          {bid.vendorEmail}
+                        </p>
                       </div>
-                      <Badge className={`shrink-0 text-xs ${statusColors[bid.status] ?? ""}`}>
+                      <Badge
+                        className={`shrink-0 rounded-none border font-mono text-[9px] tracking-widest uppercase ${statusColors[bid.status] ?? ""}`}
+                      >
                         {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
                       </Badge>
                     </div>
 
-                    <div className="flex items-center gap-1 text-sm font-semibold text-zinc-900">
-                      <DollarSign className="h-3.5 w-3.5 text-zinc-400" />
+                    <div className="flex items-center gap-1 font-mono text-[10px] font-bold tracking-widest text-foreground">
+                      <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
                       {bid.amount.toLocaleString()}
                     </div>
 
                     {bid.message && (
-                      <p className="text-xs text-zinc-500 italic">&ldquo;{bid.message}&rdquo;</p>
+                      <p className="font-mono text-[9px] leading-relaxed tracking-widest text-muted-foreground uppercase">
+                        &ldquo;{bid.message}&rdquo;
+                      </p>
                     )}
 
-                    <p className="text-[10px] text-zinc-400">
+                    <p className="font-mono text-[8px] tracking-widest text-muted-foreground uppercase">
                       {format(new Date(bid.createdAt), "MMM d, h:mm a")}
                     </p>
 
                     {bid.status === "pending" && (
-                      <div className="flex gap-1.5 pt-1">
+                      <div className="flex gap-2 pt-2">
                         <Button
                           size="sm"
-                          className="h-7 flex-1 bg-emerald-600 text-xs hover:bg-emerald-700"
+                          className="h-8 flex-1 rounded-none bg-success border border-success font-mono text-[9px] tracking-widest text-white uppercase shadow-none hover:bg-success/90"
                           disabled={actioningId === bid.id}
                           onClick={() => handleAction(bid.id, "approved")}
                         >
-                          <Check className="h-3 w-3" />
+                          <Check className="mr-1.5 h-3 w-3" />
                           Approve
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 flex-1 border-red-200 text-xs text-red-600 hover:bg-red-50"
+                          className="h-8 flex-1 rounded-none border-destructive font-mono text-[9px] tracking-widest text-destructive uppercase shadow-none hover:bg-destructive hover:text-destructive-foreground"
                           disabled={actioningId === bid.id}
                           onClick={() => handleAction(bid.id, "rejected")}
                         >
-                          <X className="h-3 w-3" />
+                          <X className="mr-1.5 h-3 w-3" />
                           Reject
                         </Button>
                       </div>

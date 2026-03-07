@@ -8,12 +8,12 @@ import { Server, Terminal, Database, Shield, ArrowRight, Cpu } from "lucide-reac
 function CanvasPreview() {
   return (
     <div
-      className="relative overflow-hidden border border-[#333] bg-black shadow-[8px_8px_0_0_#111] select-none"
+      className="relative overflow-hidden border border-border bg-card shadow-sm select-none"
       style={{
         width: 520,
         height: 340,
         backgroundImage:
-          "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)",
+          "linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)",
         backgroundSize: "20px 20px",
         transform: "perspective(1200px) rotateY(-8deg) rotateX(4deg)",
         transformOrigin: "right center",
@@ -21,7 +21,7 @@ function CanvasPreview() {
     >
       {/* Stage */}
       <div
-        className="absolute flex items-center justify-center border border-white bg-white text-[10px] font-bold tracking-widest text-black uppercase"
+        className="absolute flex items-center justify-center border border-foreground bg-foreground text-[10px] font-bold tracking-widest text-background uppercase"
         style={{ left: 40, top: 30, width: 200, height: 60 }}
       >
         EVENT CANVAS
@@ -31,7 +31,7 @@ function CanvasPreview() {
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="absolute flex flex-col items-center justify-center border border-[#009944] bg-[#009944]/10 font-mono text-[9px] font-bold text-[#009944]"
+          className="absolute flex flex-col items-center justify-center border border-success bg-success/10 font-mono text-[9px] font-bold text-success"
           style={{ left: 40 + i * 70, top: 120, width: 58, height: 58 }}
         >
           <span>SEC-{i + 1}</span>
@@ -43,14 +43,14 @@ function CanvasPreview() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="absolute border border-[#0055ff] bg-[#0055ff]/10"
+          className="absolute border border-info bg-info/10"
           style={{ left: 48 + i * 90, top: 210, width: 64, height: 64 }}
         />
       ))}
 
       {/* Gateway */}
       <div
-        className="absolute flex items-center justify-center border border-[#ffb300] bg-[#ffb300]/10 font-mono text-[10px] font-bold text-[#ffb300] uppercase"
+        className="absolute flex items-center justify-center border border-warning bg-warning/10 font-mono text-[10px] font-bold text-warning uppercase"
         style={{ left: 380, top: 200, width: 100, height: 110 }}
       >
         ENTRANCE
@@ -58,36 +58,36 @@ function CanvasPreview() {
 
       {/* Auxiliary Node */}
       <div
-        className="absolute border border-[#cc0000] bg-[#cc0000]/10"
+        className="absolute border border-destructive bg-destructive/10"
         style={{ left: 280, top: 30, width: 80, height: 60 }}
       />
 
       {/* Selection ring */}
       <div
-        className="absolute border-2 border-[#0055ff]"
+        className="absolute border-2 border-info"
         style={{ left: 40, top: 120, width: 58, height: 58 }}
       />
 
       {/* Properties panel hint */}
-      <div className="absolute top-3 right-3 border border-[#333] bg-black p-3 font-mono text-[9px] tracking-widest text-[#999] uppercase">
-        <div className="mb-2 border-b border-[#333] pb-1 font-bold text-white">BOOTH SEC-1</div>
+      <div className="absolute top-3 right-3 border border-border bg-background p-3 font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
+        <div className="mb-2 border-b border-border pb-1 font-bold text-foreground">BOOTH SEC-1</div>
         <div className="flex justify-between gap-4">
-          <span>TYPE</span> <span className="text-white">SPONSOR</span>
+          <span>TYPE</span> <span className="text-foreground">SPONSOR</span>
         </div>
         <div className="flex justify-between gap-4">
-          <span>SIZE</span> <span className="text-white">10x10</span>
+          <span>SIZE</span> <span className="text-foreground">10x10</span>
         </div>
-        <div className="mt-2 flex items-center gap-1.5 font-bold text-[#009944]">
-          <span className="h-1.5 w-1.5 animate-pulse bg-[#009944]" /> RESERVED
+        <div className="mt-2 flex items-center gap-1.5 font-bold text-success">
+          <span className="h-1.5 w-1.5 animate-pulse bg-success" /> RESERVED
         </div>
       </div>
 
       {/* Toolbar hint */}
-      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2 border border-[#333] bg-black px-4 py-2 text-[9px] tracking-widest text-[#999] uppercase">
+      <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2 border border-border bg-background px-4 py-2 text-[9px] tracking-widest text-muted-foreground uppercase">
         <span>X:14</span>
         <span>Y:92</span>
-        <span className="mx-2 h-3 w-[1px] bg-[#333]" />
-        <span className="font-bold text-[#0055ff]">AUTO-ALIGN</span>
+        <span className="mx-2 h-3 w-[1px] bg-border" />
+        <span className="font-bold text-info">AUTO-ALIGN</span>
       </div>
     </div>
   )
@@ -144,26 +144,26 @@ function PricingCard({
 }) {
   return (
     <div
-      className={`relative flex flex-col border p-8 ${highlight ? "border-[#0055ff] bg-[#00051a]" : "border-[#333] bg-black"} transition-all hover:bg-[#111]`}
+      className={`relative flex flex-col border p-8 ${highlight ? "border-info bg-info/10" : "border-border bg-background"} transition-all hover:bg-muted`}
     >
       {highlight && (
-        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 border border-[#0055ff] bg-[#0055ff] px-4 py-1 text-[10px] font-bold tracking-widest text-white uppercase">
+        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 border border-info bg-info px-4 py-1 text-[10px] font-bold tracking-widest text-primary-foreground uppercase">
           RECOMMENDED PROTOCOL
         </div>
       )}
-      <div className="mb-8 border-b border-[#333] pb-6">
+      <div className="mb-8 border-b border-border pb-6">
         <p
-          className={`mb-2 text-[10px] font-bold tracking-widest uppercase ${highlight ? "text-[#0055ff]" : "text-[#666]"}`}
+          className={`mb-2 text-[10px] font-bold tracking-widest uppercase ${highlight ? "text-info" : "text-muted-foreground"}`}
         >
           PLAN: {plan}
         </p>
-        <div className="flex items-baseline gap-2 text-white">
+        <div className="flex items-baseline gap-2 text-foreground">
           <span className="font-mono text-4xl font-bold tracking-tight">{price}</span>
           {price !== "FREE" && (
-            <span className="text-xs tracking-widest text-[#999] uppercase">/MONTH</span>
+            <span className="text-xs tracking-widest text-muted-foreground uppercase">/MONTH</span>
           )}
         </div>
-        <p className="mt-4 text-[10px] leading-relaxed tracking-widest text-[#999] uppercase">
+        <p className="mt-4 text-[10px] leading-relaxed tracking-widest text-muted-foreground uppercase">
           {description}
         </p>
       </div>
@@ -172,9 +172,9 @@ function PricingCard({
         {features.map((f) => (
           <li key={f} className="flex items-start gap-3">
             <div
-              className={`mt-[1px] h-3 w-3 border ${highlight ? "border-[#0055ff] bg-[#0055ff]/20" : "border-[#666] bg-transparent"}`}
+              className={`mt-[1px] h-3 w-3 border ${highlight ? "border-info bg-info/20" : "border-muted-foreground bg-transparent"}`}
             />
-            <span className="text-[#ccc]">{f}</span>
+            <span className="text-muted-foreground">{f}</span>
           </li>
         ))}
       </ul>
@@ -182,8 +182,8 @@ function PricingCard({
       <Link
         href={href}
         className={`mt-auto flex items-center justify-center gap-2 px-6 py-4 text-[10px] font-bold tracking-widest uppercase transition-all ${highlight
-          ? "border border-[#0055ff] bg-[#0055ff] text-white shadow-[4px_4px_0_0_#fff] hover:bg-[#0033cc]"
-          : "border border-white bg-white text-black hover:bg-[#ccc]"
+          ? "border border-info bg-info text-primary-foreground shadow-[4px_4px_0_0_var(--foreground)] hover:bg-info/90"
+          : "border border-foreground bg-foreground text-background hover:bg-foreground/80"
           }`}
       >
         {cta}
@@ -197,31 +197,31 @@ function PricingCard({
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-black font-sans text-white selection:bg-white selection:text-black">
+    <div className="flex min-h-screen flex-col bg-background font-sans text-foreground selection:bg-foreground selection:text-background">
       {/* ── Navbar ── */}
-      <header className="sticky top-0 z-50 border-b border-[#333] bg-black/90 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/" className="relative z-10 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center border border-white text-sm font-bold shadow-[2px_2px_0_0_#fff]">
+            <div className="flex h-8 w-8 items-center justify-center border border-foreground text-sm font-bold shadow-sm">
               V
             </div>
             <div className="flex flex-col">
-              <div className="mb-1 text-[10px] leading-none tracking-[0.2em] text-[#999] uppercase">
+              <div className="mb-1 text-[10px] leading-none tracking-[0.2em] text-muted-foreground uppercase">
                 Event Layout
               </div>
-              <div className="text-lg leading-none font-bold tracking-tight uppercase">Planner</div>
+              <div className="text-lg leading-none font-bold tracking-tight uppercase text-foreground">Planner</div>
             </div>
           </Link>
           <nav className="flex items-center gap-8 font-mono text-[10px] font-bold tracking-widest uppercase">
-            <Link href="/marketplace" className="text-[#999] transition-colors hover:text-white">
+            <Link href="/marketplace" className="text-muted-foreground transition-colors hover:text-foreground">
               MARKETPLACE
             </Link>
-            <Link href="/pricing" className="text-[#999] transition-colors hover:text-white">
+            <Link href="/pricing" className="text-muted-foreground transition-colors hover:text-foreground">
               PRICING
             </Link>
             <Link
               href="/auth/signin"
-              className="text-[#999] transition-colors hover:text-[#0055ff]"
+              className="text-muted-foreground transition-colors hover:text-primary"
             >
               SIGN IN
             </Link>
@@ -230,13 +230,13 @@ export function LandingPage() {
       </header>
 
       {/* ── Hero ── */}
-      <section className="relative flex min-h-[80vh] items-center overflow-hidden border-b border-[#333] px-6 pt-24 pb-24">
+      <section className="relative flex min-h-[80vh] items-center overflow-hidden border-b border-border px-6 pt-24 pb-24">
         {/* Background Grid */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-20"
+          className="pointer-events-none absolute inset-0 opacity-10 dark:opacity-20"
           style={{
             backgroundImage:
-              "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)",
+              "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
             backgroundSize: "40px 40px",
           }}
         />
@@ -244,20 +244,20 @@ export function LandingPage() {
         <div className="relative mx-auto flex w-full max-w-7xl items-center justify-between gap-16">
           {/* Left: text */}
           <div className="max-w-2xl flex-1">
-            <div className="mb-6 inline-flex items-center gap-2 border border-[#009944] bg-[#009944]/10 px-3 py-1 font-mono text-[9px] font-bold tracking-widest text-[#009944] uppercase">
-              <span className="h-1.5 w-1.5 animate-pulse bg-[#009944]" />
+            <div className="mb-6 inline-flex items-center gap-2 border border-success bg-success/10 px-3 py-1 font-mono text-[9px] font-bold tracking-widest text-success uppercase">
+              <span className="h-1.5 w-1.5 animate-pulse bg-success" />
               SYSTEM ONLINE
             </div>
 
-            <h1 className="mb-8 text-5xl leading-[0.9] font-black tracking-tighter text-white uppercase lg:text-[72px]">
+            <h1 className="mb-8 text-5xl leading-[0.9] font-black tracking-tighter text-foreground uppercase lg:text-[72px]">
               INTELLIGENT
               <br />
-              <span className="text-[#666]">EVENT SPACE</span>
+              <span className="text-muted-foreground">EVENT SPACE</span>
               <br />
               ORCHESTRATION
             </h1>
 
-            <p className="mb-10 max-w-lg border-l-2 border-[#333] pl-4 font-mono text-sm leading-relaxed tracking-widest text-[#999] uppercase">
+            <p className="mb-10 max-w-lg border-l-2 border-border pl-4 font-mono text-sm leading-relaxed tracking-widest text-muted-foreground uppercase">
               {">"} PRECISION-ENGINEERED FLOOR PLANS.
               <br />
               {">"} AI-OPTIMIZED SPACE UTILIZATION.
@@ -268,41 +268,33 @@ export function LandingPage() {
             <div className="flex items-center gap-6">
               <Link
                 href="/auth/signup"
-                className="flex items-center gap-3 border border-white bg-white px-8 py-4 text-xs font-bold tracking-widest text-black uppercase transition-all hover:bg-black hover:text-white hover:shadow-[4px_4px_0_0_#fff]"
+                className="flex items-center gap-3 border border-foreground bg-foreground px-8 py-4 text-xs font-bold tracking-widest text-background uppercase transition-all hover:bg-foreground/80 hover:text-background shadow-sm"
               >
                 GET STARTED <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/marketplace"
-                className="flex items-center gap-3 text-xs font-bold tracking-widest text-[#999] uppercase transition-colors hover:text-white"
+                className="flex items-center gap-3 text-xs font-bold tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
               >
                 VIEW MARKETPLACE <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
 
-            <div className="mt-8 font-mono text-[9px] tracking-[0.2em] text-[#666] uppercase">
+            <div className="mt-8 font-mono text-[9px] tracking-[0.2em] text-muted-foreground uppercase">
               // FREE TIER AVAILABLE
             </div>
           </div>
 
           {/* Right: canvas preview */}
-          <div className="hidden flex-shrink-0 border border-[#333] bg-[#111] p-4 lg:block">
-            <div className="mb-4 flex items-center justify-between border-b border-[#333] pb-2">
-              <div className="font-mono text-[9px] tracking-widest text-[#999]">LIVE PREVIEW</div>
-              <div className="flex gap-2">
-                <div className="h-2 w-2 rounded-full border border-white" />
-                <div className="h-2 w-2 rounded-full border border-white" />
-                <div className="h-2 w-2 bg-white" />
-              </div>
-            </div>
+          <div className="hidden flex-shrink-0 lg:block pointer-events-none">
             <CanvasPreview />
           </div>
         </div>
       </section>
 
       {/* ── Stats bar ── */}
-      <section className="overflow-hidden border-b border-[#333] bg-[#0a0a0a] px-6 py-6 font-mono">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 text-[10px] tracking-widest text-[#666] uppercase">
+      <section className="overflow-hidden border-b border-border bg-card px-6 py-6 font-mono">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 text-[10px] tracking-widest text-muted-foreground uppercase">
           {[
             { id: "STATUS", val: "OPERATIONAL" },
             { id: "WORKSPACE", val: "SECURE" },
@@ -311,21 +303,21 @@ export function LandingPage() {
             { id: "VERSION", val: "2.0.0" },
           ].map(({ id, val }) => (
             <div key={id} className="flex items-center gap-3">
-              <span className="font-bold text-white">{id} /</span>
-              <span className={val === "OPERATIONAL" ? "text-[#009944]" : ""}>{val}</span>
+              <span className="font-bold text-foreground">{id} /</span>
+              <span className={val === "OPERATIONAL" ? "text-success" : ""}>{val}</span>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── Features ── */}
-      <section className="border-b border-[#333] bg-black px-6 py-32">
+      <section className="border-b border-border bg-background px-6 py-32">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-20 flex items-end gap-12 border-b border-[#333] pb-8">
-            <h2 className="text-4xl font-bold tracking-tighter text-white uppercase">
+          <div className="mb-20 flex items-end gap-12 border-b border-border pb-8">
+            <h2 className="text-4xl font-bold tracking-tighter text-foreground uppercase">
               PLATFORM FEATURES
             </h2>
-            <p className="mb-1.5 max-w-xs font-mono text-[10px] tracking-widest text-[#999] uppercase">
+            <p className="mb-1.5 max-w-xs font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
               // POWERFUL TOOLS.
               <br />
               // MINIMALIST DESIGN.
@@ -336,21 +328,21 @@ export function LandingPage() {
             {FEATURES.map(({ icon: Icon, title, desc }, idx) => (
               <div
                 key={title}
-                className="group relative border border-[#333] bg-[#0a0a0a] p-8 transition-colors hover:border-white"
+                className="group relative border border-border bg-card p-8 transition-colors hover:border-foreground"
               >
-                <div className="absolute top-0 left-0 h-2 w-2 bg-[#333] transition-colors group-hover:bg-white" />
+                <div className="absolute top-0 left-0 h-2 w-2 bg-border transition-colors group-hover:bg-foreground" />
                 <div className="mb-6 flex items-start justify-between">
-                  <div className="inline-flex h-12 w-12 items-center justify-center border border-[#333] bg-black text-[#999] transition-colors group-hover:text-white">
+                  <div className="inline-flex h-12 w-12 items-center justify-center border border-border bg-background text-muted-foreground transition-colors group-hover:text-foreground">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <div className="font-mono text-[10px] font-bold tracking-widest text-[#333] group-hover:text-[#666]">
+                  <div className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground group-hover:text-foreground">
                     0{idx + 1}
                   </div>
                 </div>
-                <h3 className="mb-4 font-mono text-sm font-bold tracking-widest text-white uppercase">
+                <h3 className="mb-4 font-mono text-sm font-bold tracking-widest text-foreground uppercase">
                   {title}
                 </h3>
-                <p className="font-mono text-[10px] leading-relaxed tracking-widest text-[#666] uppercase">
+                <p className="font-mono text-[10px] leading-relaxed tracking-widest text-muted-foreground uppercase">
                   {desc}
                 </p>
               </div>
@@ -360,13 +352,13 @@ export function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section className="border-b border-[#333] bg-[#050505] px-6 py-32">
+      <section className="border-b border-border bg-card px-6 py-32">
         <div className="mx-auto max-w-5xl">
           <div className="mb-20 text-center">
-            <h2 className="mb-4 text-4xl font-bold tracking-tighter text-white uppercase">
+            <h2 className="mb-4 text-4xl font-bold tracking-tighter text-foreground uppercase">
               PRICING PLANS
             </h2>
-            <div className="font-mono text-[10px] tracking-widest text-[#666] uppercase">
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
               SELECT THE APPROPRIATE PLAN FOR YOUR EVENT SCALE.
             </div>
           </div>
@@ -406,31 +398,31 @@ export function LandingPage() {
       </section>
 
       {/* ── CTA Banner ── */}
-      <section className="relative overflow-hidden bg-black px-6 py-32">
+      <section className="relative overflow-hidden bg-background px-6 py-32">
         <div
-          className="absolute inset-0 z-0 opacity-10"
+          className="absolute inset-0 z-0 opacity-10 dark:opacity-20"
           style={{
-            backgroundImage: "radial-gradient(circle at 50% 50%, #fff 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(circle at 50% 50%, currentColor 1px, transparent 1px)",
             backgroundSize: "40px 40px",
           }}
         />
 
-        <div className="relative z-10 mx-auto max-w-3xl border border-[#333] bg-[#0a0a0a] p-16 text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center border border-white">
-            <div className="flex h-8 w-8 items-center justify-center bg-white text-black">
+        <div className="relative z-10 mx-auto max-w-3xl border border-border bg-card p-16 text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center border border-border bg-muted">
+            <div className="flex h-8 w-8 items-center justify-center bg-foreground text-background">
               <ArrowRight className="h-5 w-5 -rotate-45" />
             </div>
           </div>
-          <h2 className="mb-6 text-4xl font-bold tracking-tighter text-white uppercase">
+          <h2 className="mb-6 text-4xl font-bold tracking-tighter text-foreground uppercase">
             READY TO START?
           </h2>
-          <p className="mx-auto mb-10 max-w-lg font-mono text-[10px] leading-loose tracking-widest text-[#999] uppercase">
+          <p className="mx-auto mb-10 max-w-lg font-mono text-[10px] leading-loose tracking-widest text-muted-foreground uppercase">
             CREATE YOUR FIRST EVENT, DESIGN THE LAYOUT, AND PUBLISH TO THE MARKETPLACE.
           </p>
           <div className="flex justify-center">
             <Link
               href="/auth/signup"
-              className="inline-flex items-center gap-3 border border-white bg-white px-10 py-5 text-sm font-bold tracking-widest text-black uppercase shadow-[6px_6px_0_0_#333] transition-all hover:bg-black hover:text-white"
+              className="inline-flex items-center gap-3 border border-foreground bg-foreground px-10 py-5 text-sm font-bold tracking-widest text-background uppercase shadow-sm transition-all hover:bg-foreground/80 hover:text-background"
             >
               GET STARTED NOW
             </Link>
@@ -439,35 +431,35 @@ export function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-[#333] bg-black px-6 py-12">
+      <footer className="border-t border-border bg-background px-6 py-12">
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 md:flex-row md:items-center">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center border border-white bg-white">
-              <span className="font-mono text-sm font-bold text-black">V</span>
+            <div className="flex h-8 w-8 items-center justify-center border border-foreground bg-foreground">
+              <span className="font-mono text-sm font-bold text-background">V</span>
             </div>
             <div className="flex flex-col">
-              <span className="leading-none font-bold tracking-tight text-white uppercase">
+              <span className="leading-none font-bold tracking-tight text-foreground uppercase">
                 EVENT PLANNER
               </span>
-              <span className="mt-1 font-mono text-[8px] tracking-widest text-[#666] uppercase">
+              <span className="mt-1 font-mono text-[8px] tracking-widest text-muted-foreground uppercase">
                 SERIOUS_OS STYLE
               </span>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-8 font-mono text-[9px] font-bold tracking-widest text-[#999] uppercase">
-            <Link href="/marketplace" className="transition-colors hover:text-white">
+          <div className="flex flex-wrap gap-8 font-mono text-[9px] font-bold tracking-widest text-muted-foreground uppercase">
+            <Link href="/marketplace" className="transition-colors hover:text-foreground">
               MARKETPLACE
             </Link>
-            <Link href="/pricing" className="transition-colors hover:text-white">
+            <Link href="/pricing" className="transition-colors hover:text-foreground">
               PRICING
             </Link>
-            <Link href="/auth/signin" className="transition-colors hover:text-white">
+            <Link href="/auth/signin" className="transition-colors hover:text-foreground">
               SIGN IN
             </Link>
           </div>
 
-          <p className="font-mono text-[9px] tracking-widest text-[#666] uppercase">
+          <p className="font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
             © {new Date().getFullYear()} EVENT PLANNER.
           </p>
         </div>

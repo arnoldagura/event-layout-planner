@@ -196,16 +196,20 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
   }
 
   return (
-    <div className={cn("flex w-72 flex-col border-l bg-white", className)}>
+    <div className={cn("flex w-72 flex-col border-l border-border bg-card", className)}>
       {/* Header */}
-      <div className="border-b p-4">
+      <div className="border-b border-border p-4">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900">
-            <Sparkles className="h-4 w-4 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-none bg-foreground">
+            <Sparkles className="h-4 w-4 text-background" />
           </div>
           <div>
-            <h2 className="font-semibold text-zinc-900">AI Assistant</h2>
-            <p className="text-xs text-zinc-500">Auto-generate layouts</p>
+            <h2 className="font-mono text-xs font-bold tracking-widest text-foreground uppercase">
+              AI Assistant
+            </h2>
+            <p className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              Auto-generate layouts
+            </p>
           </div>
         </div>
       </div>
@@ -213,32 +217,37 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
         {/* Event context */}
-        <div className="mb-4 rounded-lg bg-zinc-50 p-3">
-          <h3 className="mb-2 text-xs font-medium tracking-wider text-zinc-500 uppercase">
+        <div className="mb-4 rounded-none bg-muted p-3">
+          <h3 className="mb-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
             Event Details
           </h3>
-          <div className="space-y-1 text-sm">
-            <p className="text-zinc-700">
-              <span className="text-zinc-500">Type:</span>{" "}
-              <span className="capitalize">{eventData.eventType || "Not specified"}</span>
+          <div className="space-y-1 font-mono text-[10px] tracking-widest uppercase">
+            <p className="text-foreground">
+              <span className="text-muted-foreground">Type:</span>{" "}
+              <span>{eventData.eventType || "Not specified"}</span>
             </p>
-            <p className="text-zinc-700">
-              <span className="text-zinc-500">Capacity:</span>{" "}
+            <p className="text-foreground">
+              <span className="text-muted-foreground">Capacity:</span>{" "}
               {eventData.capacity ? `${eventData.capacity} guests` : "Not specified"}
             </p>
           </div>
         </div>
 
         {/* Generate button */}
-        <Button onClick={generateSuggestion} disabled={isLoading} className="mb-4 w-full" size="lg">
+        <Button
+          onClick={generateSuggestion}
+          disabled={isLoading}
+          className="mb-4 w-full rounded-none font-mono text-xs tracking-widest uppercase shadow-none border border-foreground transition-colors"
+          size="lg"
+        >
           {isLoading ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Generating...
             </>
           ) : (
             <>
-              <LayoutGrid className="h-4 w-4" />
+              <LayoutGrid className="mr-2 h-4 w-4" />
               Generate Layout
             </>
           )}
@@ -246,8 +255,8 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
 
         {/* Error state */}
         {error && (
-          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="mb-4 rounded-none border border-destructive bg-destructive/10 p-3 text-destructive">
+            <p className="font-mono text-[10px] font-bold tracking-widest uppercase">{error}</p>
           </div>
         )}
 
@@ -256,53 +265,62 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
           <div className="space-y-4">
             {/* Reasoning */}
             {suggestion.reasoning && (
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <div className="rounded-none border border-warning bg-warning/10 p-3">
                 <div className="flex items-start gap-2">
-                  <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                  <p className="text-sm text-amber-800">{suggestion.reasoning}</p>
+                  <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+                  <p className="font-mono text-[10px] tracking-widest uppercase text-warning-foreground">
+                    {suggestion.reasoning}
+                  </p>
                 </div>
               </div>
             )}
 
             {/* Elements preview */}
-            <div className="rounded-lg bg-zinc-50 p-3">
-              <h4 className="mb-2 text-xs font-medium tracking-wider text-zinc-500 uppercase">
+            <div className="rounded-none bg-muted p-3">
+              <h4 className="mb-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                 Generated Elements
               </h4>
               <div className="mb-3 flex flex-wrap gap-1.5">
                 {suggestion.elements?.slice(0, 8).map((el, idx) => (
                   <span
                     key={idx}
-                    className="rounded border bg-white px-2 py-1 text-xs text-zinc-600"
+                    className="rounded-none border border-border bg-background px-2 py-1 font-mono text-[9px] tracking-widest text-foreground uppercase"
                   >
                     {el.name}
                   </span>
                 ))}
                 {(suggestion.elements?.length || 0) > 8 && (
-                  <span className="rounded bg-zinc-100 px-2 py-1 text-xs text-zinc-500">
+                  <span className="rounded-none border border-border bg-muted-foreground/10 px-2 py-1 font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
                     +{(suggestion.elements?.length || 0) - 8} more
                   </span>
                 )}
               </div>
-              <p className="mb-3 text-xs text-zinc-500">
+              <p className="mb-3 font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
                 {suggestion.elements?.length || 0} elements total
               </p>
-              <Button onClick={applySuggestion} className="w-full" size="sm">
-                <Check className="h-4 w-4" />
+              <Button
+                onClick={applySuggestion}
+                className="w-full rounded-none font-mono text-xs tracking-widest shadow-none border border-foreground"
+                size="sm"
+              >
+                <Check className="mr-2 h-4 w-4" />
                 Apply Layout
               </Button>
             </div>
 
             {/* Alternatives */}
             {suggestion.alternatives && suggestion.alternatives.length > 0 && (
-              <div className="rounded-lg bg-zinc-50 p-3">
-                <h4 className="mb-2 text-xs font-medium tracking-wider text-zinc-500 uppercase">
+              <div className="rounded-none border border-border bg-background p-3">
+                <h4 className="mb-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                   Alternative Ideas
                 </h4>
                 <ul className="space-y-2">
                   {suggestion.alternatives.map((alt: string, idx: number) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-600">
-                      <span className="text-zinc-400">•</span>
+                    <li
+                      key={idx}
+                      className="flex items-start gap-2 font-mono text-[9px] leading-relaxed tracking-widest text-foreground uppercase"
+                    >
+                      <span className="text-muted-foreground font-bold">•</span>
                       {alt}
                     </li>
                   ))}
@@ -315,11 +333,13 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
         {/* Empty state */}
         {!suggestion && !isLoading && !error && (
           <div className="py-6 text-center">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
-              <Sparkles className="h-5 w-5 text-zinc-400" />
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-none border border-border bg-muted">
+              <Sparkles className="h-5 w-5 text-muted-foreground" />
             </div>
-            <p className="mb-1 text-sm text-zinc-500">No layout generated yet</p>
-            <p className="text-xs text-zinc-400">
+            <p className="mb-1 font-mono text-[10px] font-bold tracking-widest text-foreground uppercase">
+              No layout generated yet
+            </p>
+            <p className="font-mono text-[9px] leading-relaxed tracking-widest text-muted-foreground uppercase">
               Click the button above to generate a suggested layout based on your event details.
             </p>
           </div>
@@ -327,8 +347,8 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
       </div>
 
       {/* Footer */}
-      <div className="border-t bg-zinc-50 p-3">
-        <p className="text-center text-xs text-zinc-500">
+      <div className="border-t border-border bg-muted p-3">
+        <p className="text-center font-mono text-[9px] leading-relaxed tracking-widest text-muted-foreground uppercase">
           AI suggestions are starting points. Customize as needed.
         </p>
       </div>

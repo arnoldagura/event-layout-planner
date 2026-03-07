@@ -42,37 +42,37 @@ const elementConfig: Record<
   { background: string; borderRadius: string; textColor: string; Icon: LucideIcon | null }
 > = {
   stage: {
-    background: "#3b82f6",
-    borderRadius: "12px",
-    textColor: "text-white",
+    background: "var(--info)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
     Icon: Presentation,
   },
   table: {
-    background: "#f59e0b",
-    borderRadius: "12px",
-    textColor: "text-white",
+    background: "var(--warning)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
     Icon: MdTableRestaurant,
   },
-  chair: { background: "#71717a", borderRadius: "12px", textColor: "text-white", Icon: Armchair },
-  booth: { background: "#0d9488", borderRadius: "12px", textColor: "text-white", Icon: Store },
+  chair: { background: "var(--muted-foreground)", borderRadius: "0px", textColor: "var(--canvas-element-text)", Icon: Armchair },
+  booth: { background: "var(--info)", borderRadius: "0px", textColor: "var(--canvas-element-text)", Icon: Store },
   entrance: {
-    background: "#22c55e",
-    borderRadius: "12px",
-    textColor: "text-white",
+    background: "var(--success)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
     Icon: DoorOpen,
   },
-  exit: { background: "#ef4444", borderRadius: "12px", textColor: "text-white", Icon: DoorClosed },
+  exit: { background: "var(--destructive)", borderRadius: "0px", textColor: "var(--canvas-element-text)", Icon: DoorClosed },
   restroom: {
-    background: "#475569",
-    borderRadius: "12px",
-    textColor: "text-white",
+    background: "var(--muted-foreground)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
     Icon: FaRestroom,
   },
-  bar: { background: "#f97316", borderRadius: "12px", textColor: "text-white", Icon: Wine },
+  bar: { background: "var(--warning)", borderRadius: "0px", textColor: "var(--canvas-element-text)", Icon: Wine },
   registration: {
-    background: "#06b6d4",
-    borderRadius: "12px",
-    textColor: "text-white",
+    background: "var(--info)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
     Icon: ClipboardList,
   },
 }
@@ -93,12 +93,11 @@ const SNAP_THRESHOLD = 8 // canvas px — snap guides kick in within this distan
 function handleStyle(h: ResizeHandle): React.CSSProperties {
   const base: React.CSSProperties = {
     position: "absolute",
-    width: 8,
-    height: 8,
-    background: "white",
-    border: "1.5px solid #27272a",
-    borderRadius: 2,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
+    width: 6,
+    height: 6,
+    background: "var(--info)",
+    border: "1px solid var(--background)",
+    borderRadius: 0,
     cursor: HANDLE_CURSORS[h],
     zIndex: 10,
   }
@@ -158,11 +157,12 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
   const isBooth = element.type === "booth"
   const isSmall = element.width < 60 || element.height < 35
   const isLocked = element.properties?.isLocked === true
+  const attendeeName = element.properties?.attendeeName as string | undefined
 
   const config = elementConfig[element.type] ?? {
-    background: "#a1a1aa",
-    borderRadius: "12px",
-    textColor: "text-white",
+    background: "var(--muted-foreground)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
     Icon: null,
   }
 
@@ -337,9 +337,9 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
   // ── Derived styles ───────────────────────────────────────────────────
 
   const outerBoxShadow = isSelected
-    ? "0 0 0 1.5px #fff, 0 0 0 3px #18181b, 0 8px 24px rgba(0,0,0,0.22)"
+    ? "0 0 0 1px var(--foreground), 0 0 0 2px var(--info), 4px 4px 0 0 rgba(0,85,255,0.2)"
     : isInMultiSelection
-      ? "0 0 0 1.5px #fff, 0 0 0 3px #3b82f6, 0 4px 12px rgba(59,130,246,0.22)"
+      ? "0 0 0 1px var(--foreground), 0 0 0 2px var(--info), 2px 2px 0 0 rgba(0,85,255,0.2)"
       : undefined
 
   const innerBoxShadow =
@@ -387,17 +387,40 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         )}
         {!isSmall && (
           <div
-            className={cn("pointer-events-none w-full leading-tight font-medium", config.textColor)}
+            className={cn("pointer-events-none w-full leading-tight font-medium flex flex-col items-center gap-0.5", config.textColor)}
             style={{
               fontSize: element.width > 80 ? "12px" : "10px",
-              textShadow: "0 1px 3px rgba(0,0,0,0.45)",
+              fontFamily: "monospace",
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
               textAlign: "center",
               wordBreak: "break-word",
               overflowWrap: "anywhere",
               padding: "0 6px",
             }}
           >
-            {element.name}
+            <div>{element.name}</div>
+            {attendeeName && (
+              <div className="mt-1 flex flex-col items-center gap-0.5">
+                {attendeeName
+                  .split("\n")
+                  .filter((line) => line.trim())
+                  .slice(0, 3)
+                  .map((name, i) => (
+                    <div
+                      key={i}
+                      className="max-w-[calc(100%-8px)] truncate border border-white/30 bg-black/40 px-1.5 py-0.5 text-[8px] leading-none tracking-widest text-white uppercase"
+                    >
+                      {name.trim()}
+                    </div>
+                  ))}
+                {attendeeName.split("\n").filter((line) => line.trim()).length > 3 && (
+                  <div className="max-w-[calc(100%-8px)] truncate border border-white/30 bg-black/40 px-1.5 py-0.5 text-[8px] leading-none tracking-widest text-white uppercase">
+                    +{attendeeName.split("\n").filter((line) => line.trim()).length - 3} MORE
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -470,6 +493,13 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
           }}
         >
           {element.name}
+          {attendeeName && (
+            <span className="ml-1 text-[#0055ff]">
+              [{attendeeName.split("\n").filter((line) => line.trim()).length > 1
+                ? `${attendeeName.split("\n").filter((line) => line.trim()).length} ATTENDEES`
+                : attendeeName.trim().substring(0, 10)}]
+            </span>
+          )}
         </div>
       )}
 

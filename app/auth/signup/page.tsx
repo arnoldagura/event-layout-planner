@@ -65,78 +65,78 @@ export default function SignUp() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black font-mono text-white selection:bg-white selection:text-black">
+    <div className="flex min-h-screen bg-background font-mono text-foreground selection:bg-foreground selection:text-background">
       {/* ── Left panel ── */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-[#333] p-12 lg:flex">
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden border-r border-border p-12 lg:flex">
         <div
-          className="absolute inset-0 z-0 opacity-20"
+          className="absolute inset-0 z-0 opacity-10 dark:opacity-20"
           style={{
             backgroundImage:
-              "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)",
+              "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
             backgroundSize: "40px 40px",
           }}
         />
 
         <Link href="/" className="relative z-10 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center border border-white text-lg leading-none font-bold shadow-[2px_2px_0_0_#fff]">
+          <div className="flex h-10 w-10 items-center justify-center border border-foreground text-lg leading-none font-bold shadow-sm">
             V
           </div>
           <div className="flex flex-col">
-            <div className="mb-1 text-[10px] leading-none tracking-[0.2em] text-[#999] uppercase">
+            <div className="mb-1 text-[10px] leading-none tracking-[0.2em] text-muted-foreground uppercase">
               Event Layout
             </div>
-            <div className="text-lg leading-none font-bold tracking-tight uppercase">Planner</div>
+            <div className="text-lg leading-none font-bold tracking-tight uppercase text-foreground">Planner</div>
           </div>
         </Link>
 
         <div className="z-10">
-          <h1 className="mb-6 text-6xl leading-none font-bold tracking-tighter text-[#999] uppercase">
+          <h1 className="mb-6 text-6xl leading-none font-bold tracking-tighter text-muted-foreground uppercase">
             CREATE
             <br />
-            <span className="text-white">YOUR</span>
+            <span className="text-foreground">YOUR</span>
             <br />
             ACCOUNT
           </h1>
-          <div className="space-y-2 text-xs leading-loose tracking-widest text-[#666] uppercase">
+          <div className="space-y-2 text-xs leading-loose tracking-widest text-muted-foreground uppercase">
             <p>{">"} SECURE REGISTRATION PROCESS</p>
             <p>{">"} DATA IS ENCRYPTED AND PROTECTED</p>
           </div>
         </div>
 
-        <div className="z-10 flex items-end justify-between border-t border-[#333] pt-6">
-          <div className="text-right text-[10px] tracking-widest text-[#666] uppercase">
+        <div className="z-10 flex items-end justify-between border-t border-border pt-6">
+          <div className="text-right text-[10px] tracking-widest text-muted-foreground uppercase">
             V 2.0.4 <br /> EVENT_PLANNER
           </div>
         </div>
       </div>
 
       {/* ── Right panel ── */}
-      <div className="relative flex w-full flex-col justify-center bg-black px-8 py-12 lg:w-1/2 lg:px-24 xl:px-32">
+      <div className="relative flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-24 xl:px-32">
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-12 flex items-center justify-center gap-3 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center border border-white text-sm font-bold shadow-[2px_2px_0_0_#fff]">
+            <div className="flex h-8 w-8 items-center justify-center border border-foreground text-sm font-bold shadow-sm">
               V
             </div>
-            <span className="text-lg font-bold tracking-widest uppercase">EVENT PLANNER</span>
+            <span className="text-lg font-bold tracking-widest uppercase text-foreground">EVENT PLANNER</span>
           </div>
 
-          <div className="mb-8 flex items-center gap-3 border-b border-[#333] pb-4 text-white">
-            <Terminal className="h-5 w-5 text-[#ffb300]" />
+          <div className="mb-8 flex items-center gap-3 border-b border-border pb-4 text-foreground">
+            <Terminal className="h-5 w-5 text-amber-500" />
             <h2 className="text-base font-bold tracking-widest uppercase">SIGN UP</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="flex items-start gap-3 border border-[#cc0000] bg-[#cc0000]/10 p-4">
-                <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#ff3333]" />
-                <p className="text-[11px] font-bold tracking-widest text-[#ff3333] uppercase">
+              <div className="flex items-start gap-3 border border-destructive bg-destructive/10 p-4">
+                <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+                <p className="text-[11px] font-bold tracking-widest text-destructive uppercase">
                   {error}
                 </p>
               </div>
             )}
 
             <div className="space-y-3">
-              <label className="block text-[10px] tracking-widest text-[#999] uppercase">
+              <label className="block text-[10px] tracking-widest text-muted-foreground uppercase">
                 Full Name
               </label>
               <Input
@@ -146,12 +146,12 @@ export default function SignUp() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="JOHN DOE"
-                className="h-12 rounded-none border-[#333] bg-transparent font-mono text-sm tracking-widest text-white uppercase shadow-none transition-all placeholder:text-[#333] focus-visible:ring-1 focus-visible:ring-white"
+                className="h-12 rounded-none border-input bg-transparent font-mono text-sm tracking-widest text-foreground uppercase shadow-none transition-all placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-foreground"
               />
             </div>
 
             <div className="space-y-3">
-              <label className="block text-[10px] tracking-widest text-[#999] uppercase">
+              <label className="block text-[10px] tracking-widest text-muted-foreground uppercase">
                 Email Address
               </label>
               <Input
@@ -161,12 +161,12 @@ export default function SignUp() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="NAME@COMPANY.COM"
-                className="h-12 rounded-none border-[#333] bg-transparent font-mono text-sm tracking-widest text-white uppercase shadow-none transition-all placeholder:text-[#333] focus-visible:ring-1 focus-visible:ring-white"
+                className="h-12 rounded-none border-input bg-transparent font-mono text-sm tracking-widest text-foreground uppercase shadow-none transition-all placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-foreground"
               />
             </div>
 
             <div className="space-y-3">
-              <label className="block text-[10px] tracking-widest text-[#999] uppercase">
+              <label className="block text-[10px] tracking-widest text-muted-foreground uppercase">
                 Password
               </label>
               <Input
@@ -176,12 +176,12 @@ export default function SignUp() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••••••"
-                className="h-12 rounded-none border-[#333] bg-transparent font-mono text-sm tracking-widest text-white shadow-none transition-all placeholder:text-[#333] focus-visible:ring-1 focus-visible:ring-white"
+                className="h-12 rounded-none border-input bg-transparent font-mono text-sm tracking-widest text-foreground shadow-none transition-all placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-foreground"
               />
             </div>
 
             <div className="space-y-3">
-              <label className="block text-[10px] tracking-widest text-[#999] uppercase">
+              <label className="block text-[10px] tracking-widest text-muted-foreground uppercase">
                 Confirm Password
               </label>
               <Input
@@ -191,7 +191,7 @@ export default function SignUp() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••••••"
-                className="h-12 rounded-none border-[#333] bg-transparent font-mono text-sm tracking-widest text-white shadow-none transition-all placeholder:text-[#333] focus-visible:ring-1 focus-visible:ring-white"
+                className="h-12 rounded-none border-input bg-transparent font-mono text-sm tracking-widest text-foreground shadow-none transition-all placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-foreground"
               />
             </div>
 
@@ -199,7 +199,7 @@ export default function SignUp() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="h-12 w-full rounded-none border border-white bg-white text-xs font-bold tracking-widest text-black uppercase shadow-[4px_4px_0_0_#333] transition-all hover:bg-white hover:text-[#009944] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                className="h-12 w-full rounded-none border border-foreground bg-foreground text-xs font-bold tracking-widest text-background uppercase shadow-sm transition-all hover:bg-foreground/80 hover:text-background"
               >
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -212,12 +212,12 @@ export default function SignUp() {
             </div>
           </form>
 
-          <div className="mt-12 border-t border-[#333] pt-6 text-center">
-            <p className="text-[10px] tracking-widest text-[#666] uppercase">
+          <div className="mt-12 border-t border-border pt-6 text-center">
+            <p className="text-[10px] tracking-widest text-muted-foreground uppercase">
               ALREADY HAVE AN ACCOUNT?{" "}
               <Link
                 href="/auth/signin"
-                className="ml-2 font-bold text-white underline underline-offset-4 hover:text-[#0055ff]"
+                className="ml-2 font-bold text-foreground underline underline-offset-4 hover:text-primary"
               >
                 SIGN IN
               </Link>

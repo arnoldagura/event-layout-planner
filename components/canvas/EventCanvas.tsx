@@ -175,7 +175,7 @@ export const EventCanvas = React.forwardRef<HTMLDivElement, Props>(function Even
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden bg-zinc-200"
+      className="relative h-full w-full overflow-hidden bg-muted"
       style={{ cursor: getCursorStyle() }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
@@ -183,7 +183,7 @@ export const EventCanvas = React.forwardRef<HTMLDivElement, Props>(function Even
       onMouseLeave={handleMouseUp}
     >
       {isSpacePressed && (
-        <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white shadow-lg">
+        <div className="absolute top-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-none bg-foreground px-3 py-1.5 font-mono text-[10px] tracking-widest text-background uppercase shadow-lg">
           <Hand className="h-3 w-3" />
           Pan Mode
         </div>
@@ -191,13 +191,11 @@ export const EventCanvas = React.forwardRef<HTMLDivElement, Props>(function Even
 
       <div
         ref={ref}
-        className="absolute bg-white shadow-lg"
+        className="absolute shadow-lg border border-border"
         style={{
+          backgroundColor: "var(--canvas-bg)",
           backgroundImage: showGrid
-            ? `
-              linear-gradient(to right, #f4f4f5 1px, transparent 1px),
-              linear-gradient(to bottom, #f4f4f5 1px, transparent 1px)
-            `
+            ? `linear-gradient(var(--canvas-grid) 1px, transparent 1px), linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px)`
             : "none",
           backgroundSize: `${20}px ${20}px`,
           transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`,
