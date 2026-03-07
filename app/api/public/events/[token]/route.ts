@@ -45,7 +45,6 @@ export async function GET(
       return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
-    // Check expiry if set
     if (event.shareExpiresAt && new Date() > event.shareExpiresAt) {
       return NextResponse.json({ error: "This link has expired" }, { status: 410 })
     }

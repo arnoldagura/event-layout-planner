@@ -23,7 +23,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
-    // If already published, update expiry and return existing token
     if (event.isPublic && event.shareToken) {
       await prisma.event.update({
         where: { id },

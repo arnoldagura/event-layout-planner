@@ -64,35 +64,40 @@ export function PricingPage({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-black text-white font-mono selection:bg-white selection:text-black">
+    <div className="flex min-h-screen flex-col bg-black font-mono text-white selection:bg-white selection:text-black">
       {/* ── Navbar ── */}
       <header className="border-b border-[#333] bg-black">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-3">
-            <div className="h-8 w-8 border border-white flex items-center justify-center font-bold text-sm shadow-[2px_2px_0_0_#fff]">
+            <div className="flex h-8 w-8 items-center justify-center border border-white text-sm font-bold shadow-[2px_2px_0_0_#fff]">
               V
             </div>
             <div className="flex flex-col">
-              <div className="text-[10px] tracking-[0.2em] text-[#999] uppercase leading-none mb-1">Event Layout</div>
-              <div className="font-bold uppercase tracking-tight text-lg leading-none">Planner</div>
+              <div className="mb-1 text-[10px] leading-none tracking-[0.2em] text-[#999] uppercase">
+                Event Layout
+              </div>
+              <div className="text-lg leading-none font-bold tracking-tight uppercase">Planner</div>
             </div>
           </Link>
           <div className="flex items-center gap-4">
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 border border-[#333] bg-[#111] px-4 py-2 text-[10px] font-bold tracking-widest text-[#ccc] uppercase hover:bg-[#222] hover:text-white transition-colors"
+                className="flex items-center gap-2 border border-[#333] bg-[#111] px-4 py-2 text-[10px] font-bold tracking-widest text-[#ccc] uppercase transition-colors hover:bg-[#222] hover:text-white"
               >
                 ACCESS DASHBOARD
               </Link>
             ) : (
               <>
-                <Link href="/auth/signin" className="text-[10px] font-bold tracking-widest text-[#999] uppercase hover:text-white transition-colors">
+                <Link
+                  href="/auth/signin"
+                  className="text-[10px] font-bold tracking-widest text-[#999] uppercase transition-colors hover:text-white"
+                >
                   SIGN IN
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="flex items-center gap-2 border border-white bg-white px-4 py-2 text-[10px] font-bold tracking-widest text-black uppercase hover:bg-black hover:text-white transition-all shadow-[2px_2px_0_0_#fff] hover:shadow-none"
+                  className="flex items-center gap-2 border border-white bg-white px-4 py-2 text-[10px] font-bold tracking-widest text-black uppercase shadow-[2px_2px_0_0_#fff] transition-all hover:bg-black hover:text-white hover:shadow-none"
                 >
                   INITIALIZE ACCOUNT
                 </Link>
@@ -103,15 +108,21 @@ export function PricingPage({
       </header>
 
       {/* ── Main content ── */}
-      <main className="flex-1 px-6 py-20 flex flex-col items-center relative z-10 w-full overflow-hidden">
+      <main className="relative z-10 flex w-full flex-1 flex-col items-center overflow-hidden px-6 py-20">
         {/* Background Grid */}
-        <div className="absolute inset-0 z-0 opacity-10 pointer-events-none"
-          style={{ backgroundImage: "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <div
+          className="pointer-events-none absolute inset-0 z-0 opacity-10"
+          style={{
+            backgroundImage:
+              "linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
 
         <div className="relative z-10 w-full max-w-5xl">
           <div className="mb-20 text-center">
             <div className="mb-6 inline-flex items-center gap-2 border border-[#333] bg-[#111] px-3 py-1 font-mono text-[9px] font-bold tracking-widest text-[#999] uppercase">
-              <span className="h-1.5 w-1.5 bg-[#0055ff] animate-pulse" />
+              <span className="h-1.5 w-1.5 animate-pulse bg-[#0055ff]" />
               SYSTEM MODULE: PRICING
             </div>
             <h1 className="mb-4 text-4xl font-bold tracking-tighter text-white uppercase sm:text-5xl">
@@ -140,7 +151,7 @@ export function PricingPage({
               <ul className="mb-10 flex flex-col gap-4 font-mono text-[10px] tracking-widest uppercase">
                 {FREE_FEATURES.map((f) => (
                   <li key={f} className="flex items-start gap-3">
-                    <div className="mt-[1px] h-3 w-3 border border-[#666] bg-transparent flex-shrink-0" />
+                    <div className="mt-[1px] h-3 w-3 flex-shrink-0 border border-[#666] bg-transparent" />
                     <span className="text-[#ccc]">{f}</span>
                   </li>
                 ))}
@@ -183,7 +194,7 @@ export function PricingPage({
               <ul className="mb-10 flex flex-col gap-4 font-mono text-[10px] tracking-widest uppercase">
                 {PRO_FEATURES.map((f) => (
                   <li key={f} className="flex items-start gap-3">
-                    <div className="mt-[1px] h-3 w-3 border border-[#0055ff] bg-[#0055ff]/20 flex-shrink-0" />
+                    <div className="mt-[1px] h-3 w-3 flex-shrink-0 border border-[#0055ff] bg-[#0055ff]/20" />
                     <span className="text-[#ccc]">{f}</span>
                   </li>
                 ))}
@@ -199,12 +210,16 @@ export function PricingPage({
                   <button
                     onClick={handleUpgrade}
                     disabled={loading}
-                    className="flex w-full items-center justify-center gap-2 border border-white bg-white px-5 py-4 text-xs font-bold tracking-widest text-black uppercase transition-all shadow-[4px_4px_0_0_#333] hover:bg-black hover:text-white hover:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex w-full items-center justify-center gap-2 border border-white bg-white px-5 py-4 text-xs font-bold tracking-widest text-black uppercase shadow-[4px_4px_0_0_#333] transition-all hover:bg-black hover:text-white hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {loading ? (
-                      <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> INITIALIZING...</span>
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" /> INITIALIZING...
+                      </span>
                     ) : (
-                      <span className="flex items-center gap-2">UPGRADE TO PRO <ArrowRight className="h-4 w-4" /></span>
+                      <span className="flex items-center gap-2">
+                        UPGRADE TO PRO <ArrowRight className="h-4 w-4" />
+                      </span>
                     )}
                   </button>
                 )}
@@ -223,10 +238,15 @@ export function PricingPage({
               <button
                 onClick={handlePortal}
                 disabled={portalLoading}
-                className="group inline-flex items-center justify-center gap-2 font-bold text-white hover:text-[#0055ff] transition-colors disabled:opacity-50"
+                className="group inline-flex items-center justify-center gap-2 font-bold text-white transition-colors hover:text-[#0055ff] disabled:opacity-50"
               >
-                {portalLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckSquare className="h-3 w-3" />}
-                ACCESS BILLING PORTAL <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                {portalLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <CheckSquare className="h-3 w-3" />
+                )}
+                ACCESS BILLING PORTAL{" "}
+                <span className="opacity-0 transition-opacity group-hover:opacity-100">→</span>
               </button>
             )}
           </div>
@@ -234,15 +254,13 @@ export function PricingPage({
       </main>
 
       {/* ── System Status Footer ── */}
-      <div className="border-t border-[#333] bg-[#0a0a0a] px-6 py-4 font-mono text-[10px] tracking-widest uppercase text-[#666] flex justify-between items-center relative z-20">
+      <div className="relative z-20 flex items-center justify-between border-t border-[#333] bg-[#0a0a0a] px-6 py-4 font-mono text-[10px] tracking-widest text-[#666] uppercase">
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#009944] animate-pulse" />
-            STATUS / <span className="text-[#009944] font-bold">OPERATIONAL</span>
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#009944]" />
+            STATUS / <span className="font-bold text-[#009944]">OPERATIONAL</span>
           </div>
-          <div className="hidden sm:flex items-center gap-2">
-            WORKSPACE / SECURE
-          </div>
+          <div className="hidden items-center gap-2 sm:flex">WORKSPACE / SECURE</div>
         </div>
         <div className="flex items-center gap-6">
           <div className="hidden sm:block">VERSION / 2.0.0</div>

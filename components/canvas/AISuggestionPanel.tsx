@@ -27,7 +27,6 @@ function clampToCanvas(el: CanvasElement): CanvasElement {
   }
 }
 
-// Type priority: anchors placed first so they keep their AI positions
 const TYPE_PRIORITY = [
   "stage",
   "entrance",
@@ -55,7 +54,6 @@ function resolveOverlaps(elements: CanvasElement[]): CanvasElement[] {
       continue
     }
 
-    // Search for a free position in an expanding grid spiral
     const stepX = clamped.width + GAP
     const stepY = clamped.height + GAP
     let found = false
@@ -63,7 +61,6 @@ function resolveOverlaps(elements: CanvasElement[]): CanvasElement[] {
     outer: for (let ring = 1; ring <= 20; ring++) {
       for (let dx = -ring; dx <= ring; dx++) {
         for (let dy = -ring; dy <= ring; dy++) {
-          // Only check the perimeter of the current ring
           if (Math.abs(dx) !== ring && Math.abs(dy) !== ring) continue
 
           const candidate = clampToCanvas({
@@ -82,7 +79,6 @@ function resolveOverlaps(elements: CanvasElement[]): CanvasElement[] {
     }
 
     if (!found) {
-      // Last resort: place at end of canvas row
       placed.push(clamped)
     }
   }
@@ -197,7 +193,6 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
 
   return (
     <div className={cn("flex w-72 flex-col border-l border-border bg-card", className)}>
-      {/* Header */}
       <div className="border-b border-border p-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-none bg-foreground">
@@ -214,9 +209,7 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {/* Event context */}
         <div className="mb-4 rounded-none bg-muted p-3">
           <h3 className="mb-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
             Event Details
@@ -233,11 +226,10 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
           </div>
         </div>
 
-        {/* Generate button */}
         <Button
           onClick={generateSuggestion}
           disabled={isLoading}
-          className="mb-4 w-full rounded-none font-mono text-xs tracking-widest uppercase shadow-none border border-foreground transition-colors"
+          className="mb-4 w-full rounded-none border border-foreground font-mono text-xs tracking-widest uppercase shadow-none transition-colors"
           size="lg"
         >
           {isLoading ? (
@@ -253,29 +245,25 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
           )}
         </Button>
 
-        {/* Error state */}
         {error && (
           <div className="mb-4 rounded-none border border-destructive bg-destructive/10 p-3 text-destructive">
             <p className="font-mono text-[10px] font-bold tracking-widest uppercase">{error}</p>
           </div>
         )}
 
-        {/* Suggestion result */}
         {suggestion && (
           <div className="space-y-4">
-            {/* Reasoning */}
             {suggestion.reasoning && (
               <div className="rounded-none border border-warning bg-warning/10 p-3">
                 <div className="flex items-start gap-2">
                   <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
-                  <p className="font-mono text-[10px] tracking-widest uppercase text-warning-foreground">
+                  <p className="text-warning-foreground font-mono text-[10px] tracking-widest uppercase">
                     {suggestion.reasoning}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Elements preview */}
             <div className="rounded-none bg-muted p-3">
               <h4 className="mb-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                 Generated Elements
@@ -300,7 +288,7 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
               </p>
               <Button
                 onClick={applySuggestion}
-                className="w-full rounded-none font-mono text-xs tracking-widest shadow-none border border-foreground"
+                className="w-full rounded-none border border-foreground font-mono text-xs tracking-widest shadow-none"
                 size="sm"
               >
                 <Check className="mr-2 h-4 w-4" />
@@ -308,7 +296,6 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
               </Button>
             </div>
 
-            {/* Alternatives */}
             {suggestion.alternatives && suggestion.alternatives.length > 0 && (
               <div className="rounded-none border border-border bg-background p-3">
                 <h4 className="mb-2 font-mono text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
@@ -320,7 +307,7 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
                       key={idx}
                       className="flex items-start gap-2 font-mono text-[9px] leading-relaxed tracking-widest text-foreground uppercase"
                     >
-                      <span className="text-muted-foreground font-bold">•</span>
+                      <span className="font-bold text-muted-foreground">•</span>
                       {alt}
                     </li>
                   ))}
@@ -330,7 +317,6 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
           </div>
         )}
 
-        {/* Empty state */}
         {!suggestion && !isLoading && !error && (
           <div className="py-6 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-none border border-border bg-muted">
@@ -346,7 +332,6 @@ export const AISuggestionPanel: React.FC<Props> = ({ eventId, eventData, classNa
         )}
       </div>
 
-      {/* Footer */}
       <div className="border-t border-border bg-muted p-3">
         <p className="text-center font-mono text-[9px] leading-relaxed tracking-widest text-muted-foreground uppercase">
           AI suggestions are starting points. Customize as needed.

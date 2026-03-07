@@ -75,7 +75,6 @@ export function BidsPanel({ eventId, onBidsLoaded }: Props) {
     }
   }
 
-  // Group bids by boothId
   const grouped = bids.reduce<Record<string, Bid[]>>((acc, bid) => {
     if (!acc[bid.boothId]) acc[bid.boothId] = []
     acc[bid.boothId].push(bid)
@@ -91,7 +90,6 @@ export function BidsPanel({ eventId, onBidsLoaded }: Props) {
 
   return (
     <>
-      {/* Header */}
       <div className="shrink-0 border-b border-border p-4">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-none bg-foreground">
@@ -108,7 +106,6 @@ export function BidsPanel({ eventId, onBidsLoaded }: Props) {
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-10">
@@ -179,7 +176,7 @@ export function BidsPanel({ eventId, onBidsLoaded }: Props) {
                       <div className="flex gap-2 pt-2">
                         <Button
                           size="sm"
-                          className="h-8 flex-1 rounded-none bg-success border border-success font-mono text-[9px] tracking-widest text-white uppercase shadow-none hover:bg-success/90"
+                          className="h-8 flex-1 rounded-none border border-success bg-success font-mono text-[9px] tracking-widest text-white uppercase shadow-none hover:bg-success/90"
                           disabled={actioningId === bid.id}
                           onClick={() => handleAction(bid.id, "approved")}
                         >
@@ -189,7 +186,7 @@ export function BidsPanel({ eventId, onBidsLoaded }: Props) {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-8 flex-1 rounded-none border-destructive font-mono text-[9px] tracking-widest text-destructive uppercase shadow-none hover:bg-destructive hover:text-destructive-foreground"
+                          className="hover:text-destructive-foreground h-8 flex-1 rounded-none border-destructive font-mono text-[9px] tracking-widest text-destructive uppercase shadow-none hover:bg-destructive"
                           disabled={actioningId === bid.id}
                           onClick={() => handleAction(bid.id, "rejected")}
                         >

@@ -32,7 +32,7 @@ export function BoothSearch({ elements, onHighlight, highlightedId, onBidClick }
         forRent: Boolean((el.properties as any)?.forRent),
         askingPrice: (el.properties as any)?.askingPrice as number | undefined,
         rentStatus: (el.properties as any)?.status as string | undefined,
-        attendeeName: (el.properties as any)?.attendeeName as string | undefined ?? "",
+        attendeeName: ((el.properties as any)?.attendeeName as string | undefined) ?? "",
       })),
     [elements]
   )
@@ -73,7 +73,7 @@ export function BoothSearch({ elements, onHighlight, highlightedId, onBidClick }
             if (!e.target.value) onHighlight(null)
           }}
           placeholder="SEARCH BOOTHS, ATTENDEES, VENDORS..."
-          className="w-full rounded-none border border-border bg-background py-2 pr-8 pl-9 text-xs font-mono uppercase tracking-widest placeholder:text-muted-foreground focus:border-transparent focus:ring-1 focus:ring-foreground focus:outline-none"
+          className="w-full rounded-none border border-border bg-background py-2 pr-8 pl-9 font-mono text-xs tracking-widest uppercase placeholder:text-muted-foreground focus:border-transparent focus:ring-1 focus:ring-foreground focus:outline-none"
         />
         {query && (
           <button
@@ -90,8 +90,9 @@ export function BoothSearch({ elements, onHighlight, highlightedId, onBidClick }
           {results.map(({ item }) => (
             <div
               key={item.id}
-              className={`flex items-start gap-3 border-b border-border px-3 py-2.5 last:border-0 ${highlightedId === item.id ? "bg-muted" : "hover:bg-muted/50"
-                }`}
+              className={`flex items-start gap-3 border-b border-border px-3 py-2.5 last:border-0 ${
+                highlightedId === item.id ? "bg-muted" : "hover:bg-muted/50"
+              }`}
             >
               <button
                 onClick={() => handleSelect(item.id)}
@@ -99,30 +100,35 @@ export function BoothSearch({ elements, onHighlight, highlightedId, onBidClick }
               >
                 <div className="mt-0.5 shrink-0">
                   <MapPin
-                    className={`h-4 w-4 ${highlightedId === item.id ? "text-foreground" : "text-muted-foreground"
-                      }`}
+                    className={`h-4 w-4 ${
+                      highlightedId === item.id ? "text-foreground" : "text-muted-foreground"
+                    }`}
                   />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="truncate text-sm font-mono tracking-widest uppercase font-bold text-foreground">{item.name}</span>
+                    <span className="truncate font-mono text-sm font-bold tracking-widest text-foreground uppercase">
+                      {item.name}
+                    </span>
                     {item.forRent && item.rentStatus !== "rented" && (
-                      <span className="shrink-0 rounded-none border border-success bg-success/10 px-1.5 py-0.5 text-[9px] font-mono tracking-widest uppercase font-bold text-success">
+                      <span className="shrink-0 rounded-none border border-success bg-success/10 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-widest text-success uppercase">
                         FOR RENT
                       </span>
                     )}
                     {item.forRent && item.rentStatus === "rented" && (
-                      <span className="shrink-0 rounded-none border border-border bg-muted/50 px-1.5 py-0.5 text-[9px] font-mono tracking-widest uppercase font-bold text-muted-foreground">
+                      <span className="shrink-0 rounded-none border border-border bg-muted/50 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-widest text-muted-foreground uppercase">
                         RENTED
                       </span>
                     )}
                   </div>
                   {item.vendorName && (
-                    <div className="truncate text-xs font-mono tracking-widest uppercase text-muted-foreground">{item.vendorName}</div>
+                    <div className="truncate font-mono text-xs tracking-widest text-muted-foreground uppercase">
+                      {item.vendorName}
+                    </div>
                   )}
                   {item.attendeeName && (
-                    <div className="flex items-start gap-1.5 mt-1.5 text-[10px] font-mono tracking-widest uppercase font-bold text-info">
-                      <Users className="h-3 w-3 mt-0.5 shrink-0" />
+                    <div className="mt-1.5 flex items-start gap-1.5 font-mono text-[10px] font-bold tracking-widest text-info uppercase">
+                      <Users className="mt-0.5 h-3 w-3 shrink-0" />
                       <div className="flex flex-wrap gap-1">
                         {item.attendeeName
                           .split("\n")
@@ -137,7 +143,7 @@ export function BoothSearch({ elements, onHighlight, highlightedId, onBidClick }
                     </div>
                   )}
                   {item.forRent && item.askingPrice && (
-                    <div className="flex items-center gap-0.5 text-xs font-mono tracking-widest uppercase text-muted-foreground">
+                    <div className="flex items-center gap-0.5 font-mono text-xs tracking-widest text-muted-foreground uppercase">
                       <DollarSign className="h-3 w-3" />
                       {item.askingPrice.toLocaleString()} ASKING
                     </div>
@@ -146,7 +152,7 @@ export function BoothSearch({ elements, onHighlight, highlightedId, onBidClick }
               </button>
 
               <div className="flex shrink-0 items-center gap-1.5 self-center">
-                <span className="rounded-none border border-border bg-muted/50 px-2 py-0.5 text-[9px] font-mono tracking-widest text-muted-foreground uppercase">
+                <span className="rounded-none border border-border bg-muted/50 px-2 py-0.5 font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
                   {item.type}
                 </span>
                 {item.forRent && item.rentStatus !== "rented" && onBidClick && (
@@ -155,7 +161,7 @@ export function BoothSearch({ elements, onHighlight, highlightedId, onBidClick }
                       e.stopPropagation()
                       onBidClick(item.id)
                     }}
-                    className="flex items-center gap-1 rounded-none border border-foreground bg-foreground px-2 py-1 text-[9px] font-mono tracking-widest font-bold text-background transition-colors hover:bg-background hover:text-foreground"
+                    className="flex items-center gap-1 rounded-none border border-foreground bg-foreground px-2 py-1 font-mono text-[9px] font-bold tracking-widest text-background transition-colors hover:bg-background hover:text-foreground"
                   >
                     <Gavel className="h-3 w-3" />
                     BID

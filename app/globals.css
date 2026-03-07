@@ -49,146 +49,83 @@
 }
 
 :root {
-  --radius: 0px;
-  /* Zero radius everywhere for tactical module feel */
-  --background: #f8f8f8;
-  /* Very light gray */
-  --foreground: #000000;
+  --radius: 0.375rem;
+
+  --background: #f5f5f5;
+  --foreground: #1a1a1a;
 
   --card: #ffffff;
-  --card-foreground: #000000;
+  --card-foreground: #1a1a1a;
 
   --popover: #ffffff;
-  --popover-foreground: #000000;
+  --popover-foreground: #1a1a1a;
 
-  --primary: #000000;
+  --primary: #ff5f1f;
   --primary-foreground: #ffffff;
 
-  --secondary: #e0e0e0;
-  --secondary-foreground: #000000;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
 
-  --muted: #f0f0f0;
-  --muted-foreground: #666666;
+  --muted: #e2e8f0;
+  --muted-foreground: #64748b;
 
-  --accent: #e0e0e0;
-  --accent-foreground: #000000;
+  --accent: #fff4f0;
+  --accent-foreground: #ff5f1f;
 
-  /* Status Colors */
-  --destructive: #cc0000;
-  /* Deep Red */
-  --warning: #ffb300;
-  /* Sharp Yellow */
-  --success: #009944;
-  /* Crisp Green */
-  --info: #0055ff;
-  /* Pure Blue */
+  --destructive: #dc2626;
+  --warning: #facc15;
+  --success: #059669;
+  --info: #2563eb;
 
   --border: #d4d4d8;
-  /* Thin zinc-300 lines */
   --input: #d4d4d8;
-  --ring: #000000;
-
-  --chart-1: #000000;
-  --chart-2: #666666;
-  --chart-3: #999999;
-  --chart-4: #cccccc;
-  --chart-5: #e0e0e0;
+  --ring: #ff5f1f;
 
   --sidebar: #ffffff;
-  --sidebar-foreground: #000000;
-  --sidebar-primary: #000000;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f0f0f0;
-  --sidebar-accent-foreground: #000000;
-  --sidebar-border: #d4d4d8;
-  --sidebar-ring: #000000;
+  --sidebar-foreground: #1a1a1a;
+  --sidebar-primary: #ff5f1f;
+  --sidebar-border: #e5e7eb;
 
-  /* Custom Canvas Variables for Day/Night mode */
-  --canvas-bg: #e5e5e5;
-  --canvas-grid: #cccccc;
-  --canvas-element-bg: #ffffff;
-  --canvas-element-border: #000000;
-  --canvas-element-text: #000000;
-  --panel-bg: #ffffff;
-  --panel-border: #d4d4d8;
+  --canvas-bg: #ffffff;
+  --canvas-grid: #e5e7eb;
+  --canvas-element-bg: #f8fafc;
+  --canvas-element-border: #1e293b;
+  --canvas-element-text: #1a1a1a;
 }
 
 .dark {
   --background: #000000;
-  --foreground: #ffffff;
+  --foreground: #f5f5f5;
 
-  --card: #0a0a0a;
-  --card-foreground: #ffffff;
+  --card: #111111;
+  --card-foreground: #f5f5f5;
 
-  --popover: #0a0a0a;
-  --popover-foreground: #ffffff;
+  --popover: #111111;
+  --popover-foreground: #f5f5f5;
 
-  --primary: #ffffff;
-  --primary-foreground: #000000;
+  --primary: #ff5f1f;
+  --primary-foreground: #ffffff;
 
-  --secondary: #222222;
-  --secondary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
 
-  --muted: #111111;
-  --muted-foreground: #888888;
+  --muted: #1a1a1a;
+  --muted-foreground: #a8a29e;
 
-  --accent: #222222;
-  --accent-foreground: #ffffff;
+  --accent: #2a1a14;
+  --accent-foreground: #ff5f1f;
 
-  --destructive: #ff3333;
-  --warning: #ffcc00;
-  --success: #00cc66;
-  --info: #3388ff;
-
-  --border: #333333;
-  --input: #333333;
-  --ring: #ffffff;
-
-  --chart-1: #ffffff;
-  --chart-2: #cccccc;
-  --chart-3: #999999;
-  --chart-4: #666666;
-  --chart-5: #333333;
+  --border: #262626;
+  --input: #262626;
+  --ring: #ff5f1f;
 
   --sidebar: #0a0a0a;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #222222;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #333333;
-  --sidebar-ring: #ffffff;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-border: #1a1a1a;
 
-  /* Custom Canvas Variables for Night mode */
-  --canvas-bg: #050505;
-  --canvas-grid: #4a4a4a;
+  --canvas-bg: #000000;
+  --canvas-grid: #1a1a1a;
   --canvas-element-bg: #111111;
-  --canvas-element-border: #ffffff;
-  --canvas-element-text: #ffffff;
-  --panel-bg: #0a0a0a;
-  --panel-border: #333333;
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-    /* Sharp edges across all components automatically */
-    border-radius: 0 !important;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-
-  /* Additional tactical UI resets */
-  button {
-    @apply transition-none;
-    /* Disable playfulness */
-  }
-
-  input,
-  textarea,
-  select {
-    @apply rounded-none shadow-none focus-visible:ring-1 focus-visible:ring-black focus-visible:ring-offset-0;
-  }
+  --canvas-element-border: #ff5f1f;
+  --canvas-element-text: #f5f5f5;
 }

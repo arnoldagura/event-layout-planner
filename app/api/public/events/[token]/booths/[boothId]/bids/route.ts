@@ -21,7 +21,6 @@ export async function POST(
       return NextResponse.json({ error: "Share link has expired" }, { status: 410 })
     }
 
-    // Find the booth element with matching boothId in properties
     const boothElement = event.elements.find((el) => {
       const props = el.properties as Record<string, unknown> | null
       return el.type === "booth" && props?.boothId === boothId && props?.forRent === true

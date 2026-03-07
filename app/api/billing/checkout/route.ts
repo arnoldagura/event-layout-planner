@@ -12,14 +12,12 @@ export async function POST() {
   const userId = session.user.id
   const userEmail = session.user.email ?? undefined
 
-  // Get or create Stripe customer
   let sub = await prisma.subscription.findUnique({ where: { userId } })
   let customerId = sub?.stripeCustomerId ?? null
 
   if (!customerId) {
     const customer = await stripe.customers.create({ email: userEmail, metadata: { userId } })
     customerId = customer.id
-    // Upsert subscription row with customer id
     sub = await prisma.subscription.upsert({
       where: { userId },
       update: { stripeCustomerId: customerId },

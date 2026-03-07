@@ -40,7 +40,6 @@ export async function PATCH(
       return NextResponse.json({ error: "Status must be approved or rejected" }, { status: 400 })
     }
 
-    // Look up booth name for email subject (shared by both paths)
     const boothElements = await prisma.eventElement.findMany({
       where: { eventId, type: "booth" },
     })
@@ -51,23 +50,19 @@ export async function PATCH(
     const boothName = boothElement?.name ?? bid.boothId.slice(0, 8)
 
     if (status === "approved") {
-      // Fetch other pending bids BEFORE the transaction so we can email them after
       const otherPendingBids = await prisma.boothBid.findMany({
         where: { eventId, boothId: bid.boothId, status: "pending", id: { not: bidId } },
         select: { vendorName: true, vendorEmail: true },
       })
 
       await prisma.$transaction(async (tx) => {
-        // Approve this bid
         await tx.boothBid.update({ where: { id: bidId }, data: { status: "approved" } })
 
-        // Reject all other pending bids for the same booth
         await tx.boothBid.updateMany({
           where: { eventId, boothId: bid.boothId, status: "pending", id: { not: bidId } },
           data: { status: "rejected" },
         })
 
-        // Update booth element status to 'rented' if found
         if (boothElement) {
           const existingProps = (boothElement.properties as Record<string, unknown>) ?? {}
           await tx.eventElement.update({
@@ -79,7 +74,6 @@ export async function PATCH(
         }
       })
 
-      // Fire-and-forget emails — don't block the response
       const eventDate = format(new Date(event.eventDate), "MMMM d, yyyy")
       sendBidApprovedEmail({
         vendorName: bid.vendorName,

@@ -15,7 +15,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = await request.json()
     const { type, name, x, y, width, height, rotation, properties } = body
 
-    // Verify event ownership
     const event = await prisma.event.findFirst({
       where: {
         id: eventId,
@@ -63,7 +62,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const body = await request.json()
     const { elementId, ...updates } = body
 
-    // Verify event ownership
     const event = await prisma.event.findFirst({
       where: {
         id: eventId,
@@ -115,7 +113,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Element ID required" }, { status: 400 })
     }
 
-    // Verify event ownership
     const event = await prisma.event.findFirst({
       where: {
         id: eventId,
@@ -141,7 +138,6 @@ export async function DELETE(
   }
 }
 
-// Atomic full replace — delete all existing elements, create all new ones in one transaction
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth()

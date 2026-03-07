@@ -31,7 +31,6 @@ export default async function MarketplacePage() {
 
   const now = new Date()
 
-  // Fetch all public non-expired events with their booth elements
   const events = await prisma.event.findMany({
     where: {
       isPublic: true,
@@ -53,7 +52,6 @@ export default async function MarketplacePage() {
     orderBy: { eventDate: "asc" },
   })
 
-  // Build summary per event; only keep events with ≥1 available for-rent booth
   const marketplaceEvents: MarketplaceEvent[] = []
 
   for (const event of events) {

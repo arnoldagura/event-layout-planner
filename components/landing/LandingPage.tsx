@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Server, Terminal, Database, Shield, ArrowRight, Cpu } from "lucide-react"
+import { ThemeToggle } from "@/components/ThemeToggle"
 
 // ─── Static canvas preview mockup ────────────────────────────────────────────
 
@@ -70,7 +71,9 @@ function CanvasPreview() {
 
       {/* Properties panel hint */}
       <div className="absolute top-3 right-3 border border-border bg-background p-3 font-mono text-[9px] tracking-widest text-muted-foreground uppercase">
-        <div className="mb-2 border-b border-border pb-1 font-bold text-foreground">BOOTH SEC-1</div>
+        <div className="mb-2 border-b border-border pb-1 font-bold text-foreground">
+          BOOTH SEC-1
+        </div>
         <div className="flex justify-between gap-4">
           <span>TYPE</span> <span className="text-foreground">SPONSOR</span>
         </div>
@@ -181,10 +184,11 @@ function PricingCard({
 
       <Link
         href={href}
-        className={`mt-auto flex items-center justify-center gap-2 px-6 py-4 text-[10px] font-bold tracking-widest uppercase transition-all ${highlight
-          ? "border border-info bg-info text-primary-foreground shadow-[4px_4px_0_0_var(--foreground)] hover:bg-info/90"
-          : "border border-foreground bg-foreground text-background hover:bg-foreground/80"
-          }`}
+        className={`mt-auto flex items-center justify-center gap-2 px-6 py-4 text-[10px] font-bold tracking-widest uppercase transition-all ${
+          highlight
+            ? "border border-info bg-info text-primary-foreground shadow-[4px_4px_0_0_var(--foreground)] hover:bg-info/90"
+            : "border border-foreground bg-foreground text-background hover:bg-foreground/80"
+        }`}
       >
         {cta}
         <ArrowRight className="h-3 w-3" />
@@ -209,14 +213,22 @@ export function LandingPage() {
               <div className="mb-1 text-[10px] leading-none tracking-[0.2em] text-muted-foreground uppercase">
                 Event Layout
               </div>
-              <div className="text-lg leading-none font-bold tracking-tight uppercase text-foreground">Planner</div>
+              <div className="text-lg leading-none font-bold tracking-tight text-foreground uppercase">
+                Planner
+              </div>
             </div>
           </Link>
           <nav className="flex items-center gap-8 font-mono text-[10px] font-bold tracking-widest uppercase">
-            <Link href="/marketplace" className="text-muted-foreground transition-colors hover:text-foreground">
+            <Link
+              href="/marketplace"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
               MARKETPLACE
             </Link>
-            <Link href="/pricing" className="text-muted-foreground transition-colors hover:text-foreground">
+            <Link
+              href="/pricing"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+            >
               PRICING
             </Link>
             <Link
@@ -225,6 +237,7 @@ export function LandingPage() {
             >
               SIGN IN
             </Link>
+            <ThemeToggle />
           </nav>
         </div>
       </header>
@@ -268,7 +281,7 @@ export function LandingPage() {
             <div className="flex items-center gap-6">
               <Link
                 href="/auth/signup"
-                className="flex items-center gap-3 border border-foreground bg-foreground px-8 py-4 text-xs font-bold tracking-widest text-background uppercase transition-all hover:bg-foreground/80 hover:text-background shadow-sm"
+                className="flex items-center gap-3 border border-foreground bg-foreground px-8 py-4 text-xs font-bold tracking-widest text-background uppercase shadow-sm transition-all hover:bg-foreground/80 hover:text-background"
               >
                 GET STARTED <ArrowRight className="h-4 w-4" />
               </Link>
@@ -286,7 +299,7 @@ export function LandingPage() {
           </div>
 
           {/* Right: canvas preview */}
-          <div className="hidden flex-shrink-0 lg:block pointer-events-none">
+          <div className="pointer-events-none hidden flex-shrink-0 lg:block">
             <CanvasPreview />
           </div>
         </div>
@@ -402,7 +415,8 @@ export function LandingPage() {
         <div
           className="absolute inset-0 z-0 opacity-10 dark:opacity-20"
           style={{
-            backgroundImage: "radial-gradient(circle at 50% 50%, currentColor 1px, transparent 1px)",
+            backgroundImage:
+              "radial-gradient(circle at 50% 50%, currentColor 1px, transparent 1px)",
             backgroundSize: "40px 40px",
           }}
         />

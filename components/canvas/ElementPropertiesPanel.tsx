@@ -33,53 +33,53 @@ interface Props {
 }
 
 const ELEMENT_ICONS: Record<string, { icon: React.ReactNode; bgClass: string; iconClass: string }> =
-{
-  stage: {
-    icon: <Presentation className="h-5 w-5" />,
-    bgClass: "bg-blue-100",
-    iconClass: "text-blue-600",
-  },
-  table: {
-    icon: <MdTableRestaurant className="h-5 w-5" />,
-    bgClass: "bg-amber-100",
-    iconClass: "text-amber-600",
-  },
-  chair: {
-    icon: <Armchair className="h-5 w-5" />,
-    bgClass: "bg-zinc-100",
-    iconClass: "text-zinc-600",
-  },
-  booth: {
-    icon: <Store className="h-5 w-5" />,
-    bgClass: "bg-teal-100",
-    iconClass: "text-teal-600",
-  },
-  entrance: {
-    icon: <DoorOpen className="h-5 w-5" />,
-    bgClass: "bg-emerald-100",
-    iconClass: "text-emerald-600",
-  },
-  exit: {
-    icon: <DoorClosed className="h-5 w-5" />,
-    bgClass: "bg-red-100",
-    iconClass: "text-red-600",
-  },
-  restroom: {
-    icon: <FaRestroom className="h-5 w-5" />,
-    bgClass: "bg-slate-100",
-    iconClass: "text-slate-600",
-  },
-  bar: {
-    icon: <Wine className="h-5 w-5" />,
-    bgClass: "bg-orange-100",
-    iconClass: "text-orange-600",
-  },
-  registration: {
-    icon: <ClipboardList className="h-5 w-5" />,
-    bgClass: "bg-cyan-100",
-    iconClass: "text-cyan-600",
-  },
-}
+  {
+    stage: {
+      icon: <Presentation className="h-5 w-5" />,
+      bgClass: "bg-blue-100",
+      iconClass: "text-blue-600",
+    },
+    table: {
+      icon: <MdTableRestaurant className="h-5 w-5" />,
+      bgClass: "bg-amber-100",
+      iconClass: "text-amber-600",
+    },
+    chair: {
+      icon: <Armchair className="h-5 w-5" />,
+      bgClass: "bg-zinc-100",
+      iconClass: "text-zinc-600",
+    },
+    booth: {
+      icon: <Store className="h-5 w-5" />,
+      bgClass: "bg-teal-100",
+      iconClass: "text-teal-600",
+    },
+    entrance: {
+      icon: <DoorOpen className="h-5 w-5" />,
+      bgClass: "bg-emerald-100",
+      iconClass: "text-emerald-600",
+    },
+    exit: {
+      icon: <DoorClosed className="h-5 w-5" />,
+      bgClass: "bg-red-100",
+      iconClass: "text-red-600",
+    },
+    restroom: {
+      icon: <FaRestroom className="h-5 w-5" />,
+      bgClass: "bg-slate-100",
+      iconClass: "text-slate-600",
+    },
+    bar: {
+      icon: <Wine className="h-5 w-5" />,
+      bgClass: "bg-orange-100",
+      iconClass: "text-orange-600",
+    },
+    registration: {
+      icon: <ClipboardList className="h-5 w-5" />,
+      bgClass: "bg-cyan-100",
+      iconClass: "text-cyan-600",
+    },
+  }
 
 export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
   const { elements, updateElement, deleteElement } = useCanvasStore()
@@ -104,7 +104,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     if (!element) return
     const p = (element.properties ?? {}) as Record<string, unknown>
 
-    // Auto-generate boothId for booths
     if (element.type === "booth" && !p.boothId) {
       updateElement(elementId, { properties: { ...p, boothId: crypto.randomUUID() } })
     }
@@ -137,7 +136,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
         ? "text-warning bg-warning/10 border-warning"
         : "text-success bg-success/10 border-success"
 
-  // Apply name on blur / Enter
   const applyName = () => {
     const trimmed = name.trim()
     if (trimmed && trimmed !== element.name) {
@@ -145,7 +143,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     }
   }
 
-  // Apply attendee name on blur / Enter
   const applyAttendeeName = () => {
     const existing = (element.properties ?? {}) as Record<string, unknown>
     const trimmed = attendeeName.trim()
@@ -157,7 +154,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     })
   }
 
-  // Apply dimensions on blur
   const applyDimensions = () => {
     const w = Math.max(30, width)
     const h = Math.max(30, height)
@@ -166,17 +162,14 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     }
   }
 
-  // Apply rotation on blur / Enter
   const applyRotation = () => {
     updateElement(elementId, { rotation: rotation % 360 })
   }
 
-  // Apply position on blur / Enter
   const applyPosition = () => {
     updateElement(elementId, { x: posX, y: posY })
   }
 
-  // Apply booth rental props on blur
   const applyBoothProps = () => {
     const existing = (element.properties ?? {}) as Record<string, unknown>
     updateElement(elementId, {
@@ -191,7 +184,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
     })
   }
 
-  // Toggle forRent immediately
   const handleForRentToggle = () => {
     const next = !forRent
     setForRent(next)
@@ -207,10 +199,9 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
 
   return (
     <div className="shrink-0 border-b border-border bg-card">
-      {/* ── Header ── */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3">
         <div
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-none shadow-none text-white ${typeConfig.bgClass}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-none text-white shadow-none ${typeConfig.bgClass}`}
         >
           {typeConfig.icon}
         </div>
@@ -223,12 +214,17 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           </p>
         </div>
         {isBooth && forRent && (
-          <Badge className={`shrink-0 rounded-none border text-[10px] font-mono tracking-widest uppercase ${statusColor}`}>
+          <Badge
+            className={`shrink-0 rounded-none border font-mono text-[10px] tracking-widest uppercase ${statusColor}`}
+          >
             {rentStatus.charAt(0).toUpperCase() + rentStatus.slice(1)}
           </Badge>
         )}
         {isBooth && bidCount > 0 && (
-          <Badge variant="secondary" className="shrink-0 rounded-none font-mono text-[10px] tracking-widest uppercase bg-secondary text-secondary-foreground border border-border">
+          <Badge
+            variant="secondary"
+            className="shrink-0 rounded-none border border-border bg-secondary font-mono text-[10px] tracking-widest text-secondary-foreground uppercase"
+          >
             {bidCount} bid{bidCount !== 1 ? "s" : ""}
           </Badge>
         )}
@@ -237,7 +233,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
       <div className="h-px bg-border" />
 
       <div className="space-y-4 p-4">
-        {/* ── Name ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <Type className="h-3.5 w-3.5 text-muted-foreground" />
@@ -257,7 +252,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           />
         </div>
 
-        {/* ── Attendee Name ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <Users className="h-3.5 w-3.5 text-muted-foreground" />
@@ -288,7 +282,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           )}
         </div>
 
-        {/* ── Dimensions ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <Ruler className="h-3.5 w-3.5 text-muted-foreground" />
@@ -326,7 +319,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           </div>
         </div>
 
-        {/* ── Rotation ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <RotateCw className="h-3.5 w-3.5 text-muted-foreground" />
@@ -349,7 +341,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           </div>
         </div>
 
-        {/* ── Position ── */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <Crosshair className="h-3.5 w-3.5 text-muted-foreground" />
@@ -391,7 +382,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           </div>
         </div>
 
-        {/* ── Booth rental fields ── */}
         {isBooth && (
           <>
             <div className="h-px bg-border" />
@@ -404,12 +394,14 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
                 role="switch"
                 aria-checked={forRent}
                 onClick={handleForRentToggle}
-                className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none border border-border ${forRent ? "bg-primary" : "bg-muted"
-                  }`}
+                className={`relative inline-flex h-5 w-9 items-center rounded-none border border-border transition-colors focus:outline-none ${
+                  forRent ? "bg-primary" : "bg-muted"
+                }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform bg-background transition-transform border border-border ${forRent ? "translate-x-[18px]" : "translate-x-0"
-                    }`}
+                  className={`inline-block h-4 w-4 transform border border-border bg-background transition-transform ${
+                    forRent ? "translate-x-[18px]" : "translate-x-0"
+                  }`}
                 />
               </button>
             </div>
@@ -460,7 +452,6 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
           </>
         )}
 
-        {/* ── Lock ── */}
         <div className="h-px bg-border" />
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
@@ -478,21 +469,22 @@ export function ElementPropertiesPanel({ elementId, bidCount }: Props) {
                 properties: { ...existing, isLocked: !existing.isLocked },
               })
             }}
-            className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors focus:outline-none border border-border ${props.isLocked ? "bg-warning" : "bg-muted"
-              }`}
+            className={`relative inline-flex h-5 w-9 items-center rounded-none border border-border transition-colors focus:outline-none ${
+              props.isLocked ? "bg-warning" : "bg-muted"
+            }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform bg-background transition-transform border border-border ${props.isLocked ? "translate-x-[18px]" : "translate-x-0"
-                }`}
+              className={`inline-block h-4 w-4 transform border border-border bg-background transition-transform ${
+                props.isLocked ? "translate-x-[18px]" : "translate-x-0"
+              }`}
             />
           </button>
         </div>
 
-        {/* ── Remove ── */}
         <Button
           variant="outline"
           size="sm"
-          className="w-full rounded-none border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground font-mono text-[10px] tracking-widest uppercase shadow-none"
+          className="hover:text-destructive-foreground w-full rounded-none border-destructive font-mono text-[10px] tracking-widest text-destructive uppercase shadow-none hover:bg-destructive"
           onClick={() => deleteElement(elementId)}
         >
           <Trash2 className="h-4 w-4" />

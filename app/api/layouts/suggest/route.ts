@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Pro-only feature
     const plan = await getUserPlan(session.user.id)
     if (!PLAN_LIMITS[plan].hasAI) {
       return NextResponse.json(
@@ -31,7 +30,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify the event belongs to the user
     const event = await prisma.event.findFirst({
       where: {
         id: eventId,
@@ -43,7 +41,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
-    // Generate AI layout suggestion
     const suggestion = await generateLayoutSuggestion({
       eventType,
       capacity,
@@ -52,7 +49,6 @@ export async function POST(request: NextRequest) {
       existingElements,
     })
 
-    // Save the suggested layout
     const layout = await prisma.eventLayout.create({
       data: {
         eventId,

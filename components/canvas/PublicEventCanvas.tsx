@@ -68,7 +68,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
   const [panStart, setPanStart] = useState({ x: 0, y: 0 })
   const [initialOffset, setInitialOffset] = useState({ x: 0, y: 0 })
 
-  // Refs to avoid stale closures in event listeners
   const panOffsetRef = useRef(panOffset)
   const scaleRef = useRef(scale)
   const touchRef = useRef<{
@@ -78,7 +77,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
     pinchDist: number | null
   } | null>(null)
 
-  // Keep refs in sync with state
   const setPanOffsetSync = useCallback((offset: { x: number; y: number }) => {
     panOffsetRef.current = offset
     setPanOffset(offset)
@@ -89,7 +87,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
     setScale(s)
   }, [])
 
-  // Pan to highlighted element when it changes
   useEffect(() => {
     if (!highlightedId || !containerRef.current) return
     const el = elements.find((e) => e.id === highlightedId)
@@ -108,7 +105,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
     })
   }, [highlightedId, elements, setPanOffsetSync])
 
-  // Spacebar pan mode (desktop)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space" && !e.repeat && e.target === document.body) {
@@ -130,7 +126,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
     }
   }, [])
 
-  // Mouse pan
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.button === 1 || (isSpacePressed && e.button === 0)) {
@@ -157,7 +152,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
 
   const handleMouseUp = useCallback(() => setIsPanning(false), [])
 
-  // Wheel zoom
   const handleWheel = useCallback(
     (e: WheelEvent) => {
       e.preventDefault()
@@ -186,7 +180,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
     return () => el.removeEventListener("wheel", handleWheel)
   }, [handleWheel])
 
-  // Touch pan + pinch-to-zoom
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -216,7 +209,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
       if (!touchRef.current) return
 
       if (e.touches.length === 1 && touchRef.current.pinchDist === null) {
-        // Single finger pan
         const dx = e.touches[0].clientX - touchRef.current.startX
         const dy = e.touches[0].clientY - touchRef.current.startY
         setPanOffsetSync({
@@ -224,14 +216,12 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
           y: touchRef.current.startOffset.y + dy,
         })
       } else if (e.touches.length === 2 && touchRef.current.pinchDist !== null) {
-        // Two-finger pinch-to-zoom + pan
         const ddx = e.touches[0].clientX - e.touches[1].clientX
         const ddy = e.touches[0].clientY - e.touches[1].clientY
         const newDist = Math.sqrt(ddx * ddx + ddy * ddy)
         const ratio = newDist / touchRef.current.pinchDist
         const newScale = Math.min(3, Math.max(0.25, scaleRef.current * ratio))
 
-        // Zoom toward pinch midpoint
         const rect = el.getBoundingClientRect()
         const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left
         const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top
@@ -241,7 +231,6 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
           y: midY - (midY - panOffsetRef.current.y) * scaleRatio,
         })
         setScaleSync(newScale)
-        // Update baseline for next move event
         touchRef.current.pinchDist = newDist
       }
     }
@@ -357,7 +346,7 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
               )}
               {!isSmall && (
                 <div
-                  className="pointer-events-none w-full leading-tight font-medium text-white flex flex-col items-center gap-0.5"
+                  className="pointer-events-none flex w-full flex-col items-center gap-0.5 leading-tight font-medium text-white"
                   style={{
                     fontSize: element.width > 80 ? "12px" : "10px",
                     fontFamily: "monospace",
@@ -427,9 +416,11 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
                   {element.name}
                   {attendeeName && (
                     <span className="ml-1 text-info">
-                      [{attendeeName.split("\n").filter((line) => line.trim()).length > 1
+                      [
+                      {attendeeName.split("\n").filter((line) => line.trim()).length > 1
                         ? `${attendeeName.split("\n").filter((line) => line.trim()).length} ATTENDEES`
-                        : attendeeName.trim().substring(0, 10)}]
+                        : attendeeName.trim().substring(0, 10)}
+                      ]
                     </span>
                   )}
                 </div>
@@ -452,10 +443,22 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
                       border: "1px solid",
                       whiteSpace: "nowrap",
                       ...(rentStatus === "rented"
-                        ? { background: "var(--muted)", color: "var(--muted-foreground)", borderColor: "var(--border)" }
+                        ? {
+                            background: "var(--muted)",
+                            color: "var(--muted-foreground)",
+                            borderColor: "var(--border)",
+                          }
                         : rentStatus === "pending"
-                          ? { background: "var(--warning)", color: "var(--primary-foreground)", borderColor: "var(--warning)" }
-                          : { background: "var(--success)", color: "var(--primary-foreground)", borderColor: "var(--success)" }),
+                          ? {
+                              background: "var(--warning)",
+                              color: "var(--primary-foreground)",
+                              borderColor: "var(--warning)",
+                            }
+                          : {
+                              background: "var(--success)",
+                              color: "var(--primary-foreground)",
+                              borderColor: "var(--success)",
+                            }),
                     }}
                   >
                     {isForRent
@@ -473,8 +476,7 @@ export const PublicEventCanvas: React.FC<Props> = ({ elements, highlightedId, on
         })}
       </div>
 
-      {/* Zoom hint — desktop shows keyboard shortcuts, mobile shows touch hints */}
-      <div className="absolute bottom-4 left-4 space-y-1 rounded-none border border-border bg-card/90 px-3 py-2 text-[9px] font-mono tracking-widest text-muted-foreground uppercase shadow-sm backdrop-blur-sm">
+      <div className="absolute bottom-4 left-4 space-y-1 rounded-none border border-border bg-card/90 px-3 py-2 font-mono text-[9px] tracking-widest text-muted-foreground uppercase shadow-sm backdrop-blur-sm">
         <div className="font-bold text-foreground">{Math.round(scale * 100)}%</div>
         <div className="hidden items-center gap-3 text-muted-foreground sm:flex">
           <span>SCROLL TO ZOOM</span>

@@ -4,7 +4,6 @@ import React from "react"
 import { useCanvasStore } from "@/lib/store"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
-// Inline SVG icons
 const icons = {
   alignLeft: (
     <svg viewBox="0 0 16 16" fill="currentColor" className="h-3.5 w-3.5">
@@ -150,7 +149,6 @@ export function AlignmentToolbar() {
         </span>
       )}
 
-      {/* Layer order — always shown for any selection */}
       <AlignBtn
         label="Bring to front"
         onClick={() => bringToFront(selectedElement ?? selectedElements[0])}
@@ -180,7 +178,6 @@ export function AlignmentToolbar() {
         <>
           <div className="mx-1 h-4 w-px bg-zinc-200" />
 
-          {/* Horizontal alignment */}
           <AlignBtn label="Align left edges" onClick={() => alignElements("left")}>
             {icons.alignLeft}
           </AlignBtn>
@@ -193,7 +190,6 @@ export function AlignmentToolbar() {
 
           <div className="mx-1 h-4 w-px bg-zinc-200" />
 
-          {/* Vertical alignment */}
           <AlignBtn label="Align top edges" onClick={() => alignElements("top")}>
             {icons.alignTop}
           </AlignBtn>

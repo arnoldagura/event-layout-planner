@@ -19,7 +19,6 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
-    // Snapshot current elements (strip DB-managed fields)
     const currentElements = await prisma.eventElement.findMany({
       where: { eventId },
       select: {
@@ -34,7 +33,6 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       },
     })
 
-    // Compute next version number
     const last = await prisma.eventVersion.findFirst({
       where: { eventId },
       orderBy: { versionNum: "desc" },
@@ -47,7 +45,6 @@ export async function POST(_request: NextRequest, { params }: { params: Promise<
       select: { id: true, versionNum: true, createdAt: true },
     })
 
-    // Prune to max 20 versions
     const count = await prisma.eventVersion.count({ where: { eventId } })
     if (count > 20) {
       const oldest = await prisma.eventVersion.findFirst({

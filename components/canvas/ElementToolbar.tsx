@@ -111,8 +111,9 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
       <div className="relative flex h-full w-full flex-col overflow-hidden">
         {/* ── Collapsed view (icon strip) ── */}
         <div
-          className={`absolute inset-0 flex flex-col items-center gap-1.5 overflow-y-auto px-2 py-3 transition-opacity duration-150 ${collapsed ? "opacity-100" : "pointer-events-none opacity-0"
-            }`}
+          className={`absolute inset-0 flex flex-col items-center gap-1.5 overflow-y-auto px-2 py-3 transition-opacity duration-150 ${
+            collapsed ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
         >
           {elements.map((element) => (
             <Tooltip key={element.type}>
@@ -127,7 +128,7 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
               </TooltipTrigger>
               <TooltipContent
                 side="right"
-                className="rounded-none border border-border bg-card font-mono text-[10px] uppercase text-foreground"
+                className="rounded-none border border-border bg-card font-mono text-[10px] text-foreground uppercase"
               >
                 <p>Drag to add {element.label.toLowerCase()}</p>
               </TooltipContent>
@@ -137,8 +138,9 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
 
         {/* ── Expanded view (full panel) ── */}
         <div
-          className={`flex h-full flex-col bg-card transition-opacity duration-150 ${collapsed ? "pointer-events-none opacity-0" : "opacity-100"
-            }`}
+          className={`flex h-full flex-col bg-card transition-opacity duration-150 ${
+            collapsed ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
         >
           <div className="border-b border-border p-4">
             <h2 className="font-mono text-xs font-bold tracking-widest text-foreground uppercase">
@@ -179,7 +181,7 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
                         </TooltipTrigger>
                         <TooltipContent
                           side="right"
-                          className="rounded-none border border-border bg-card font-mono text-[10px] uppercase text-foreground"
+                          className="rounded-none border border-border bg-card font-mono text-[10px] text-foreground uppercase"
                         >
                           <p>Drag to add {element.label.toLowerCase()}</p>
                         </TooltipContent>
@@ -192,8 +194,8 @@ export const ElementToolbar: React.FC<Props> = ({ collapsed = false }) => {
 
           <div className="border-t border-border bg-muted p-4">
             <p className="font-mono text-[9px] leading-relaxed tracking-widest text-muted-foreground uppercase">
-              <span className="font-bold text-foreground">SYSTEM TIP:</span> CLICK AN ELEMENT ON CANVAS
-              TO SELECT IT, THEN DRAG TO MOVE OR RESIZE.
+              <span className="font-bold text-foreground">SYSTEM TIP:</span> CLICK AN ELEMENT ON
+              CANVAS TO SELECT IT, THEN DRAG TO MOVE OR RESIZE.
             </p>
           </div>
         </div>

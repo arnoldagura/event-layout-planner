@@ -7,6 +7,7 @@ import { Loader2, Terminal, ShieldAlert } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ThemeToggle } from "@/components/ThemeToggle"
 
 export default function SignUp() {
   const router = useRouter()
@@ -85,7 +86,9 @@ export default function SignUp() {
             <div className="mb-1 text-[10px] leading-none tracking-[0.2em] text-muted-foreground uppercase">
               Event Layout
             </div>
-            <div className="text-lg leading-none font-bold tracking-tight uppercase text-foreground">Planner</div>
+            <div className="text-lg leading-none font-bold tracking-tight text-foreground uppercase">
+              Planner
+            </div>
           </div>
         </Link>
 
@@ -112,12 +115,17 @@ export default function SignUp() {
 
       {/* ── Right panel ── */}
       <div className="relative flex w-full flex-col justify-center px-8 py-12 lg:w-1/2 lg:px-24 xl:px-32">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-12 flex items-center justify-center gap-3 lg:hidden">
             <div className="flex h-8 w-8 items-center justify-center border border-foreground text-sm font-bold shadow-sm">
               V
             </div>
-            <span className="text-lg font-bold tracking-widest uppercase text-foreground">EVENT PLANNER</span>
+            <span className="text-lg font-bold tracking-widest text-foreground uppercase">
+              EVENT PLANNER
+            </span>
           </div>
 
           <div className="mb-8 flex items-center gap-3 border-b border-border pb-4 text-foreground">

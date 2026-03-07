@@ -70,8 +70,6 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
   const [isCreating, setIsCreating] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
 
-  // Removed timeStr state and effect per user request
-
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -84,7 +82,6 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
     eventType: "conference",
   })
 
-  // Data fetching / Mutations
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsCreating(true)
@@ -154,7 +151,6 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
 
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background font-sans text-foreground selection:bg-foreground selection:text-background">
-      {/* Top Navigation Bar */}
       <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-6 font-mono text-[10px] tracking-widest uppercase">
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-3">
@@ -165,7 +161,9 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
               <div className="mb-1 font-mono text-[9px] leading-none tracking-[0.2em] text-muted-foreground uppercase">
                 Event Layout
               </div>
-              <div className="text-sm leading-none font-bold tracking-tight uppercase text-foreground">Planner</div>
+              <div className="text-sm leading-none font-bold tracking-tight text-foreground uppercase">
+                Planner
+              </div>
             </div>
           </Link>
 
@@ -217,19 +215,18 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
         </div>
       </header>
 
-      {/* Dashboard Canvas */}
       <main className="relative w-full flex-1 overflow-y-auto p-8">
         <div className="mx-auto max-w-6xl">
-          {/* Header Area */}
           <div className="mb-8 flex items-center justify-between border-b border-border pb-4">
             <div>
-              <h1 className="mb-1 text-3xl font-bold tracking-tighter uppercase text-foreground">Events</h1>
+              <h1 className="mb-1 text-3xl font-bold tracking-tighter text-foreground uppercase">
+                Events
+              </h1>
               <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
                 Total Events: {events.length} {plan === "free" && `(MAX 3)`}
               </p>
             </div>
 
-            {/* Initialize Dialog */}
             <Dialog
               open={showCreateModal}
               onOpenChange={(open) => {
@@ -242,14 +239,14 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                   + Create Event
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-xl overflow-hidden rounded-none border-2 border-border p-0 shadow-lg bg-card">
+              <DialogContent className="max-w-xl overflow-hidden rounded-none border-2 border-border bg-card p-0 shadow-lg">
                 <div className="flex items-center justify-between border-b border-border bg-foreground px-6 py-4 text-background">
                   <DialogTitle className="font-mono text-sm tracking-widest text-background uppercase">
                     New Event
                   </DialogTitle>
                   <Terminal className="h-4 w-4 text-warning" />
                 </div>
-                <div className="max-h-[80vh] overflow-y-auto px-6 py-6 text-foreground bg-card">
+                <div className="max-h-[80vh] overflow-y-auto bg-card px-6 py-6 text-foreground">
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-4">
                       <div className="space-y-2">
@@ -361,7 +358,7 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                       <Button
                         type="submit"
                         disabled={isCreating}
-                        className="h-12 flex-1 rounded-none border border-foreground bg-foreground font-mono text-xs tracking-widest text-background uppercase transition-all shadow-sm hover:bg-foreground/80"
+                        className="h-12 flex-1 rounded-none border border-foreground bg-foreground font-mono text-xs tracking-widest text-background uppercase shadow-sm transition-all hover:bg-foreground/80"
                       >
                         {isCreating ? "Saving..." : "Create Event"}
                       </Button>
@@ -372,7 +369,6 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
             </Dialog>
           </div>
 
-          {/* Grid display */}
           {events.length === 0 ? (
             <div className="flex flex-col items-center justify-center border border-dashed border-border bg-card p-12 text-center">
               <Terminal className="mb-4 h-8 w-8 text-muted-foreground" />
@@ -381,7 +377,7 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
               </p>
               <Button
                 variant="outline"
-                className="rounded-none border-foreground text-foreground font-mono text-xs tracking-widest uppercase hover:bg-muted"
+                className="rounded-none border-foreground font-mono text-xs tracking-widest text-foreground uppercase hover:bg-muted"
                 onClick={() => setShowCreateModal(true)}
               >
                 Create Your First Event
@@ -394,7 +390,6 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                   key={event.id}
                   className="group flex flex-col border border-border bg-card shadow-sm transition-colors hover:border-foreground"
                 >
-                  {/* Top status line */}
                   <div
                     className={`h-1 w-full ${event.isPublic ? "bg-success" : "bg-muted group-hover:bg-info"}`}
                   />
@@ -406,12 +401,12 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                       </div>
                       {event.isPublic && (
                         <div
-                          className="h-2 w-2 rounded-full bg-success shadow-[0_0_8px_currentColor] text-success"
+                          className="h-2 w-2 rounded-full bg-success text-success shadow-[0_0_8px_currentColor]"
                           title="Published"
                         />
                       )}
                     </div>
-                    <h3 className="mb-4 line-clamp-2 text-lg font-bold tracking-tight uppercase transition-colors text-foreground group-hover:text-info">
+                    <h3 className="mb-4 line-clamp-2 text-lg font-bold tracking-tight text-foreground uppercase transition-colors group-hover:text-info">
                       {event.title}
                     </h3>
 
@@ -432,14 +427,15 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                         {event.eventType?.toUpperCase() || "UNKNOWN"}
                       </span>
 
-                      <span className="text-[10px] tracking-widest text-muted-foreground uppercase">
+                      <span className="text-[10px] tracking-widest text-background/60 uppercase">
                         ELEMENTS
                       </span>
-                      <span className="text-right font-medium text-foreground">{event._count.elements}</span>
+                      <span className="text-right font-medium text-foreground">
+                        {event._count.elements}
+                      </span>
                     </div>
                   </Link>
 
-                  {/* Actions Bar */}
                   <div className="flex h-10 divide-x divide-border border-t border-border bg-muted/20">
                     <Link
                       href={`/events/${event.id}`}
@@ -463,8 +459,8 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="max-w-md overflow-hidden rounded-none border-2 border-foreground p-0 shadow-[8px_8px_0_0_currentColor] bg-card text-foreground">
-                        <div className="border-b border-border bg-destructive px-5 py-3 text-destructive-foreground">
+                      <AlertDialogContent className="max-w-md overflow-hidden rounded-none border-2 border-foreground bg-card p-0 text-foreground shadow-[8px_8px_0_0_currentColor]">
+                        <div className="text-destructive-foreground border-b border-border bg-destructive px-5 py-3">
                           <AlertDialogTitle className="font-mono text-xs font-bold tracking-widest uppercase">
                             Delete Event
                           </AlertDialogTitle>
@@ -480,12 +476,12 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
                             </span>
                           </AlertDialogDescription>
                           <AlertDialogFooter className="space-x-4 sm:space-x-4">
-                            <AlertDialogCancel className="mt-0 h-10 w-full rounded-none border border-border bg-background font-mono text-xs tracking-widest uppercase text-foreground hover:bg-muted sm:w-1/2">
+                            <AlertDialogCancel className="mt-0 h-10 w-full rounded-none border border-border bg-background font-mono text-xs tracking-widest text-foreground uppercase hover:bg-muted sm:w-1/2">
                               Cancel
                             </AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(event.id)}
-                              className="h-10 w-full rounded-none border border-destructive bg-destructive font-mono text-xs tracking-widest text-destructive-foreground uppercase shadow-[2px_2px_0px_currentColor] hover:bg-destructive/90 sm:w-1/2"
+                              className="text-destructive-foreground h-10 w-full rounded-none border border-destructive bg-destructive font-mono text-xs tracking-widest uppercase shadow-[2px_2px_0px_currentColor] hover:bg-destructive/90 sm:w-1/2"
                             >
                               Confirm Delete
                             </AlertDialogAction>
@@ -501,7 +497,6 @@ export function DashboardClient({ initialEvents, user, plan }: Props) {
         </div>
       </main>
 
-      {/* Keeping EventDetailsDialog as is for now, but will likely require its own tactical reskin next */}
       {editingEvent && (
         <EventDetailsDialog
           event={editingEvent}

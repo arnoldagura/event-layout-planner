@@ -332,10 +332,11 @@ export function EventEditorClient({ event }: Props) {
               size="sm"
               onClick={isPublic ? () => handlePublish() : () => setShowPublishModal(true)}
               disabled={isPublishing}
-              className={`h-8 rounded-none border-border px-3 font-mono text-[10px] tracking-widest uppercase transition-colors ${isPublic
-                ? "border-success bg-success text-white hover:bg-success/80"
-                : "bg-background text-foreground hover:bg-muted"
-                }`}
+              className={`h-8 rounded-none border-border px-3 font-mono text-[10px] tracking-widest uppercase transition-colors ${
+                isPublic
+                  ? "border-success bg-success text-white hover:bg-success/80"
+                  : "bg-background text-foreground hover:bg-muted"
+              }`}
             >
               {isPublic ? (
                 <>
@@ -381,7 +382,7 @@ export function EventEditorClient({ event }: Props) {
               size="icon-sm"
               onClick={undo}
               disabled={past.length === 0}
-              className="h-6 w-6 rounded-none hover:bg-muted text-foreground"
+              className="h-6 w-6 rounded-none text-foreground hover:bg-muted"
             >
               <Undo2 className="h-3.5 w-3.5" />
             </Button>
@@ -390,7 +391,7 @@ export function EventEditorClient({ event }: Props) {
               size="icon-sm"
               onClick={redo}
               disabled={future.length === 0}
-              className="h-6 w-6 rounded-none hover:bg-muted text-foreground"
+              className="h-6 w-6 rounded-none text-foreground hover:bg-muted"
             >
               <Redo2 className="h-3.5 w-3.5" />
             </Button>
@@ -401,7 +402,7 @@ export function EventEditorClient({ event }: Props) {
               variant={showGrid ? "default" : "ghost"}
               size="icon-sm"
               onClick={() => setShowGrid(!showGrid)}
-              className={`h-6 w-6 rounded-none ${showGrid ? "bg-foreground text-background hover:bg-foreground/80" : "hover:bg-muted text-foreground"}`}
+              className={`h-6 w-6 rounded-none ${showGrid ? "bg-foreground text-background hover:bg-foreground/80" : "text-foreground hover:bg-muted"}`}
             >
               <Grid3X3 className="h-3.5 w-3.5" />
             </Button>
@@ -409,7 +410,7 @@ export function EventEditorClient({ event }: Props) {
               variant="ghost"
               size="icon-sm"
               onClick={() => resetView()}
-              className="h-6 w-6 rounded-none hover:bg-muted text-foreground"
+              className="h-6 w-6 rounded-none text-foreground hover:bg-muted"
             >
               <Maximize className="h-3.5 w-3.5" />
             </Button>
@@ -430,10 +431,11 @@ export function EventEditorClient({ event }: Props) {
                 <button
                   key={preset}
                   onClick={() => setScale(preset / 100)}
-                  className={`h-full px-2 text-[10px] tracking-widest transition-colors ${Math.round(scale * 100) === preset
-                    ? "bg-black font-bold text-white"
-                    : "text-[#666] hover:bg-[#f0f0f0]"
-                    }`}
+                  className={`h-full px-2 text-[10px] tracking-widest transition-colors ${
+                    Math.round(scale * 100) === preset
+                      ? "bg-black font-bold text-white"
+                      : "text-[#666] hover:bg-[#f0f0f0]"
+                  }`}
                 >
                   {preset}%
                 </button>
@@ -466,8 +468,8 @@ export function EventEditorClient({ event }: Props) {
                   <RotateCcw className="h-3.5 w-3.5" />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="rounded-none border-2 border-border p-0 shadow-none bg-card">
-                <div className="border-b border-border bg-destructive px-4 py-3 text-xs font-bold tracking-widest text-destructive-foreground uppercase">
+              <AlertDialogContent className="rounded-none border-2 border-border bg-card p-0 shadow-none">
+                <div className="text-destructive-foreground border-b border-border bg-destructive px-4 py-3 text-xs font-bold tracking-widest uppercase">
                   Clear Canvas
                 </div>
                 <div className="p-6">
@@ -475,12 +477,12 @@ export function EventEditorClient({ event }: Props) {
                     Are you sure you want to delete {elements.length} elements from your layout?
                   </AlertDialogDescription>
                   <AlertDialogFooter className="mt-6 flex gap-4 sm:space-x-4">
-                    <AlertDialogCancel className="mt-0 h-10 w-1/2 rounded-none border border-border bg-background font-mono text-xs tracking-widest uppercase hover:bg-muted text-foreground">
+                    <AlertDialogCancel className="mt-0 h-10 w-1/2 rounded-none border border-border bg-background font-mono text-xs tracking-widest text-foreground uppercase hover:bg-muted">
                       Cancel
                     </AlertDialogCancel>
                     <AlertDialogAction
                       onClick={clearCanvas}
-                      className="m-0 h-10 w-1/2 rounded-none border border-destructive bg-destructive font-mono text-xs tracking-widest text-destructive-foreground uppercase hover:bg-destructive/80"
+                      className="text-destructive-foreground m-0 h-10 w-1/2 rounded-none border border-destructive bg-destructive font-mono text-xs tracking-widest uppercase hover:bg-destructive/80"
                     >
                       Confirm Delete
                     </AlertDialogAction>
@@ -509,7 +511,7 @@ export function EventEditorClient({ event }: Props) {
             </button>
             <div className="flex h-full flex-col overflow-hidden">
               {leftOpen && (
-                <div className="flex h-10 shrink-0 items-center border-b border-border bg-muted px-4">
+                <div className="flex h-10 shrink-0 items-center border-b border-border bg-foreground px-4">
                   <span className="font-mono text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                     Elements
                   </span>
@@ -531,7 +533,7 @@ export function EventEditorClient({ event }: Props) {
                 <div className="max-w-sm border border-border bg-card p-6 shadow-sm">
                   <div className="mb-4 flex items-center gap-3 border-b border-border pb-3">
                     <Terminal className="h-5 w-5 text-foreground" />
-                    <h3 className="font-mono text-sm font-bold tracking-widest uppercase text-foreground">
+                    <h3 className="font-mono text-sm font-bold tracking-widest text-foreground uppercase">
                       EVENT CANVAS
                     </h3>
                   </div>
@@ -569,7 +571,7 @@ export function EventEditorClient({ event }: Props) {
             <div className="relative flex h-full flex-col overflow-hidden">
               {/* COLLAPSED TABS */}
               <div
-                className={`absolute inset-0 flex flex-col items-center gap-2 py-4 transition-opacity duration-150 bg-card ${rightOpen ? "pointer-events-none opacity-0" : "opacity-100"}`}
+                className={`absolute inset-0 flex flex-col items-center gap-2 bg-card py-4 transition-opacity duration-150 ${rightOpen ? "pointer-events-none opacity-0" : "opacity-100"}`}
               >
                 {(
                   [
@@ -595,7 +597,7 @@ export function EventEditorClient({ event }: Props) {
                         {tab.icon}
                         <span className="font-mono text-[8px] tracking-widest">{tab.label}</span>
                         {"pending" in tab && tab.pending > 0 && (
-                          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-none border border-foreground bg-warning text-[8px] font-bold text-warning-foreground shadow-none">
+                          <span className="text-warning-foreground absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-none border border-foreground bg-warning text-[8px] font-bold shadow-none">
                             {tab.pending}
                           </span>
                         )}
@@ -603,7 +605,7 @@ export function EventEditorClient({ event }: Props) {
                     </TooltipTrigger>
                     <TooltipContent
                       side="left"
-                      className="rounded-none border border-border bg-card text-foreground font-mono text-[10px] uppercase"
+                      className="rounded-none border border-border bg-card font-mono text-[10px] text-foreground uppercase"
                     >
                       {tab.label}
                     </TooltipContent>
@@ -663,7 +665,7 @@ export function EventEditorClient({ event }: Props) {
                   >
                     <Tag className="h-3.5 w-3.5" /> BIDS
                     {bids.filter((b) => b.status === "pending").length > 0 && (
-                      <span className="ml-1 bg-warning px-1.5 py-0.5 text-[8px] leading-none font-bold text-warning-foreground">
+                      <span className="text-warning-foreground ml-1 bg-warning px-1.5 py-0.5 text-[8px] leading-none font-bold">
                         {bids.filter((b) => b.status === "pending").length}
                       </span>
                     )}
@@ -726,14 +728,14 @@ export function EventEditorClient({ event }: Props) {
               <Button
                 variant="outline"
                 onClick={() => setShowPublishModal(false)}
-                className="h-10 w-full rounded-none border-border hover:bg-muted text-foreground font-mono text-xs tracking-widest uppercase"
+                className="h-10 w-full rounded-none border-border font-mono text-xs tracking-widest text-foreground uppercase hover:bg-muted"
               >
                 Cancel
               </Button>
               <Button
                 onClick={() => handlePublish(expiresAt || undefined)}
                 disabled={isPublishing}
-                className="h-10 w-full rounded-none border border-foreground bg-foreground font-mono text-xs tracking-widest text-background uppercase shadow-[2px_2px_0_0_currentColor] transition-colors hover:bg-success hover:border-success hover:text-white"
+                className="h-10 w-full rounded-none border border-foreground bg-foreground font-mono text-xs tracking-widest text-background uppercase shadow-[2px_2px_0_0_currentColor] transition-colors hover:border-success hover:bg-success hover:text-white"
               >
                 {isPublishing ? "Publishing..." : "Publish & Copy Link"}
               </Button>

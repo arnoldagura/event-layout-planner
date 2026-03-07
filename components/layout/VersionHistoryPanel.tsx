@@ -155,7 +155,7 @@ export function VersionHistoryPanel({ eventId }: Props) {
             <AlertDialogTitle className="font-mono text-xs tracking-widest text-background uppercase">
               Restore v{restoringNum}?
             </AlertDialogTitle>
-            <AlertDialogDescription className="font-mono text-xs leading-relaxed tracking-widest text-muted-foreground uppercase mt-2">
+            <AlertDialogDescription className="mt-2 font-mono text-xs leading-relaxed tracking-widest text-muted-foreground uppercase">
               This will replace all current canvas elements with the elements from this version.
               Your current unsaved changes will be lost.
             </AlertDialogDescription>
@@ -163,14 +163,14 @@ export function VersionHistoryPanel({ eventId }: Props) {
           <AlertDialogFooter className="mt-8 flex gap-4 p-6 pt-0">
             <AlertDialogCancel
               disabled={isRestoring}
-              className="mt-0 h-10 w-full rounded-none border-border font-mono text-xs tracking-widest uppercase hover:bg-muted text-foreground"
+              className="mt-0 h-10 w-full rounded-none border-border font-mono text-xs tracking-widest text-foreground uppercase hover:bg-muted"
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRestoreConfirm}
               disabled={isRestoring}
-              className="m-0 h-10 w-full rounded-none border border-foreground bg-foreground font-mono text-xs tracking-widest text-background uppercase shadow-[2px_2px_0_0_currentColor] transition-colors hover:bg-success hover:border-success hover:text-white"
+              className="m-0 h-10 w-full rounded-none border border-foreground bg-foreground font-mono text-xs tracking-widest text-background uppercase shadow-[2px_2px_0_0_currentColor] transition-colors hover:border-success hover:bg-success hover:text-white"
             >
               {isRestoring ? "Restoring..." : "Restore"}
             </AlertDialogAction>

@@ -191,7 +191,7 @@ export const EventCanvas = React.forwardRef<HTMLDivElement, Props>(function Even
 
       <div
         ref={ref}
-        className="absolute shadow-lg border border-border"
+        className="absolute border border-border shadow-lg"
         style={{
           backgroundColor: "var(--canvas-bg)",
           backgroundImage: showGrid

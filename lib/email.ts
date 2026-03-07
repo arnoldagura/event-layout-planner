@@ -2,7 +2,6 @@ import { Resend } from "resend"
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy_key_for_build")
 
-// Use "Friendly Name <email>" format as required by Resend
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "noreply@eventlayoutplanner.com"
 const FROM = `Event Layout Planner <${FROM_EMAIL}>`
 
@@ -11,7 +10,7 @@ interface ApprovedParams {
   vendorEmail: string
   boothName: string
   eventTitle: string
-  eventDate: string // pre-formatted, e.g. "March 15, 2026"
+  eventDate: string
   eventVenue: string | null
 }
 

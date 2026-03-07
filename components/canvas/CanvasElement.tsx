@@ -53,22 +53,42 @@ const elementConfig: Record<
     textColor: "var(--canvas-element-text)",
     Icon: MdTableRestaurant,
   },
-  chair: { background: "var(--muted-foreground)", borderRadius: "0px", textColor: "var(--canvas-element-text)", Icon: Armchair },
-  booth: { background: "var(--info)", borderRadius: "0px", textColor: "var(--canvas-element-text)", Icon: Store },
+  chair: {
+    background: "var(--muted-foreground)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
+    Icon: Armchair,
+  },
+  booth: {
+    background: "var(--info)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
+    Icon: Store,
+  },
   entrance: {
     background: "var(--success)",
     borderRadius: "0px",
     textColor: "var(--canvas-element-text)",
     Icon: DoorOpen,
   },
-  exit: { background: "var(--destructive)", borderRadius: "0px", textColor: "var(--canvas-element-text)", Icon: DoorClosed },
+  exit: {
+    background: "var(--destructive)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
+    Icon: DoorClosed,
+  },
   restroom: {
     background: "var(--muted-foreground)",
     borderRadius: "0px",
     textColor: "var(--canvas-element-text)",
     Icon: FaRestroom,
   },
-  bar: { background: "var(--warning)", borderRadius: "0px", textColor: "var(--canvas-element-text)", Icon: Wine },
+  bar: {
+    background: "var(--warning)",
+    borderRadius: "0px",
+    textColor: "var(--canvas-element-text)",
+    Icon: Wine,
+  },
   registration: {
     background: "var(--info)",
     borderRadius: "0px",
@@ -87,9 +107,8 @@ function iconSize(w: number, h: number): number {
 }
 
 const GRID = 20
-const SNAP_THRESHOLD = 8 // canvas px — snap guides kick in within this distance
+const SNAP_THRESHOLD = 8
 
-// Compute position for each resize handle
 function handleStyle(h: ResizeHandle): React.CSSProperties {
   const base: React.CSSProperties = {
     position: "absolute",
@@ -166,8 +185,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
     Icon: null,
   }
 
-  // ── Event handlers ──────────────────────────────────────────────────
-
   const handleMouseDown = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (e.shiftKey) {
@@ -224,7 +241,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
       let rawX = dragStart.elX + (e.clientX - dragStart.x) / scale
       let rawY = dragStart.elY + (e.clientY - dragStart.y) / scale
 
-      // Check element snap guides against non-selected elements
       const others = elements.filter(
         (el) => el.id !== element.id && !selectedElements.includes(el.id)
       )
@@ -235,7 +251,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
 
       for (const other of others) {
         if (!snappedX) {
-          // my left / center / right vs their left / center / right
           const myEdges: [number, number][] = [
             [rawX, 0],
             [rawX + element.width / 2, element.width / 2],
@@ -278,7 +293,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
 
       setSnapGuides({ x: snapX, y: snapY })
 
-      // Grid snap only where no element snap
       const newX = snappedX ? rawX : Math.round(rawX / GRID) * GRID
       const newY = snappedY ? rawY : Math.round(rawY / GRID) * GRID
       updateElementSilent(element.id, { x: newX, y: newY })
@@ -308,7 +322,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
       const centerY = rect.top + rect.height / 2
       const currentAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * (180 / Math.PI)
       let newRotation = rotateStart.startRotation + (currentAngle - rotateStart.angle)
-      // Shift to snap to 15° increments
       if (e.shiftKey) newRotation = Math.round(newRotation / 15) * 15
       updateElementSilent(element.id, { rotation: newRotation })
     }
@@ -333,8 +346,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
       }
     }
   }, [isDragging, isResizing, pendingDrag, isRotating, dragStart, resizeStart, rotateStart])
-
-  // ── Derived styles ───────────────────────────────────────────────────
 
   const outerBoxShadow = isSelected
     ? "0 0 0 1px var(--foreground), 0 0 0 2px var(--info), 4px 4px 0 0 rgba(0,85,255,0.2)"
@@ -370,7 +381,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
       }}
       onMouseDown={handleMouseDown}
     >
-      {/* Inner: border-radius → rounded visual */}
       <div
         className={cn("absolute inset-0 flex flex-col items-center justify-center")}
         style={{
@@ -387,7 +397,10 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         )}
         {!isSmall && (
           <div
-            className={cn("pointer-events-none w-full leading-tight font-medium flex flex-col items-center gap-0.5", config.textColor)}
+            className={cn(
+              "pointer-events-none flex w-full flex-col items-center gap-0.5 leading-tight font-medium",
+              config.textColor
+            )}
             style={{
               fontSize: element.width > 80 ? "12px" : "10px",
               fontFamily: "monospace",
@@ -470,7 +483,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
         )}
       </div>
 
-      {/* Below-label for small elements */}
       {isSmall && (
         <div
           style={{
@@ -495,15 +507,16 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
           {element.name}
           {attendeeName && (
             <span className="ml-1 text-[#0055ff]">
-              [{attendeeName.split("\n").filter((line) => line.trim()).length > 1
+              [
+              {attendeeName.split("\n").filter((line) => line.trim()).length > 1
                 ? `${attendeeName.split("\n").filter((line) => line.trim()).length} ATTENDEES`
-                : attendeeName.trim().substring(0, 10)}]
+                : attendeeName.trim().substring(0, 10)}
+              ]
             </span>
           )}
         </div>
       )}
 
-      {/* 8-point resize handles */}
       {isSelected &&
         !isLocked &&
         ALL_HANDLES.map((h) => (
@@ -515,7 +528,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
           />
         ))}
 
-      {/* Rotation handle — stem + circle above element */}
       {isSelected && !isLocked && (
         <div
           data-export-exclude="true"
@@ -531,7 +543,7 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
             zIndex: 12,
           }}
         >
-          {/* Circle */}
+          {" "}
           <div
             style={{
               width: 12,
@@ -546,7 +558,6 @@ export const CanvasElement: React.FC<Props> = ({ element }) => {
             }}
             onMouseDown={handleRotateMouseDown}
           />
-          {/* Stem connecting circle to element top */}
           <div style={{ width: 1, height: 16, background: "#52525b", marginTop: 0 }} />
         </div>
       )}

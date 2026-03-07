@@ -12,7 +12,6 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Fetch original event + its elements (ownership check included)
     const original = await prisma.event.findFirst({
       where: { id, userId: session.user.id },
       include: { elements: true },
@@ -22,7 +21,6 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
 
-    // Create the duplicate in a transaction
     const copy = await prisma.$transaction(async (tx) => {
       const newEvent = await tx.event.create({
         data: {
@@ -35,14 +33,12 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
           capacity: original.capacity,
           eventType: original.eventType,
           userId: session.user!.id!,
-          // isPublic / shareToken intentionally NOT copied — copy starts unpublished
         },
       })
 
       if (original.elements.length > 0) {
         await tx.eventElement.createMany({
           data: original.elements.map((el) => {
-            // Give booths a fresh stable boothId so bids don't cross over
             const props = (el.properties ?? {}) as Record<string, unknown>
             const freshProps =
               el.type === "booth"
@@ -64,7 +60,6 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
         })
       }
 
-      // Return the new event with element count for the dashboard
       return tx.event.findUniqueOrThrow({
         where: { id: newEvent.id },
         include: {

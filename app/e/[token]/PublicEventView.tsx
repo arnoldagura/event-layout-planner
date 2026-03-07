@@ -56,7 +56,7 @@ export function PublicEventView({ event, shareToken }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleBoothClick = (element: CanvasElement) => {
-    setShowMobilePanel(false) // close search panel when a booth is tapped
+    setShowMobilePanel(false)
     setSelectedBooth(element)
     setVendorName("")
     setVendorEmail("")
@@ -95,7 +95,6 @@ export function PublicEventView({ event, shareToken }: Props) {
   const boothIsForRent = Boolean(selectedBoothProps.forRent)
   const boothIsRented = selectedBoothProps.status === "rented"
 
-  // Sidebar content — rendered in both desktop aside and mobile bottom sheet
   const sidebarContent = (
     <div className="flex flex-col gap-4">
       <div>
@@ -107,7 +106,7 @@ export function PublicEventView({ event, shareToken }: Props) {
           elements={event.elements}
           onHighlight={(id) => {
             setHighlightedId(id)
-            if (id) setShowMobilePanel(false) // close panel and fly to element
+            if (id) setShowMobilePanel(false)
           }}
           highlightedId={highlightedId}
           onBidClick={(elementId) => {
@@ -135,7 +134,6 @@ export function PublicEventView({ event, shareToken }: Props) {
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
-      {/* ── Header ── */}
       <header className="z-10 shrink-0 border-b border-border bg-card px-4 py-2.5">
         <div className="mx-auto flex max-w-screen-xl items-start justify-between gap-3">
           <div className="min-w-0">
@@ -144,7 +142,7 @@ export function PublicEventView({ event, shareToken }: Props) {
                 {event.title}
               </h1>
               {event.eventType && (
-                <span className="shrink-0 rounded-none border border-border bg-muted px-2 py-0.5 text-xs text-muted-foreground uppercase tracking-widest font-mono">
+                <span className="shrink-0 rounded-none border border-border bg-muted px-2 py-0.5 font-mono text-xs tracking-widest text-muted-foreground uppercase">
                   {event.eventType}
                 </span>
               )}
@@ -176,7 +174,7 @@ export function PublicEventView({ event, shareToken }: Props) {
           <div className="mt-0.5 flex shrink-0 items-center gap-2">
             <ThemeToggle />
             <button
-              className="flex items-center gap-1.5 rounded-none bg-muted px-3 py-1.5 text-xs font-mono tracking-widest uppercase font-medium text-foreground transition-colors hover:bg-muted/80 md:hidden border border-border"
+              className="flex items-center gap-1.5 rounded-none border border-border bg-muted px-3 py-1.5 font-mono text-xs font-medium tracking-widest text-foreground uppercase transition-colors hover:bg-muted/80 md:hidden"
               onClick={() => setShowMobilePanel((v) => !v)}
             >
               <Search className="h-3.5 w-3.5" />
@@ -187,12 +185,10 @@ export function PublicEventView({ event, shareToken }: Props) {
       </header>
 
       <div className="relative flex flex-1 overflow-hidden">
-        {/* ── Desktop sidebar ── */}
         <aside className="hidden w-72 shrink-0 flex-col overflow-y-auto border-r border-border bg-card p-4 md:flex">
           {sidebarContent}
         </aside>
 
-        {/* ── Canvas ── */}
         <div className="flex-1 overflow-hidden">
           <PublicEventCanvas
             elements={event.elements}
@@ -201,7 +197,6 @@ export function PublicEventView({ event, shareToken }: Props) {
           />
         </div>
 
-        {/* ── Mobile backdrop ── */}
         {showMobilePanel && (
           <div
             className="fixed inset-0 z-20 bg-background/80 backdrop-blur-sm md:hidden"
@@ -209,15 +204,16 @@ export function PublicEventView({ event, shareToken }: Props) {
           />
         )}
 
-        {/* ── Mobile bottom sheet ── */}
         <div
-          className={`fixed inset-x-0 bottom-0 z-30 transform rounded-none border-t border-border bg-card shadow-lg transition-transform duration-300 ease-in-out md:hidden ${showMobilePanel ? "translate-y-0" : "translate-y-full"
-            }`}
+          className={`fixed inset-x-0 bottom-0 z-30 transform rounded-none border-t border-border bg-card shadow-lg transition-transform duration-300 ease-in-out md:hidden ${
+            showMobilePanel ? "translate-y-0" : "translate-y-full"
+          }`}
           style={{ maxHeight: "72vh" }}
         >
-          {/* Drag handle + close */}
-          <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border bg-muted">
-            <span className="text-sm font-mono tracking-widest uppercase font-semibold">Search & Info</span>
+          <div className="flex items-center justify-between border-b border-border bg-muted px-4 pt-3 pb-2">
+            <span className="font-mono text-sm font-semibold tracking-widest uppercase">
+              Search & Info
+            </span>
             <button
               onClick={() => setShowMobilePanel(false)}
               className="rounded-none p-1 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
@@ -225,23 +221,33 @@ export function PublicEventView({ event, shareToken }: Props) {
               <ChevronDown className="h-5 w-5" />
             </button>
           </div>
-          <div className="overflow-y-auto px-4 pt-4 pb-8 bg-background" style={{ maxHeight: "calc(72vh - 52px)" }}>
+          <div
+            className="overflow-y-auto bg-background px-4 pt-4 pb-8"
+            style={{ maxHeight: "calc(72vh - 52px)" }}
+          >
             {sidebarContent}
           </div>
         </div>
       </div>
 
-      {/* ── Bid Dialog ── */}
       <Dialog open={!!selectedBooth} onOpenChange={(open) => !open && setSelectedBooth(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-sm rounded-none border-2 border-border shadow-lg bg-card">
-          <DialogHeader className="border-b border-border pb-2 bg-muted px-4 pt-4 -mx-6 -mt-6 mb-4">
-            <DialogTitle className="font-mono text-sm uppercase tracking-widest">{selectedBooth?.name}</DialogTitle>
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-none border-2 border-border bg-card shadow-lg sm:max-w-sm">
+          <DialogHeader className="-mx-6 -mt-6 mb-4 border-b border-border bg-muted px-4 pt-4 pb-2">
+            <DialogTitle className="font-mono text-sm tracking-widest uppercase">
+              {selectedBooth?.name}
+            </DialogTitle>
           </DialogHeader>
 
           {selectedBooth && !boothIsForRent && (
             <div className="space-y-4 py-2 text-center">
-              <p className="text-xs font-mono tracking-widest uppercase text-muted-foreground">Booth Not Available</p>
-              <Button variant="outline" className="w-full rounded-none font-mono tracking-widest uppercase" onClick={() => setSelectedBooth(null)}>
+              <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+                Booth Not Available
+              </p>
+              <Button
+                variant="outline"
+                className="w-full rounded-none font-mono tracking-widest uppercase"
+                onClick={() => setSelectedBooth(null)}
+              >
                 Close
               </Button>
             </div>
@@ -249,8 +255,14 @@ export function PublicEventView({ event, shareToken }: Props) {
 
           {selectedBooth && boothIsForRent && boothIsRented && (
             <div className="space-y-4 py-2 text-center">
-              <p className="text-xs font-mono tracking-widest uppercase text-muted-foreground">Booth Rented Out</p>
-              <Button variant="outline" className="w-full rounded-none font-mono tracking-widest uppercase" onClick={() => setSelectedBooth(null)}>
+              <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
+                Booth Rented Out
+              </p>
+              <Button
+                variant="outline"
+                className="w-full rounded-none font-mono tracking-widest uppercase"
+                onClick={() => setSelectedBooth(null)}
+              >
                 Close
               </Button>
             </div>
@@ -259,7 +271,7 @@ export function PublicEventView({ event, shareToken }: Props) {
           {selectedBooth && boothIsForRent && !boothIsRented && (
             <>
               {(boothCategory || askingPrice || boothDescription) && (
-                <div className="space-y-2 rounded-none border border-border bg-muted p-4 text-xs font-mono text-muted-foreground uppercase tracking-widest">
+                <div className="space-y-2 rounded-none border border-border bg-muted p-4 font-mono text-xs tracking-widest text-muted-foreground uppercase">
                   {boothCategory && (
                     <p>
                       <span className="font-bold text-foreground">CAT:</span> {boothCategory}
@@ -267,17 +279,24 @@ export function PublicEventView({ event, shareToken }: Props) {
                   )}
                   {askingPrice && (
                     <p className="flex items-center gap-1">
-                      <span className="font-bold text-foreground">ASKING:</span>
-                      ${askingPrice.toLocaleString()}
+                      <span className="font-bold text-foreground">ASKING:</span>$
+                      {askingPrice.toLocaleString()}
                     </p>
                   )}
-                  {boothDescription && <p className="text-muted-foreground mt-2 border-t border-border pt-2 leading-relaxed normal-case tracking-normal font-sans">{boothDescription}</p>}
+                  {boothDescription && (
+                    <p className="mt-2 border-t border-border pt-2 font-sans leading-relaxed tracking-normal text-muted-foreground normal-case">
+                      {boothDescription}
+                    </p>
+                  )}
                 </div>
               )}
 
-              <div className="space-y-4 mt-2">
+              <div className="mt-2 space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="bid-name" className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
+                  <Label
+                    htmlFor="bid-name"
+                    className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase"
+                  >
                     Vendor Identity *
                   </Label>
                   <Input
@@ -285,12 +304,15 @@ export function PublicEventView({ event, shareToken }: Props) {
                     value={vendorName}
                     onChange={(e) => setVendorName(e.target.value)}
                     placeholder="ENTER VENDOR NAME..."
-                    className="h-10 text-sm rounded-none border-border focus-visible:ring-1 focus-visible:ring-foreground"
+                    className="h-10 rounded-none border-border text-sm focus-visible:ring-1 focus-visible:ring-foreground"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="bid-email" className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
+                  <Label
+                    htmlFor="bid-email"
+                    className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase"
+                  >
                     Comms Uplink (Email) *
                   </Label>
                   <Input
@@ -299,12 +321,15 @@ export function PublicEventView({ event, shareToken }: Props) {
                     value={vendorEmail}
                     onChange={(e) => setVendorEmail(e.target.value)}
                     placeholder="SYSTEM.OPERATOR@GMAIL.COM"
-                    className="h-10 text-sm rounded-none border-border focus-visible:ring-1 focus-visible:ring-foreground"
+                    className="h-10 rounded-none border-border text-sm focus-visible:ring-1 focus-visible:ring-foreground"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="bid-amount" className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
+                  <Label
+                    htmlFor="bid-amount"
+                    className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase"
+                  >
                     Proposal Value ($) *
                   </Label>
                   <Input
@@ -314,12 +339,15 @@ export function PublicEventView({ event, shareToken }: Props) {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder={askingPrice ? String(askingPrice) : "0"}
-                    className="h-10 text-sm rounded-none border-border focus-visible:ring-1 focus-visible:ring-foreground"
+                    className="h-10 rounded-none border-border text-sm focus-visible:ring-1 focus-visible:ring-foreground"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="bid-message" className="text-[10px] font-mono tracking-widest uppercase text-muted-foreground">
+                  <Label
+                    htmlFor="bid-message"
+                    className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase"
+                  >
                     Auxiliary Data (Optional)
                   </Label>
                   <Textarea
@@ -328,17 +356,21 @@ export function PublicEventView({ event, shareToken }: Props) {
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="INPUT ADDITIONAL PARAMETERS..."
                     rows={2}
-                    className="resize-none text-sm rounded-none border-border focus-visible:ring-1 focus-visible:ring-foreground"
+                    className="resize-none rounded-none border-border text-sm focus-visible:ring-1 focus-visible:ring-foreground"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-4 pt-4 mt-2 border-t border-border">
-                <Button variant="outline" className="flex-1 rounded-none font-mono tracking-widest uppercase text-xs h-10 border-border hover:bg-muted" onClick={() => setSelectedBooth(null)}>
+              <div className="mt-2 flex gap-4 border-t border-border pt-4">
+                <Button
+                  variant="outline"
+                  className="h-10 flex-1 rounded-none border-border font-mono text-xs tracking-widest uppercase hover:bg-muted"
+                  onClick={() => setSelectedBooth(null)}
+                >
                   ABORT
                 </Button>
                 <Button
-                  className="flex-1 rounded-none font-mono tracking-widest uppercase text-xs h-10 bg-foreground text-background hover:bg-foreground/90"
+                  className="h-10 flex-1 rounded-none bg-foreground font-mono text-xs tracking-widest text-background uppercase hover:bg-foreground/90"
                   onClick={handleBidSubmit}
                   disabled={isSubmitting || !vendorName.trim() || !vendorEmail.trim() || !amount}
                 >

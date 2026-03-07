@@ -7,8 +7,6 @@ import {
   Search,
   MapPin,
   SlidersHorizontal,
-  X,
-  ArrowLeft,
   Terminal,
   Database,
   Shield,
@@ -16,9 +14,9 @@ import {
   LogOut,
 } from "lucide-react"
 import { signOut } from "next-auth/react"
+import { ThemeToggle } from "@/components/ThemeToggle"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -26,10 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import type { MarketplaceEvent } from "./page"
-
-// ─── Price formatting ─────────────────────────────────────────────────────────
 
 function formatPrice(min: number | null, max: number | null): string {
   if (min === null) return "VARIES"
@@ -37,8 +32,6 @@ function formatPrice(min: number | null, max: number | null): string {
   if (max === null) return `FROM $${min.toLocaleString()}`
   return `$${min.toLocaleString()} - $${max.toLocaleString()}`
 }
-
-// ─── Single event card ────────────────────────────────────────────────────────
 
 function EventCard({ event }: { event: MarketplaceEvent }) {
   const dateStr = (() => {
@@ -69,7 +62,7 @@ function EventCard({ event }: { event: MarketplaceEvent }) {
 
         <Link
           href={`/e/${event.shareToken}`}
-          className="mb-3 line-clamp-2 text-lg font-bold tracking-tight uppercase transition-colors text-foreground group-hover:text-info"
+          className="mb-3 line-clamp-2 text-lg font-bold tracking-tight text-foreground uppercase transition-colors group-hover:text-info"
         >
           {event.title}
         </Link>
@@ -92,13 +85,19 @@ function EventCard({ event }: { event: MarketplaceEvent }) {
           <span className="text-right font-medium text-foreground">{dateStr}</span>
 
           <span className="text-[10px] tracking-widest text-muted-foreground uppercase">TYPE</span>
-          <span className="truncate text-right text-foreground">{event.eventType?.toUpperCase() || "UNKNOWN"}</span>
+          <span className="truncate text-right text-foreground">
+            {event.eventType?.toUpperCase() || "UNKNOWN"}
+          </span>
 
-          <span className="text-[10px] tracking-widest text-muted-foreground uppercase">AVAILABLE</span>
+          <span className="text-[10px] tracking-widest text-muted-foreground uppercase">
+            AVAILABLE
+          </span>
           <span className="text-right font-medium text-success">{event.availableBooths}</span>
 
           <span className="text-[10px] tracking-widest text-muted-foreground uppercase">PRICE</span>
-          <span className={`text-right font-medium ${isPriceKnown ? "text-foreground" : "text-muted-foreground"}`}>
+          <span
+            className={`text-right font-medium ${isPriceKnown ? "text-foreground" : "text-muted-foreground"}`}
+          >
             {priceLabel}
           </span>
         </div>
@@ -133,8 +132,6 @@ function EventCard({ event }: { event: MarketplaceEvent }) {
     </div>
   )
 }
-
-// ─── Main component ───────────────────────────────────────────────────────────
 
 export function MarketplaceClient({
   events,
@@ -196,6 +193,31 @@ export function MarketplaceClient({
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans text-foreground selection:bg-foreground selection:text-background">
+      {!user && (
+        <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-6 font-mono text-[10px] tracking-widest uppercase">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center bg-foreground text-sm leading-none font-bold tracking-tighter text-background shadow-sm">
+              V
+            </div>
+            <div className="hidden sm:block">
+              <div className="mb-1 font-mono text-[9px] leading-none tracking-[0.2em] text-muted-foreground uppercase">
+                Event Layout
+              </div>
+              <div className="text-sm leading-none font-bold tracking-tight uppercase">Planner</div>
+            </div>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/auth/signin"
+              className="tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
+            >
+              SIGN IN
+            </Link>
+            <ThemeToggle />
+          </div>
+        </header>
+      )}
+
       {user && (
         <header className="z-10 flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-6 font-mono text-[10px] tracking-widest uppercase">
           <div className="flex items-center gap-8">
@@ -257,14 +279,14 @@ export function MarketplaceClient({
               <LogOut className="h-4 w-4" />
               <span className="hidden lg:inline">LOG OUT</span>
             </button>
+            <ThemeToggle />
           </div>
         </header>
       )}
 
-      {/* ── Page header ─────────────────────────────────────────────────── */}
       <div className="mx-auto flex w-full max-w-6xl items-end justify-between border-b border-border px-6 pt-8 pb-6">
         <div>
-          <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight uppercase text-foreground">
+          <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-foreground uppercase">
             <Database className="h-6 w-6" /> MARKETPLACE
           </h1>
           <p className="mt-2 font-mono text-xs tracking-widest text-muted-foreground uppercase">
@@ -281,7 +303,6 @@ export function MarketplaceClient({
         </div>
       </div>
 
-      {/* ── Filter bar ──────────────────────────────────────────────────── */}
       <div className="sticky top-0 z-10 w-full border-b border-border bg-card">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 px-6 py-4 md:flex-row">
           <div className="relative flex-1">
@@ -290,12 +311,12 @@ export function MarketplaceClient({
               placeholder="SEARCH EVENTS..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-10 rounded-none border-foreground pl-10 font-mono text-xs uppercase focus-visible:ring-1 focus-visible:ring-foreground bg-background"
+              className="h-10 rounded-none border-foreground bg-background pl-10 font-mono text-xs uppercase focus-visible:ring-1 focus-visible:ring-foreground"
             />
           </div>
 
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="h-10 w-[180px] rounded-none border-foreground font-mono text-xs uppercase bg-background">
+            <SelectTrigger className="h-10 w-[180px] rounded-none border-foreground bg-background font-mono text-xs uppercase">
               <SelectValue placeholder="ALL TYPES" />
             </SelectTrigger>
             <SelectContent className="rounded-none border-black font-mono text-[10px] uppercase">
@@ -355,7 +376,7 @@ export function MarketplaceClient({
           </div>
 
           {activeFilters > 0 && (
-            <div className="flex shrink-0 items-center gap-2 border border-foreground pl-2 bg-card">
+            <div className="flex shrink-0 items-center gap-2 border border-foreground bg-card pl-2">
               <span className="font-mono text-[10px] font-bold text-info">
                 {activeFilters} FILTERS
               </span>
@@ -393,7 +414,7 @@ export function MarketplaceClient({
             <Button
               variant="outline"
               onClick={clearAll}
-              className="mt-4 rounded-none border-foreground text-foreground font-mono text-xs uppercase"
+              className="mt-4 rounded-none border-foreground font-mono text-xs text-foreground uppercase"
             >
               CLEAR FILTERS
             </Button>

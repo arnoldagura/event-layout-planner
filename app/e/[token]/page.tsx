@@ -57,12 +57,10 @@ export default async function PublicEventPage({ params }: Props) {
 
   if (!event) notFound()
 
-  // Check expiry
   if (event.shareExpiresAt && new Date() > event.shareExpiresAt) {
     notFound()
   }
 
-  // Serialize dates for client component
   const serialized = {
     ...event,
     eventDate: event.eventDate.toISOString(),

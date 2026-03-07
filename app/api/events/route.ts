@@ -43,7 +43,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Plan limit: free users max 3 events
     const plan = await getUserPlan(session.user.id)
     const eventCount = await prisma.event.count({ where: { userId: session.user.id } })
     if (plan === "free" && eventCount >= PLAN_LIMITS.free.maxEvents) {
